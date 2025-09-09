@@ -32,7 +32,6 @@
 - [Acerca del Proyecto](#-acerca-del-proyecto)
 - [Tecnologías Usadas](#-tecnologías-usadas)
 - [Instalación](#-instalación)
-- [Uso](#-uso)
 - [Contribución](#-contribución)
 - [Licencia](#-licencia)
 
