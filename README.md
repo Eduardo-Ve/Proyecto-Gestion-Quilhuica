@@ -25,9 +25,8 @@
   <img src="https://img.shields.io/badge/Git-F05032?logo=git&logoColor=white" />
   <img src="https://img.shields.io/badge/GitHub_Actions-2088FF?logo=github-actions&logoColor=white" />
 </p>
--
 
-## 📑 Tabla de Contenidos
+## Tabla de Contenidos
 - [Acerca del Proyecto](#-acerca-del-proyecto)
 - [Tecnologías Usadas](#-tecnologías-usadas)
 - [Instalación](#-instalación)
@@ -36,16 +35,16 @@
 
 ---
 
-## 📖 Acerca del Proyecto
+## Acerca del Proyecto
 Gestión Quilhucia es una aplicación web desarrollada en Django que tiene como propósito optimizar la administración de insumos agrícolas y el control de inventarios en diferentes zonas de almacenamiento. La plataforma permite organizar productos como fertilizantes y otros insumos, registrar su movimiento entre casetas, llevar un control de su aplicación en terreno y mantener un inventario actualizado en todo momento. Además, facilita la generación de reportes que apoyan la trazabilidad y la toma de decisiones, contribuyendo a una gestión agrícola más eficiente y confiable.  
 
-## 🛠 Tecnologías a Usar
+## Tecnologías a Usar
 - Python 3.11+  
 - Django  
 - HTML5, CSS3, Bootstrap  
 - PostgreSQL / SQLite  
 
-## ⚙️ Instalación local
+## Instalación local
 ```git clone https://github.com/Eduardo-Ve/Proyecto-Gestion-Quilhuica```
 
 ```cd Proyecto-Gestion-Quilhuica```
