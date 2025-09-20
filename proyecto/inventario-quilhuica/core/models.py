@@ -1,42 +1,19 @@
-from django.db import models
-from django.utils import timezone
-
-class Caseta(models.Model):
-    nombre = models.CharField(max_length=100, unique=True)
-
-    class Meta:
-        verbose_name = "Caseta"
-        verbose_name_plural = "Casetas"
-
-    def __str__(self):
-        return self.nombre
+﻿from django.db import models
 
 class Producto(models.Model):
-    sku = models.CharField("SKU", max_length=50, unique=True)
-    nombre = models.CharField(max_length=150)
-    descripcion = models.TextField(blank=True)
-    cantidad = models.PositiveIntegerField(default=0)
-    unidad = models.CharField(max_length=20, default="unid")  
-    caseta = models.ForeignKey(Caseta, on_delete=models.PROTECT, related_name="productos")
-    stock_minimo = models.PositiveIntegerField(default=0)
+    nombre = models.CharField(max_length=120)
+    categoria = models.CharField(max_length=80, blank=True)
+    cantidad = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    unidad = models.CharField(max_length=20, default="unid")  # ej: kg, lt, unid
+    caseta = models.CharField(max_length=50, blank=True)      # ubicación
+    stock_minimo = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     fecha_vencimiento = models.DateField(null=True, blank=True)
+    precio = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["nombre"]
-        verbose_name = "Producto"
-        verbose_name_plural = "Productos"
 
     def __str__(self):
-        return f"{self.nombre} ({self.sku})"
-
-    @property
-    def bajo_stock(self):
-        return self.cantidad <= self.stock_minimo if self.stock_minimo is not None else False
-
-    @property
-    def por_vencer(self):
-        return self.fecha_vencimiento and self.fecha_vencimiento <= timezone.now().date()
-
-# Create your models here.
+        return self.nombre

@@ -1,0 +1,10 @@
+﻿<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>Producto</title></head>
+<body>
+  <h1>{{ view.object|default:"Nuevo producto" }}</h1>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Guardar</button>
+    <a href="{% url 'core:producto_list' %}">Volver</a>
+  </form>
+</body></html>
