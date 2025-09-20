@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h2>prueba de middleware & login exitoso</h2>
+    # Usuario: {{ user.username }} <br>
+    # Email: {{ user.email }} <br>
+    # Fecha de creación: {{ user.date_joined }} <br>
+    # Último login: {{ user.last_login }} <br>
+    # Es superusuario: {{ user.is_superuser }} <br>
+    # Está activo: {{ user.is_active }} <br>
+
+    #boton logout
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</body>
+</html>

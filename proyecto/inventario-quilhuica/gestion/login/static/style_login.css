@@ -1,51 +1,202 @@
-/* Fondo */
+/* General */
+
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #b9b8b8;
+  font-size: large;
 }
 
-/* Caja de login */
-.right-form {
-    background: #fff;
-    padding: 30px 40px;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    width: 350px;
+/* Contenedor principal */
+.container-login {
+  display: flex;
+  width: 80%;
+  height: 70%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #ddd; /* Borde sutil */
+}
+
+/* Lado izquierdo con imagen de fondo */
+.login-left {
+  flex: 1;
+  background: url("/static/images/background_quilhuica.jpg") no-repeat center
+    center;
+  background-size: cover;
+}
+
+/* Lado derecho */
+.login-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Centra verticalmente */
+  background: #f4f6f9;
+}
+
+/* Caja del formulario */
+.login-form {
+  width: 80%;
+  text-align: left;
 }
 
 /* Título */
-.right-form h2 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
+.login-form h2 {
+  margin-bottom: 20px;
+  font-size: 24px;
+  color: #333;
+  text-align: center;
 }
 
 /* Inputs */
 .login-form input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  outline: none;
+  text-align: left;
+  font-size: 14px;
 }
 
+/* Opciones (recordarme y olvidé contraseña) */
+.options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.options a {
+  color: #00c451;
+  text-decoration: none;
+}
+.options a:hover {
+  color: #055526;
+}
+.options remember {
+  display: flex;
+  align-items: center;
+}
+/* Contenedor del checkbox */
+.remember-me {
+  display: flex;
+  align-items: right;
+  margin: 10px 0 20px 0;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Checkbox */
+.remember-me input[type="checkbox"] {
+  margin-right: 10px; /* espacio entre el cuadrado y el texto */
+  transform: scale(1.1); /* opcional: agranda un poco el checkbox */
+  cursor: pointer;
+}
+.remember-me label {
+  display: flex;
+  align-items: center; /* alinea verticalmente */
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  gap: 10px; /* separación entre checkbox y texto */
+}
+
+.remember-me input[type="checkbox"] {
+  transform: scale(1.1); /* agranda un poquito el checkbox */
+  cursor: pointer;
+}
 /* Botón */
 .btn-login {
-    width: 100%;
-    background: #00c451; 
-    border: none;
-    padding: 12px;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
+  width: 100%;
+  background: #00c451;
+  border: none;
+  padding: 12px;
+  color: #fff;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: background 0.3s;
 }
 
 .btn-login:hover {
-    background: #055526;
+  background: #055526;
+}
+.btn-password-toggle {
+  border: none;
+  background: transparent;
+  padding: 0 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem; /* espacio entre icono y texto */
+}
+
+.btn-password-toggle:hover i,
+.btn-password-toggle:hover span {
+  color: #0d6efd;
+}
+
+/* --- Modo móvil --- */
+@media (max-width: 768px) {
+  .container-login {
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  /* Imagen ahora será fondo de toda la pantalla */
+  .login-left {
+    display: none; /* Ocultamos el panel izquierdo */
+  }
+
+  .container-login {
+    position: relative;
+    background: url("/static/images/background_quilhuica.jpg") no-repeat center
+      center;
+    background-size: cover;
+  }
+
+  /* Efecto blur usando un pseudo-elemento */
+  .container-login::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    backdrop-filter: blur(6px); /* el blur 🔥 */
+    background: rgba(0, 0, 0, 0.4); /* oscurecer un poco */
+    z-index: 1;
+  }
+
+  /* Formulario encima del fondo */
+  .login-right {
+    flex: none;
+    width: 100%;
+    height: 100%;
+    background: transparent; /* quitamos fondo gris */
+    z-index: 2; /* encima del blur */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .login-form {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 350px;
+  }
 }

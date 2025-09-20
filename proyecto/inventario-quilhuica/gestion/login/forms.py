@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model
 
 class RegistroUsuario(UserCreationForm):
     first_name = forms.CharField(
@@ -52,9 +53,42 @@ class CustomLoginForm(AuthenticationForm):
     )
     password = forms.CharField(
         label="Contraseña",
-        widget=forms.PasswordInput(attrs={'placeholder': 'Ingrese su contraseña'})
+        widget=forms.PasswordInput(attrs={'placeholder': 'Ingrese su contraseña',  'id': 'password'})
     )
     error_messages = {
         'invalid_login': "Usuario o contraseña incorrectos. Inténtelo nuevamente.",
         'inactive': "Esta cuenta está inactiva, contacte al administrador.",
     }
+    def clean(self):
+        username_or_email = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username_or_email and password:
+            # Si es un email, intentamos buscar el usuario correspondiente
+            if "@" in username_or_email:
+                try:
+                    user = User.objects.get(email__iexact=username_or_email)
+                    username = user.get_username()  # obtiene el campo definido como USERNAME_FIELD
+                except User.DoesNotExist:
+                    username = None
+            else:
+                username = username_or_email
+
+            if username:
+                self.user_cache = authenticate(
+                    self.request,
+                    username=username,
+                    password=password
+                )
+            else:
+                self.user_cache = None
+
+            if self.user_cache is None:
+                raise forms.ValidationError(
+                    self.error_messages['invalid_login'],
+                    code='invalid_login',
+                )
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data    

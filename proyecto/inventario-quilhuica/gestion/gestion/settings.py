@@ -52,6 +52,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'gestion.middleware.LoginRequiredMiddleware',
+
 ]
 
 ROOT_URLCONF = 'gestion.urls'
@@ -71,6 +73,7 @@ TEMPLATES = [
         },
     },
 ]
+LOGIN_REDIRECT_URL = '/core/'
 
 WSGI_APPLICATION = 'gestion.wsgi.application'
 
@@ -128,3 +131,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
