@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'core',
     'login',
+    'registro',
     
 ]
 
@@ -83,11 +84,16 @@ WSGI_APPLICATION = 'gestion.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'quilhuica_db',     # el nombre de la base que creaste
+        'USER': 'postgres',         # el usuario con el que probaste psql
+        'PASSWORD': 'lalo123', # la misma que usaste recién en psql
+        'HOST': 'localhost',        # o 127.0.0.1
+        'PORT': '5432',
     }
 }
-
+# Custom user model
+AUTH_USER_MODEL = 'login.Usuario'
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -133,9 +139,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+AUTH_USER_MODEL = "login.Usuario"  
+AUTHENTICATION_BACKENDS = [
+    "login.backends.UsuarioBackend",  
+    "django.contrib.auth.backends.ModelBackend",  
+]
