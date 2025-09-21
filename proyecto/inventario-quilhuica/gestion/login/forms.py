@@ -11,7 +11,7 @@ class CustomLoginForm(AuthenticationForm):
     )
     password = forms.CharField(
         label="Contraseña",
-z        widget=forms.PasswordInput(attrs={'placeholder': 'Ingrese su contraseña', 'id': 'password'})
+        widget=forms.PasswordInput(attrs={'placeholder': 'Ingrese su contraseña', 'id': 'password'})
     )
     error_messages = {
         'invalid_login': "Usuario o contraseña incorrectos. Inténtelo nuevamente.",
