@@ -3,6 +3,7 @@ from django.contrib.auth.forms import ReadOnlyPasswordHashField
 import re
 from login.models import Usuario  # tu modelo de usuarios
 
+
 class RegistroUsuarioForm(forms.ModelForm):
     password1 = forms.CharField(
         label="Contraseña", 
@@ -27,8 +28,20 @@ class RegistroUsuarioForm(forms.ModelForm):
 
     def clean_correo(self):
         correo = self.cleaned_data.get("correo")
+
+        # Regex con cerradura de Kleene (usuario + dominio + TLD(estuve 1 hora craneando esto)) 
+        # creo que aqui deberia validar de otra forma igual (nota de Eduardo)
+        # por ejemplo: podria hacer un tipo ping a un servidor de correo para validar que existe
+        # o usar una libreria externa que haga eso como un checker de correos validados 
+        # pero por ahora esto sirve
+        patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+        if not re.match(patron, correo):
+            raise forms.ValidationError("Ingrese un correo electrónico válido.")
+
         if Usuario.objects.filter(correo__iexact=correo).exists():
             raise forms.ValidationError("Este correo ya está registrado.")
+
         return correo.lower()
 
     def clean_telefono(self):
