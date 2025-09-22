@@ -17,7 +17,7 @@ class RegistroUsuarioForm(forms.ModelForm):
 
     class Meta:
         model = Usuario
-        fields = ["nombre_usuario", "nombre", "correo", "telefono", "cargo"]
+        fields = ["nombre_usuario", "correo", "telefono", "cargo"]
 
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get("nombre_usuario").strip()
