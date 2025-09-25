@@ -4,12 +4,6 @@
 <i></i></P>
 
 
-<p align="center">
-  <img src="https://img.shields.io/github/last-commit/Eduardo-Ve/Proyecto-Gestion-Quilhuica?color=blue&label=last%20commit&logo=github&style=flat" />
-  <img src="https://img.shields.io/github/languages/top/Eduardo-Ve/Proyecto-Gestion-Quilhuica??logo=python&logoColor=white&label=Python" />
-  <img src="https://img.shields.io/github/languages/count/Eduardo-Ve/Proyecto-Gestion-Quilhuica??color=blue&label=languages" />
-</p>
-
 ---
 
 <p align="center"><i>Built with the tools and technologies:</i></p>
