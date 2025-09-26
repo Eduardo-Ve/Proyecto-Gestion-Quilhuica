@@ -1,0 +1,38 @@
+﻿{% extends "core/base.html" %}
+
+{% block title %}Products{% endblock %}
+
+{% block content %}
+<h1>Products</h1>
+
+<p>
+  <a href="{% url 'core:product_create' %}" class="btn btn-primary">New product</a>
+</p>
+
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Category</th>
+      <th>Added at</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for obj in object_list %}
+      <tr>
+        <td>{{ obj.name_prod }}</td>
+        <td>{{ obj.category.name_cat }}</td>
+        <td>{{ obj.added_at|date:"Y-m-d H:i" }}</td>
+        <td class="text-end">
+          <a href="{% url 'core:product_update' obj.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+          <a href="{% url 'core:product_delete' obj.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4">No products found.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}
+
