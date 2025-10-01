@@ -76,11 +76,14 @@ WSGI_APPLICATION = "gestion.wsgi.application"
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'quilhuica_db',     # el nombre de la base que creaste
+        'USER': 'postgres',         # el usuario con el que probaste psql
+        'PASSWORD': 'admin123456', # la misma que usaste recién en psql
+        'HOST': 'localhost',        # o 127.0.0.1
+        'PORT': '5432',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
