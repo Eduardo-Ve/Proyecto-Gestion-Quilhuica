@@ -40,7 +40,9 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'core',
     'login',
-    'registro',
+    'product',
+    'warehouse',
+    'application',
     
 ]
 
