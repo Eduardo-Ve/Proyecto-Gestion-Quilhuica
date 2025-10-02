@@ -7,6 +7,10 @@
 <form method="post" novalidate>
   {% csrf_token %}
 
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
   <div class="card shadow-sm mb-3">
     <div class="card-header bg-white fw-semibold">Datos del Producto</div>
     <div class="card-body">
@@ -41,6 +45,7 @@
           <div class="col-md-6">
             <label class="form-label" for="{{ form.new_category_description.id_for_label }}">Descripción</label>
             {{ form.new_category_description }}
+            {% if form.new_category_description.errors %}<div class="text-danger small">{{ form.new_category_description.errors }}</div>{% endif %}
           </div>
           <div class="col-12 small text-muted">
             Si marcas “Crear nueva categoría”, se ignorará la categoría seleccionada arriba y se creará esta.
@@ -56,27 +61,42 @@
       <button type="button" class="btn btn-sm btn-outline-primary" id="add-row">Añadir fila</button>
     </div>
     <div class="card-body">
+
       {{ formset.management_form }}
+
+      {% if formset.non_form_errors %}
+        <div class="alert alert-danger small">{{ formset.non_form_errors }}</div>
+      {% endif %}
+
       <div id="formset-rows" class="row g-3">
         {% for f in formset %}
           <div class="col-12 border rounded p-3 mb-2 bg-light-subtle">
+            {% if f.non_field_errors %}
+              <div class="alert alert-danger small mb-2">{{ f.non_field_errors }}</div>
+            {% endif %}
             <div class="row g-3 align-items-end">
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label" for="{{ f.package_type.id_for_label }}">Tipo de envase</label>
                 {{ f.package_type }}
                 {% if f.package_type.errors %}<div class="text-danger small">{{ f.package_type.errors }}</div>{% endif %}
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label" for="{{ f.content_value.id_for_label }}">Cantidad</label>
                 {{ f.content_value }}
                 {% if f.content_value.errors %}<div class="text-danger small">{{ f.content_value.errors }}</div>{% endif %}
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <label class="form-label" for="{{ f.content_unit.id_for_label }}">Unidad</label>
                 {{ f.content_unit }}
                 {% if f.content_unit.errors %}<div class="text-danger small">{{ f.content_unit.errors }}</div>{% endif %}
               </div>
-              {% if f.DELETE %}
+              <div class="col-md-3">
+                <label class="form-label" for="{{ f.stock_units.id_for_label }}">Unidades (stock)</label>
+                {{ f.stock_units }}
+                {% if f.stock_units.errors %}<div class="text-danger small">{{ f.stock_units.errors }}</div>{% endif %}
+              </div>
+
+              {% if formset.can_delete and f.instance.pk %}
                 <div class="col-12 form-check mt-2">
                   {{ f.DELETE }}
                   <label class="form-check-label" for="{{ f.DELETE.id_for_label }}">Eliminar esta presentación</label>
@@ -84,8 +104,35 @@
               {% endif %}
             </div>
           </div>
+        {% empty %}
+          {# si no hay formularios (extra=0), insertamos 1 con JS usando empty_form #}
         {% endfor %}
       </div>
+
+      {# plantilla oculta para nuevas filas (usa __prefix__) #}
+      <template id="empty-form-template">
+        <div class="col-12 border rounded p-3 mb-2 bg-light-subtle">
+          <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+              <label class="form-label">Tipo de envase</label>
+              {{ formset.empty_form.package_type }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Cantidad</label>
+              {{ formset.empty_form.content_value }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unidad</label>
+              {{ formset.empty_form.content_unit }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unidades (stock)</label>
+              {{ formset.empty_form.stock_units }}
+            </div>
+          </div>
+        </div>
+      </template>
+
     </div>
   </div>
 
@@ -102,38 +149,37 @@
   const chk = document.getElementById("id_create_new_category");
   const newCat = document.getElementById("new-cat");
   function toggleCat() {
-    const on = chk && chk.checked;
-    if (newCat) newCat.style.display = on ? "" : "none";
+    newCat && (newCat.style.display = (chk && chk.checked) ? "" : "none");
   }
   if (chk) { chk.addEventListener("change", toggleCat); toggleCat(); }
 
-  // Añadir fila al formset
+  // Utilidad: reemplaza __prefix__ por índice
+  function replacePrefix(html, index) {
+    return html.replaceAll(/__prefix__/g, String(index));
+  }
+
+  // Añadir fila al formset usando empty_form
   const addBtn = document.getElementById("add-row");
   const rows = document.getElementById("formset-rows");
-  addBtn?.addEventListener("click", () => {
-    const totalInput = document.getElementById("id_form-TOTAL_FORMS");
-    const total = parseInt(totalInput.value, 10);
-    const regex = new RegExp(`form-(\\d+)-`, "g");
+  const tmpl = document.getElementById("empty-form-template");
+  const totalInput = document.getElementById("id_form-TOTAL_FORMS");
 
-    // usa el primer bloque como plantilla
-    const first = rows.querySelector(".col-12.border");
-    if (!first) return;
-    const clone = first.cloneNode(true);
+  function addEmptyRow() {
+    const index = parseInt(totalInput.value || "0", 10);
+    const html = replacePrefix(tmpl.innerHTML, index);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = html.trim();
+    rows.appendChild(wrapper.firstElementChild);
+    totalInput.value = index + 1;
+  }
 
-    clone.innerHTML = clone.innerHTML.replaceAll(regex, `form-${total}-`);
+  addBtn?.addEventListener("click", addEmptyRow);
 
-    // limpiar valores
-    clone.querySelectorAll("input, select, textarea").forEach(el => {
-      if (el.name.endsWith("DELETE")) {
-        if (el.type === "checkbox") el.checked = false;
-      } else {
-        if (el.tagName === "SELECT") el.selectedIndex = 0;
-        if (el.type === "number" || el.type === "text") el.value = "";
-      }
-    });
-
-    rows.appendChild(clone);
-    totalInput.value = total + 1;
+  // Si no hay filas renderizadas (extra=0 y sin instancias), creamos 1 al cargar
+  document.addEventListener("DOMContentLoaded", () => {
+    if (!rows.querySelector(".col-12.border")) {
+      addEmptyRow();
+    }
   });
 </script>
 {% endblock %}
