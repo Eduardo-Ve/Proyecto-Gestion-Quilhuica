@@ -36,14 +36,14 @@ class Product(models.Model):
 
 class Presentation(models.Model):
     PACKAGE_CHOICES = [
-        ('sack', 'Sack'),
-        ('drum', 'Drum'),
-        ('box', 'Box'),
-        ('package', 'Package'),
+        ('saco', 'Saco'),
+        ('bidon', 'Bidón'),
+        ('caja', 'Caja'),
+        ('paquete', 'Paquete'),
     ]
     UNIT_CHOICES = [
-        ('kg', 'Kilograms'),
-        ('liters', 'Liters'),
+        ('kg', 'Kilogramos'),
+        ('litros', 'Litros'),
     ]
 
     presentation_id = models.AutoField(primary_key=True)
@@ -56,6 +56,11 @@ class Presentation(models.Model):
     package_type = models.CharField(max_length=10, choices=PACKAGE_CHOICES)
     content_value = models.FloatField()
     content_unit = models.CharField(max_length=10, choices=UNIT_CHOICES)
+    stock_units = models.PositiveIntegerField(
+        default=0,
+        verbose_name="Unidades en stock",
+        help_text="Número de envases disponibles"
+    )
 
     class Meta:
         db_table = 'PRESENTATION'
@@ -63,4 +68,5 @@ class Presentation(models.Model):
 
     def __str__(self):
         return f'{self.product} - {self.package_type} {self.content_value} {self.content_unit}'
+
 
