@@ -37,13 +37,18 @@ class RegistroUsuarioForm(forms.ModelForm):
     )
     roles = forms.ModelMultipleChoiceField(
         queryset=Role.objects.all(),
-        widget=forms.SelectMultiple,   # Usa Select para 1 rol, SelectMultiple para varios
+        widget=forms.Select,   
         required=False
     )
 
     class Meta:
         model = Usuario
         fields = ["nombre_usuario", "correo", "telefono"]
+        widgets = {
+            'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo'}),
+            'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo_usuario@dominio.com'}),
+            'telefono': forms.TextInput(attrs={'placeholder': '931816450'}),
+        }
 
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get("nombre_usuario").strip()
