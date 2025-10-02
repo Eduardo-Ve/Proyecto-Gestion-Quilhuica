@@ -13,7 +13,10 @@
     # Último login: {{ user.last_login }} <br>
     # Es superusuario: {{ user.is_superuser }} <br>
     # Está activo: {{ user.is_active }} <br>
-
+    # vemos el role del Usuario
+    {% for role in user.roles.all %}
+        # Rol: {{ role.name_role }} <br>
+    {% endfor %}
     #boton logout
     <form method="POST" action="{% url 'logout' %}">
         {% csrf_token %}
