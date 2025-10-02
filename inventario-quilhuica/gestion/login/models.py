@@ -15,7 +15,7 @@ class UsuarioManager(BaseUserManager):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         return self.create_user(nombre_usuario, correo, password, **extra_fields)
-
+    
 class Role(models.Model):
     name_role = models.CharField(max_length=100, unique=True)
     description_role = models.TextField(blank=True, null=True)
