@@ -88,7 +88,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'quilhuica_db',     # el nombre de la base que creaste
         'USER': 'postgres',         # el usuario con el que probaste psql
-        'PASSWORD': 'lalo123', # la misma que usaste recién en psql
+        'PASSWORD': 'admin123456', # la misma que usaste recién en psql
         'HOST': 'localhost',        # o 127.0.0.1
         'PORT': '5432',
     }
