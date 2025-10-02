@@ -2,13 +2,13 @@
 {% block title %}Delete product{% endblock %}
 
 {% block content %}
-<h1>Delete product</h1>
-<p>Are you sure you want to delete <strong>{{ object.name_prod }}</strong>?</p>
+<h1>Borrar producto</h1>
+<p>Estas seguro que quieres borrar este producto <strong>{{ object.name_prod }}</strong>?</p>
 
 <form method="post">
   {% csrf_token %}
-  <button type="submit" class="btn btn-danger">Yes, delete</button>
-  <a href="{% url 'core:product_list' %}" class="btn btn-secondary">Cancel</a>
+  <button type="submit" class="btn btn-danger">Si, Borrar</button>
+  <a href="{% url 'core:product_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}
 
