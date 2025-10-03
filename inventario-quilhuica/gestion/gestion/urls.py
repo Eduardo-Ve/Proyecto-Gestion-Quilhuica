@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from login.views import registrar_usuario
-from warehouse import views
+from  django.conf.urls import handler400, handler403, handler404, handler500
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,3 +28,8 @@ urlpatterns = [
     path('', include('product.urls')),  # Agrega esta línea,
     path('', include('warehouse.urls')), # Trae todas las URLs de warehouse.
 ]
+
+handler400 = "core.views.error_400"
+handler403 = "core.views.error_403"
+handler404 = "core.views.error_404"
+handler500 = "core.views.error_500"

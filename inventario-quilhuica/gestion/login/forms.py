@@ -35,7 +35,7 @@ class RegistroUsuarioForm(forms.ModelForm):
         widget=forms.PasswordInput,
         help_text="Ingrese la misma contraseña para confirmar."
     )
-    roles = forms.ModelMultipleChoiceField(
+    roles = forms.ModelChoiceField(
         queryset=Role.objects.all(),
         widget=forms.Select,   
         required=False
@@ -97,7 +97,7 @@ class RegistroUsuarioForm(forms.ModelForm):
         if commit:
             user.save()
             if self.cleaned_data.get("roles"):
-                user.roles.set(self.cleaned_data["roles"])  # crea registros en UserRole
+                user.roles.set([self.cleaned_data["roles"]])  # crea registros en UserRole
         
         return user
 
