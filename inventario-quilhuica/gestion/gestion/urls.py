@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from login.views import registrar_usuario
-
+from  django.conf.urls import handler400, handler403, handler404, handler500
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', include('login.urls')),
@@ -26,3 +26,7 @@ urlpatterns = [
     path("register/", registrar_usuario, name="register"), 
     path('', include('product.urls')),  # Agrega esta línea
 ]
+handler400 = "core.views.error_400"
+handler403 = "core.views.error_403"
+handler404 = "core.views.error_404"
+handler500 = "core.views.error_500"
