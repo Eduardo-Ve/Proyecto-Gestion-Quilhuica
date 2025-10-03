@@ -17,6 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from login.views import registrar_usuario
+from warehouse import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -24,5 +25,6 @@ urlpatterns = [
     path('core/', include('core.urls')),
     path('', include('core.urls')),
     path("register/", registrar_usuario, name="register"), 
-    path('', include('product.urls')),  # Agrega esta línea
+    path('', include('product.urls')),  # Agrega esta línea,
+    path('', include('warehouse.urls')), # Trae todas las URLs de warehouse.
 ]

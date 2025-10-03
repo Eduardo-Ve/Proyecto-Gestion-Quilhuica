@@ -2,14 +2,18 @@ from django.db import models
 from django.conf import settings
 from product.models import Product, Presentation
 
+#CLASE PARA BODEGA Y CASETAS.
 class Warehouse(models.Model):
-    name_ware = models.CharField(max_length=150, unique=True)
+    name_ware = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
-    type = models.CharField(max_length=50)  # main, shed, etc.
+    type = models.CharField(
+        max_length=50,
+        choices=[('main', 'Bodega Principal'), ('shed', 'Caseta')]
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.name_ware
+        return f"{self.name_ware} ({self.type})"
 
 
 class Movement(models.Model):
