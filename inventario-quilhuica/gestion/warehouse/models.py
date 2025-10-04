@@ -17,38 +17,35 @@ class Warehouse(models.Model):
 
 
 class Movement(models.Model):
-    MOVE_TYPES = [
+    MOVEMENT_CHOICES = [
         ('entrada', 'Entrada'),
         ('traslado', 'Traslado'),
     ]
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
-    ware_origin = models.ForeignKey(
-        Warehouse, related_name="movements_origin", on_delete=models.SET_NULL, null=True, blank=True
-    )
-    ware_destin = models.ForeignKey(
-        Warehouse, related_name="movements_destin", on_delete=models.CASCADE
-    )
-    movement_type = models.CharField(max_length=20, choices=MOVE_TYPES)
+    ware_origin = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name='movements_origin')
+    ware_destin = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='movements_destin')
+    movement_type = models.CharField(max_length=20, choices=MOVEMENT_CHOICES)
     quantity = models.FloatField()
     moved_at = models.DateTimeField(auto_now_add=True)
-    moved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    moved_by = models.IntegerField()  # puedes reemplazar por FK a usuario si ya tienes AUTH
     description = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.movement_type} - {self.product.name_prod} ({self.quantity})"
+        return f"{self.movement_type} de {self.product.name_prod} ({self.quantity})"
 
 
-class InventorySummary(models.Model):
+
+class Inventory(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
-    ware = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    warehouse  = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
     quantity_packages = models.FloatField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('product', 'presentation', 'ware')
+        unique_together = ('product', 'presentation', 'warehouse')
 
     def __str__(self):
-        return f"{self.product.name_prod} ({self.quantity_packages} unidades en {self.ware.name_ware})"
+        return f"{self.product.name_prod} ({self.quantity_packages} unidades en {self.warehouse.name_ware})"
