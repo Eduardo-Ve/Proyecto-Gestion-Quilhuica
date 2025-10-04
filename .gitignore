@@ -1,4 +1,5 @@
 # Python / Django
+env_gestion/
 *.pyc
 __pycache__/
 db.sqlite3
