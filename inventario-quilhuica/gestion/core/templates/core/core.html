@@ -1,11 +1,88 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pagina Core </title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Core</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; padding: 0;
+      background: #f5f6fa;
+      color: #2f3640;
+    }
+    header {
+      background: #2f3640;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    .container {
+      padding: 20px;
+    }
+    /* Tarjetas de KPIs */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .card h3 {
+      margin: 0;
+      font-size: 2rem;
+      color: #0984e3;
+    }
+    .card p {
+      margin: 5px 0 0;
+      color: #636e72;
+    }
+
+    /* Sección de gráficos */
+    .charts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+    .chart-container {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Alertas */
+    .alerts {
+      margin-top: 30px;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .alert {
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+    .alert-warning { background: #ffeaa7; color: #2d3436; }
+    .alert-danger { background: #fab1a0; color: #2d3436; }
+    .alert-info { background: #74b9ff; color: white; }
+  </style>
 </head>
 <body>
+  <header>
+    <h1>📊 Dashboard Central - Bodega</h1>
+  </header>
+
+  <div class="container">
     <h2>prueba de middleware & login exitoso</h2>
     # Usuario: {{ user.nombre_usuario  }} <br>
     # Email: {{ user.correo  }} <br>
@@ -22,5 +99,83 @@
         {% csrf_token %}
         <button type="submit">Logout</button>
     </form>
+    <!-- KPIs -->
+    <div class="cards">
+      <div class="card">
+        <h3>145</h3>
+        <p>Productos Activos</p>
+      </div>
+      <div class="card">
+        <h3>25.000 Kg</h3>
+        <p>Stock Total</p>
+      </div>
+      <div class="card">
+        <h3>12</h3>
+        <p>Por Vencer (30 días)</p>
+      </div>
+      <div class="card">
+        <h3>7</h3>
+        <p>Bajo Stock</p>
+      </div>
+    </div>
+
+    <!-- Gráficos -->
+    <div class="charts">
+      <div class="chart-container">
+        <h3>Consumo de Productos (Últimos 3 meses)</h3>
+        <canvas id="consumoChart"></canvas>
+      </div>
+
+    </div>
+
+    <!-- Alertas -->
+    <div class="alerts">
+      <h3>🔔 Alertas Recientes</h3>
+      <div class="alert alert-warning">⚠️ El producto "Urea" está por debajo del stock mínimo.</div>
+      <div class="alert alert-danger">⏳ El producto "Magnesio" vence en menos de 15 días.</div>
+      <div class="alert alert-info">📦 Se agregaron 500 Kg de "AminoFree" el día 30/09/2025.</div>
+    </div>
+
+  </div>
+
+  <script>
+    // Gráfico de Consumo
+    const ctx1 = document.getElementById('consumoChart').getContext('2d');
+    new Chart(ctx1, {
+      type: 'bar',
+      data: {
+        labels: ['Mayo', 'Junio', 'Julio'],
+        datasets: [
+          { label: 'NitroBreak (L)', data: [500, 700, 650], backgroundColor: '#ff7675' },
+          { label: 'Urea (Kg)', data: [2000, 1800, 2200], backgroundColor: '#74b9ff' },
+          { label: 'AminoFree (L)', data: [3000, 3200, 3100], backgroundColor: '#ffeaa7' },
+          { label: 'Magnesio (Kg)', data: [1500, 1200, 1600], backgroundColor: '#55efc4' }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+
+    // Gráfico Distribución
+    const ctx2 = document.getElementById('tipoChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'pie',
+      data: {
+        labels: ['Bidones', 'Sacos', 'Otros'],
+        datasets: [{
+          label: 'Tipos',
+          data: [45, 30, 25],
+          backgroundColor: ['#6c5ce7','#fd79a8','#00cec9']
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+      }
+    });
+  </script>
+
 </body>
 </html>

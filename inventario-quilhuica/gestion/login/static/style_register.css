@@ -58,6 +58,7 @@ form input[type="text"],
 form input[type="email"],
 form input[type="tel"],
 form input[type="password"],
+form input[type="number"],
 form select {
     /* Hereda y extiende el estilo de Bootstrap */
     width: 100%;
@@ -70,6 +71,12 @@ form select {
     border-radius: 0.375rem; /* Bordes redondeados estándar */
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
+form input[type="number"]::-webkit-inner-spin-button,
+form input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 
 form input:focus,
 form select:focus {
@@ -80,11 +87,6 @@ form select:focus {
 }
 
 /* Estilo para el campo de selección múltiple de Roles */
-form select[multiple] {
-    /* Altura ajustada para mostrar más opciones a la vez */
-    height: auto;
-    min-height: 100px; /* Altura mínima para que sea fácil de seleccionar */
-}
 
 /* Estilo para el texto de ayuda (help_text) */
 .helptext {

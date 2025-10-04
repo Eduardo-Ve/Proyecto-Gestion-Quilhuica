@@ -35,19 +35,20 @@ class RegistroUsuarioForm(forms.ModelForm):
         widget=forms.PasswordInput,
         help_text="Ingrese la misma contraseña para confirmar."
     )
+    
     roles = forms.ModelChoiceField(
         queryset=Role.objects.all(),
         widget=forms.Select,   
-        required=False
+        required=True
     )
-
+    
     class Meta:
         model = Usuario
         fields = ["nombre_usuario", "correo", "telefono"]
         widgets = {
             'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo'}),
             'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo_usuario@dominio.com'}),
-            'telefono': forms.TextInput(attrs={'placeholder': '931816450'}),
+            'telefono': forms.NumberInput(attrs={'placeholder': '931816450'}),
         }
 
     def clean_nombre_usuario(self):

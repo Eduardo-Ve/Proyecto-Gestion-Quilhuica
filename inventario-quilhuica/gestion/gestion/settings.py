@@ -10,7 +10,9 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+from distutils.command import config
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,11 +88,11 @@ WSGI_APPLICATION = 'gestion.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'quilhuica_db',     # el nombre de la base que creaste
-        'USER': 'postgres',         # el usuario con el que probaste psql
-        'PASSWORD': 'lalo123', # la misma que usaste recién en psql
-        'HOST': 'localhost',        # o 127.0.0.1
-        'PORT': '5432',
+        'NAME': config('DB_NAME'),
+        'USER': config('DB_USER'),
+        'PASSWORD': config('DB_PASSWORD'),
+        'HOST': config('DB_HOST'),
+        'PORT': config('DB_PORT'),
     }
 }
 # Custom user model
