@@ -1,0 +1,116 @@
+/* ==== Variables de diseño === */
+:root {
+    --color-primary: #00C451;
+    --color-primary-dark: #055526;
+    --color-text: #1E1E1E;
+    --color-bg: #F9F9F9;
+    --color-border: #CCCCCC;
+    --radius: 8px;
+
+    --font-main: 'Inter', 'Roboto', sans-serif;
+
+    --space-xs: 4px;
+    --space-s: 8px;
+    --space-m: 16px;
+    --space-l: 24px;
+}
+
+/* ==== Estilo base === */
+body {
+    font-family: var(--font-main);
+    background: var(--color-bg);
+    color: var(--color-text);
+    margin: 40px;
+    line-height: 1.6;
+}
+h1, h2, h3 { margin-top: var(--space-l); }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.2rem; }
+
+/* ==== Bloques visuales === */
+.section {
+    margin-bottom: 50px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+}
+.color-box {
+    display: inline-block;
+    width: 120px;
+    height: 50px;
+    margin-right: 10px;
+    border-radius: 6px;
+    vertical-align: middle;
+    border: 1px solid #ddd;
+}
+
+/* ==== Botones === */
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.3s, color 0.3s, border 0.3s;
+    margin-right: 10px;
+}
+.btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+    border: none;
+}
+.btn-primary:hover {
+    background-color: var(--color-primary-dark);
+}
+.btn-secondary {
+    background-color: white;
+    color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+}
+.btn-secondary:hover {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+/* ==== Inputs === */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 12px;
+    border-radius: 25px;
+    border: 1px solid var(--color-border);
+    font-size: 14px;
+    width: 250px;
+    margin-top: 8px;
+}
+input:focus {
+    border-color: var(--color-primary);
+    outline: none;
+    box-shadow: 0 0 4px rgba(0,196,81,0.3);
+}
+
+/* ==== Tabla simple === */
+table {
+    border-collapse: collapse;
+    width: 60%;
+    margin-top: 10px;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+}
+
+/* ==== Layout demo === */
+.layout-example {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    width: 300px;
+}

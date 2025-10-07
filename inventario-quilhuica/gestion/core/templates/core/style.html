@@ -1,0 +1,80 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Guía de Estilo del Proyecto</title>
+  <link rel="stylesheet" href="{% static 'style.css' %}">
+</head>
+<body>
+
+  <h1> Guía de Estilo del Proyecto</h1>
+
+  <!-- Colores -->
+  <div class="section">
+    <h2>Paleta de colores</h2>
+    <p>Colores principales usados en botones, texto y fondos:</p>
+    <div><div class="color-box" style="background-color: var(--color-primary)"></div> <b>#00C451</b> — Primario</div>
+    <div><div class="color-box" style="background-color: var(--color-primary-dark)"></div> <b>#055526</b> — Hover</div>
+    <div><div class="color-box" style="background-color: #FFFFFF"></div> <b>#FFFFFF</b> — Fondo</div>
+    <div><div class="color-box" style="background-color: var(--color-text)"></div> <b>#1E1E1E</b> — Texto</div>
+  </div>
+
+  <!-- Tipografía -->
+  <div class="section">
+    <h2>Tipografía</h2>
+    <p><strong>Fuente principal:</strong> Inter</p>
+    <p><strong>Alternativa:</strong> Roboto</p>
+
+    <h3>Ejemplos:</h3>
+    <p style="font-size: 2rem;">H1 - 2rem</p>
+    <p style="font-size: 1.5rem;">H2 - 1.5rem</p>
+    <p style="font-size: 1rem;">Texto normal - 1rem</p>
+    <p style="font-size: 0.875rem;">Texto pequeño - 0.875rem</p>
+  </div>
+
+  <!-- Botones -->
+  <div class="section">
+    <h2>Botones</h2>
+    <button class="btn btn-primary">Botón Primario</button>
+    <button class="btn btn-secondary">Botón Secundario</button>
+  </div>
+
+  <!-- Inputs -->
+  <div class="section">
+    <h2>Campos de entrada</h2>
+    <input type="text" placeholder="Texto...">
+    <input type="email" placeholder="Correo...">
+    <input type="password" placeholder="Contraseña...">
+  </div>
+
+  <!-- Espaciado -->
+  <div class="section">
+    <h2>Escala de Espaciado</h2>
+    <ul>
+      <li>XS: 4px</li>
+      <li>S: 8px</li>
+      <li>M: 16px</li>
+      <li>L: 24px</li>
+    </ul>
+  </div>
+
+  <!-- Ejemplo de Layout -->
+  <div class="section">
+    <h2>Ejemplos de Layout</h2>
+    <div class="layout-example">
+      <div class="card">
+        <h3>Login</h3>
+        <p>Ejemplo del estilo usado en la vista de inicio de sesión.</p>
+        <button class="btn btn-primary">Ingresar</button>
+      </div>
+      <div class="card">
+        <h3>Registro</h3>
+        <p>Ejemplo del estilo usado en el formulario de registro.</p>
+        <button class="btn btn-secondary">Registrarse</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

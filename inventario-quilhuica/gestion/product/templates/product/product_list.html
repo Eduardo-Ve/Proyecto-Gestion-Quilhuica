@@ -1,84 +1,99 @@
-﻿{% extends "core/base.html" %}
+{% extends "base/base.html" %}
+{% load static %}
+
 {% block title %}Productos · Inventario{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'list.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-  <h1 class="h3 mb-0">Productos</h1>
-  <a class="btn btn-primary" href="{% url 'core:product_create' %}">Nuevo Producto</a>
-</div>
 
-<div class="card shadow-sm">
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead class="table-light">
-        <tr>
-          <th>Nombre</th>
-          <th>Categoría</th>
-          <th>Presentaciones (stock)</th>
-          <th style="min-width:220px;">Total por unidad</th>
-          <th class="text-end">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for p in products %}
-        <tr>
-          <td class="fw-semibold">{{ p.name_prod }}</td>
-          <td>{{ p.category.name_cat }}</td>
-          <td>
-            {% if p.presentations.all %}
-              <div class="d-flex flex-wrap gap-1">
-                {% for pres in p.presentations.all %}
-                  <span class="badge text-bg-secondary">
-                    {{ pres.package_type }} · {{ pres.content_value|floatformat:0 }} {{ pres.content_unit }}
-                    × {{ pres.stock_units|default:"0" }}
-                    = {{ pres.total_value|floatformat:0 }} {{ pres.content_unit }}
-                  </span>
-                {% endfor %}
-              </div>
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if p.totals_by_unit %}
-              {% for unit, total in p.totals_by_unit.items %}
-                <div>{{ total|floatformat:0 }} {{ unit }}</div>
-              {% endfor %}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-          <td class="text-end">
-            <a class="btn btn-sm btn-outline-primary" href="{% url 'core:product_update' p.pk %}">Editar</a>
-            <a class="btn btn-sm btn-outline-danger" href="{% url 'core:product_delete' p.pk %}">Eliminar</a>
-          </td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="5" class="text-center text-muted py-4">Sin productos aún.</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="container my-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 mb-0">Productos</h1>
+    <a class="btn btn-primary" href="{% url 'product:product_create' %}">Nuevo Producto</a>
   </div>
+
+  <div class="card shadow-sm">
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Presentaciones (stock)</th>
+            <th style="min-width:220px;">Total por unidad</th>
+            <th class="text-end">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in products %}
+          <tr>
+            <td class="fw-semibold">{{ p.name_prod }}</td>
+            <td>{{ p.category.name_cat }}</td>
+            <td>
+              {% if p.presentations.all %}
+                <div class="d-flex flex-wrap gap-1">
+                  {% for pres in p.presentations.all %}
+                    <span class="badge text-bg-secondary">
+                      {{ pres.package_type }} · {{ pres.content_value|floatformat:0 }} {{ pres.content_unit }}
+                      × {{ pres.stock_units|default:"0" }}
+                      = {{ pres.total_value|floatformat:0 }} {{ pres.content_unit }}
+                    </span>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if p.totals_by_unit %}
+                {% for unit, total in p.totals_by_unit.items %}
+                  <div>{{ total|floatformat:0 }} {{ unit }}</div>
+                {% endfor %}
+              {% else %}
+                <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a class="btn btn-sm btn-outline-primary" href="{% url 'product:product_update' p.pk %}">Editar</a>
+              <a class="btn btn-sm btn-outline-danger" href="{% url 'product:product_delete' p.pk %}">Eliminar</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">Sin productos aún.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% if is_paginated %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">«</span></li>
+      {% endif %}
+      {% for i in paginator.page_range %}
+        <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+          <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+        </li>
+      {% endfor %}
+      {% if page_obj.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">»</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+
 </div>
 
-{% if is_paginated %}
-<nav class="mt-3">
-  <ul class="pagination justify-content-center">
-    {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">«</span></li>
-    {% endif %}
-    {% for i in paginator.page_range %}
-      <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-      </li>
-    {% endfor %}
-    {% if page_obj.has_next %}
-      <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a></li>
-    {% else %}
-      <li class="page-item disabled"><span class="page-link">»</span></li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
 {% endblock %}

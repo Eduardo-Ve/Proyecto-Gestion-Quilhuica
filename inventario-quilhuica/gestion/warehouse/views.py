@@ -3,10 +3,12 @@ from django.contrib import messages
 from .models import Warehouse, Inventory, Movement
 from .forms import WarehouseForm, TransferForm
 
+
 # LISTAR SOLO CASETAS
 def caseta_list(request):
     casetas = Warehouse.objects.filter(type='shed')
     return render(request, 'warehouse/caseta_list.html', {'casetas': casetas})
+
 
 # CREAR CASETA
 def caseta_create(request):
@@ -14,10 +16,11 @@ def caseta_create(request):
         form = WarehouseForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('caseta_list')
+            return redirect('warehouse:caseta_list')  # ✅ con namespace
     else:
         form = WarehouseForm()
     return render(request, 'warehouse/caseta_form.html', {'form': form, 'title': 'Crear Caseta'})
+
 
 # EDITAR CASETA
 def caseta_edit(request, pk):
@@ -26,18 +29,20 @@ def caseta_edit(request, pk):
         form = WarehouseForm(request.POST, instance=caseta)
         if form.is_valid():
             form.save()
-            return redirect('caseta_list')
+            return redirect('warehouse:caseta_list')  # ✅ con namespace
     else:
         form = WarehouseForm(instance=caseta)
     return render(request, 'warehouse/caseta_form.html', {'form': form, 'title': 'Editar Caseta'})
+
 
 # ELIMINAR CASETA
 def caseta_delete(request, pk):
     caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
     if request.method == "POST":
         caseta.delete()
-        return redirect('caseta_list')
+        return redirect('warehouse:caseta_list')  # ✅ con namespace
     return render(request, 'warehouse/caseta_confirm_delete.html', {'caseta': caseta})
+
 
 # TRANSFERIR PRODUCTO A UNA CASETA
 def transfer_product(request):
@@ -56,11 +61,11 @@ def transfer_product(request):
                 inv_origin = Inventory.objects.get(product=product, presentation=presentation, warehouse=ware_origin)
             except Inventory.DoesNotExist:
                 messages.error(request, "No existe stock de ese producto en la bodega principal.")
-                return redirect('transfer_product')
+                return redirect('warehouse:transfer_product')  # ✅ con namespace
 
             if inv_origin.quantity_packages < quantity_packages:
                 messages.error(request, f"No hay suficiente stock disponible ({inv_origin.quantity_packages} unidades).")
-                return redirect('transfer_product')
+                return redirect('warehouse:transfer_product')  # ✅ con namespace
 
             # Actualizar inventario
             inv_origin.quantity_packages -= quantity_packages
@@ -79,7 +84,7 @@ def transfer_product(request):
             movement.save()
 
             messages.success(request, f"Traslado exitoso de {quantity_packages} unidades de {product.name_prod} a {ware_destin.name_ware}.")
-            return redirect('transfer_product')
+            return redirect('warehouse:transfer_product')  # ✅ con namespace
     else:
         form = TransferForm()
 

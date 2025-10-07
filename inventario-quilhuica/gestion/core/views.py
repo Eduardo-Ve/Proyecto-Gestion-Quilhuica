@@ -4,6 +4,9 @@ from django.shortcuts import render
 def index (request):
     return render(request, 'core/core.html', {})
 
+def style (request):
+    return render(request, 'core/style.html', {})
+
 ERROR_MESSAGES = {
     400: "Solicitud incorrecta (Bad Request).",
     403: "No tienes permisos para acceder a esta sección.",

@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-from distutils.command import config
 from pathlib import Path
 from decouple import config
 
@@ -45,7 +44,7 @@ INSTALLED_APPS = [
     'product',
     'warehouse',
     'application',
-    
+    'base',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +76,7 @@ TEMPLATES = [
         },
     },
 ]
-LOGIN_REDIRECT_URL = '/core/'
+LOGIN_REDIRECT_URL = '/'
 
 WSGI_APPLICATION = 'gestion.wsgi.application'
 
