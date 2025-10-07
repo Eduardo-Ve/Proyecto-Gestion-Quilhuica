@@ -1,0 +1,14 @@
+﻿{% extends "core/base.html" %}
+{% block title %}Delete product{% endblock %}
+
+{% block content %}
+<h1>Borrar producto</h1>
+<p>Estas seguro que quieres borrar este producto <strong>{{ object.name_prod }}</strong>?</p>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Si, Borrar</button>
+  <a href="{% url 'core:product_list' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}
+

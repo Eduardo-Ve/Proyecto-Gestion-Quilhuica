@@ -1,74 +1,82 @@
-﻿from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse_lazy
-from django.views.generic import View, ListView, DeleteView
+﻿from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.db import transaction
 from .models import Product
-from .forms import ProductForm, CategoryForm, PresentationFormSet
-
+from .forms import ProductForm, PresentationFormSet   
+from django.shortcuts import get_object_or_404, render, redirect
+from django.views import View
+from django.db.models import F, Sum, DecimalField, ExpressionWrapper, Prefetch
+from django.views.generic import ListView
+from .models import Product, Presentation
 # --- LISTADO ---
 class ProductListView(ListView):
     model = Product
-    template_name = "product/product_list.html"
+    template_name = "core/product_list.html"
     context_object_name = "products"
     paginate_by = 20
 
+    def get_queryset(self):
+        total_value_expr = ExpressionWrapper(
+            F("stock_units") * F("content_value"),
+            output_field=DecimalField(max_digits=14, decimal_places=2)
+        )
+        pres_qs = Presentation.objects.annotate(total_value=total_value_expr)
+        return (
+            Product.objects
+            .select_related("category")
+            .prefetch_related(Prefetch("presentations", queryset=pres_qs))
+            .order_by("name_prod")
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # añade al objeto product un dict con totales por unidad
+        for p in ctx["products"]:
+            acc = {}
+            for pres in p.presentations.all():
+                unit = pres.content_unit
+                acc[unit] = acc.get(unit, 0) + (pres.stock_units or 0) * (pres.content_value or 0)
+            p.totals_by_unit = acc  # <— ahora se puede acceder como p.totals_by_unit en el template
+        return ctx
+
 # --- CREAR ---
-class ProductCreateView(View):
-    template_name = "product/product_form.html"
-    success_url = reverse_lazy("product:product_list")
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "core/product_form.html"
+    success_url = reverse_lazy("core:product_list")
 
-    def get(self, request, *args, **kwargs):
-        product_form = ProductForm()
-        category_form = CategoryForm(prefix="cat")
-        formset = PresentationFormSet()
-        return render(request, self.template_name, {
-            "form": product_form,
-            "category_form": category_form,
-            "formset": formset,
-            "create_mode": True,
-        })
-
-    def post(self, request, *args, **kwargs):
-        product_form = ProductForm(request.POST)
-        category_form = CategoryForm(request.POST, prefix="cat")
-        formset = PresentationFormSet(request.POST)
-        create_new_category = request.POST.get("create_new_category") == "on"
-
-        forms_are_valid = product_form.is_valid() and formset.is_valid()
-        if create_new_category:
-            forms_are_valid = forms_are_valid and category_form.is_valid()
-        if not forms_are_valid:
-            return render(request, self.template_name, {
-                "form": product_form,
-                "category_form": category_form,
-                "formset": formset,
-                "create_mode": True,
-            }, status=400)
-
-        if create_new_category:
-            category = category_form.save()
-            product = product_form.save(commit=False)
-            product.category = category
-            product.save()
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        if self.request.POST:
+            ctx["formset"] = PresentationFormSet(self.request.POST)
         else:
-            product = product_form.save()
+            ctx["formset"] = PresentationFormSet()
+        return ctx
 
-        formset.instance = product
-        formset.save()
-        return redirect(self.success_url)
+    def form_valid(self, form):
+        ctx = self.get_context_data()
+        formset = ctx["formset"]
+        with transaction.atomic():
+            self.object = form.save()  # crea categoría nueva si corresponde
+            formset.instance = self.object
+            if formset.is_valid():
+                formset.save()
+            else:
+                return self.form_invalid(form)
+        return super().form_valid(form)
 
 # --- EDITAR ---
 class ProductUpdateView(View):
-    template_name = "product/product_form.html"
-    success_url = reverse_lazy("product:product_list")
+    template_name = "core/product_form.html"
+    success_url = reverse_lazy("core:product_list")
 
     def get(self, request, pk, *args, **kwargs):
         product = get_object_or_404(Product, pk=pk)
-        product_form = ProductForm(instance=product)
-        category_form = CategoryForm(prefix="cat")
+        form = ProductForm(instance=product)
         formset = PresentationFormSet(instance=product)
         return render(request, self.template_name, {
-            "form": product_form,
-            "category_form": category_form,
+            "form": form,
             "formset": formset,
             "create_mode": False,
             "object": product,
@@ -76,37 +84,29 @@ class ProductUpdateView(View):
 
     def post(self, request, pk, *args, **kwargs):
         product = get_object_or_404(Product, pk=pk)
-        product_form = ProductForm(request.POST, instance=product)
-        category_form = CategoryForm(request.POST, prefix="cat")
+        form = ProductForm(request.POST, instance=product)
         formset = PresentationFormSet(request.POST, instance=product)
-        create_new_category = request.POST.get("create_new_category") == "on"
 
-        forms_are_valid = product_form.is_valid() and formset.is_valid()
-        if create_new_category:
-            forms_are_valid = forms_are_valid and category_form.is_valid()
-        if not forms_are_valid:
+        if not (form.is_valid() and formset.is_valid()):
             return render(request, self.template_name, {
-                "form": product_form,
-                "category_form": category_form,
+                "form": form,
                 "formset": formset,
                 "create_mode": False,
                 "object": product,
             }, status=400)
 
-        if create_new_category:
-            category = category_form.save()
-            prod = product_form.save(commit=False)
-            prod.category = category
-            prod.save()
-        else:
-            prod = product_form.save()
+        # ProductForm ya maneja crear categoría nueva si viene marcado
+        with transaction.atomic():
+            prod = form.save()
+            formset.instance = prod
+            formset.save()
 
-        formset.instance = prod
-        formset.save()
         return redirect(self.success_url)
 
 # --- ELIMINAR ---
 class ProductDeleteView(DeleteView):
     model = Product
-    template_name = "product/product_confirm_delete.html"
-    success_url = reverse_lazy("product:product_list")
+    template_name = "core/product_confirm_delete.html"
+    success_url = reverse_lazy("core:product_list")
+
+
