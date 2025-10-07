@@ -1,0 +1,186 @@
+/* ================================
+   Navbar global (aislado)
+   Contenedor: .navbar-container
+================================ */
+
+/* Reset dentro del navbar */
+.navbar-container * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Montserrat', sans-serif;
+}
+
+/* HEADER */
+.navbar-container header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 30px 10%;
+  background-color: #fff;
+}
+
+/* LOGO */
+.navbar-container .logo {
+  cursor: pointer;
+  order: 3;
+  margin-left: auto;
+}
+
+.navbar-container .logo img {
+  height: 60px; /* tamaño controlado */
+  width: auto;
+  object-fit: contain;
+}
+
+/* NAV LINKS */
+.navbar-container nav {
+  order: 1;
+}
+
+.navbar-container .nav__links {
+  list-style: none;
+  display: flex;
+  font-size: 16px;
+}
+
+.navbar-container .nav__links li {
+  padding: 0px 20px;
+}
+
+.navbar-container .nav__links li:nth-child(1) {
+  padding: 0 20px 0 0;
+}
+
+.navbar-container .nav__links a,
+.navbar-container .cta > a,
+.navbar-container .overlay__content a {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  color: #1E1E1E;
+  text-decoration: none;
+  transition: all 0.3s ease 0s;
+}
+
+.navbar-container .nav__links a:hover {
+  color: #055526;
+}
+
+/* BOTÓN CTA CON DROPDOWN */
+.navbar-container .cta {
+  position: relative;
+  order: 2;
+  margin-left: 20px;
+  padding: 9px 25px;
+  background-color: #00C451;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease 0s;
+}
+
+.navbar-container .cta > a {
+  color: #fff; /* texto blanco dentro del botón */
+}
+
+.navbar-container .cta:hover {
+  background-color: #055526;
+}
+
+/* DROPDOWN MENU */
+.navbar-container .dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: #fff;
+  list-style: none;
+  padding: 10px 0;
+  margin: 0;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-radius: 6px;
+  min-width: 200px;
+  z-index: 1000;
+}
+
+.navbar-container .dropdown-menu li a {
+  display: block;
+  padding: 10px 20px;
+  color: #1E1E1E;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.navbar-container .dropdown-menu li a:hover {
+  background-color: #f4f4f4;
+  color: #055526;
+}
+
+.navbar-container .dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+/* MOBILE NAV */
+.navbar-container .menu {
+  display: none;
+  cursor: pointer;
+}
+
+.navbar-container .overlay {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  background-color: #fff; /* fondo blanco */
+  overflow-x: hidden;
+  transition: all 0.5s ease 0s;
+}
+
+.navbar-container .overlay--active {
+  width: 100%;
+}
+
+.navbar-container .overlay__content {
+  list-style: none;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-container .overlay__content a {
+  padding: 15px;
+  font-size: 28px;
+  color: #1E1E1E;
+  display: block;
+  transition: all 0.3s ease 0s;
+}
+
+.navbar-container .overlay__content a:hover {
+  color: #055526;
+}
+
+.navbar-container .overlay .close {
+  position: absolute;
+  top: 20px;
+  right: 45px;
+  font-size: 50px;
+  color: #1E1E1E;
+}
+
+/* MEDIA QUERIES */
+@media only screen and (max-width: 800px) {
+  .navbar-container .nav__links,
+  .navbar-container .cta {
+    display: none;
+  }
+
+  .navbar-container .menu {
+    display: initial;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    color: #1E1E1E;
+  }
+}

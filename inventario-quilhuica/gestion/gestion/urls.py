@@ -1,19 +1,3 @@
-"""
-URL configuration for gestion project.
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
 from django.urls import path, include
 from login.views import registrar_usuario
@@ -22,11 +6,11 @@ from  django.conf.urls import handler400, handler403, handler404, handler500
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', include('login.urls')),
-    path('core/', include('core.urls')),
     path('', include('core.urls')),
     path("register/", registrar_usuario, name="register"), 
-    path('', include('product.urls')),  # Agrega esta línea,
-    path('', include('warehouse.urls')), # Trae todas las URLs de warehouse.
+    path('products/', include(('product.urls', 'product'), namespace='product')),  
+    path('warehouse/', include(('warehouse.urls', 'warehouse'), namespace='warehouse')), 
+    path('base_desing/', include(('base.urls', 'base'), namespace='base')),  
 ]
 
 handler400 = "core.views.error_400"

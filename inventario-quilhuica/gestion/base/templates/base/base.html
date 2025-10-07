@@ -1,0 +1,30 @@
+<!-- templates/base.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gestion Quilhuica{% endblock %}</title>
+    
+    <link rel="stylesheet" href="{% static 'style_nav.css' %}">
+    <link rel="icon"  href="{% static 'img/FQ_logo.png' %}"/>
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:500&display=swap" rel="stylesheet">
+    <!-- Otros estilos específicos de la aplicación -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Incluir el navbar global -->
+    {% include 'base/navbar.html' %}
+    
+    <!-- Contenido principal -->
+    <main>
+        {% block content %}
+        <!-- El contenido específico de cada página irá aquí -->
+        {% endblock %}
+    </main>
+    
+    <!-- Scripts -->
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

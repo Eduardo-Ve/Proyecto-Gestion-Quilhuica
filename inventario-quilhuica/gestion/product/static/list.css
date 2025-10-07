@@ -1,0 +1,110 @@
+/* === General Layout === */
+body {
+  background-color: #f8fafc;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* Centrado de contenido */
+.container {
+  max-width: 1200px;
+}
+
+/* === Page Header === */
+h1.h3 {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+/* === Card y tabla === */
+.card {
+  border: none;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.table thead {
+  background-color: #f1f5f9;
+  color: #334155;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.85rem;
+}
+
+.table th, .table td {
+  padding: 0.9rem;
+  vertical-align: middle;
+}
+
+.table tbody tr:nth-child(odd) {
+  background-color: #f9fafb;
+}
+
+.table tbody tr:hover {
+  background-color: #e2e8f0;
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* === Botones de acción === */
+.btn {
+  border-radius: 10px;
+  font-weight: 500;
+  padding: 0.4rem 0.75rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-primary {
+  color: #2563eb;
+  border-color: #2563eb;
+}
+
+.btn-outline-primary:hover {
+  background-color: #2563eb;
+  color: #fff;
+}
+
+.btn-outline-danger {
+  color: #dc2626;
+  border-color: #dc2626;
+}
+
+.btn-outline-danger:hover {
+  background-color: #dc2626;
+  color: #fff;
+}
+
+/* === Badges (Presentaciones) === */
+.badge.text-bg-secondary {
+  background-color: #e2e8f0;
+  color: #1e293b;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* === Paginación === */
+.pagination .page-link {
+  color: #2563eb;
+  border-radius: 8px;
+}
+
+.pagination .active .page-link {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* === Texto y estado vacío === */
+.text-muted {
+  color: #94a3b8 !important;
+}
