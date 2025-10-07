@@ -84,3 +84,18 @@ def transfer_product(request):
         form = TransferForm()
 
     return render(request, 'warehouse/transfer_product.html', {'form': form})
+
+# LISTAR PRODUCTOS POR CASETA
+def productos_por_caseta(request):
+    # Obtenemos todas las casetas
+    casetas = Warehouse.objects.filter(type='shed')
+
+    # Obtenemos inventario relacionado con esas casetas
+    inventarios = Inventory.objects.filter(warehouse__in=casetas).select_related('product', 'presentation', 'warehouse')
+
+    context = {
+        'casetas': casetas,
+        'inventarios': inventarios
+    }
+
+    return render(request, 'warehouse/productos_por_caseta.html', context)
