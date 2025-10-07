@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Eliminar Caseta</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
+    <h1 class="text-danger">Eliminar Caseta</h1>
+    <p>¿Seguro que deseas eliminar la caseta <strong>{{ caseta.name_ware }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+        <a href="{% url 'caseta_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</body>
+</html>
