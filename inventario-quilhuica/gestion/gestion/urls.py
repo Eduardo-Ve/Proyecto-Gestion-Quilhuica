@@ -11,7 +11,9 @@ urlpatterns = [
     path('products/', include(('product.urls', 'product'), namespace='product')),  
     path('warehouse/', include(('warehouse.urls', 'warehouse'), namespace='warehouse')), 
     path('base_desing/', include(('base.urls', 'base'), namespace='base')),  
-]
+    path('application/', include(('application.urls', 'application'), namespace='application')),
+    
+    ]
 
 handler400 = "core.views.error_400"
 handler403 = "core.views.error_403"
