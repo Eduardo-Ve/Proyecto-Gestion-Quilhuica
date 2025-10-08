@@ -58,7 +58,7 @@ class ProductCreateView(CreateView):
         ctx = self.get_context_data()
         formset = ctx["formset"]
         with transaction.atomic():
-            self.object = form.save()  # crea categoría nueva si corresponde
+            self.object = form.save() 
             formset.instance = self.object
             if formset.is_valid():
                 formset.save()
