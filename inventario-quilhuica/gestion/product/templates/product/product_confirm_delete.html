@@ -1,4 +1,4 @@
-﻿{% extends "core/base.html" %}
+﻿{% extends "product/base.html" %}
 {% block title %}Delete product{% endblock %}
 
 {% block content %}
@@ -8,7 +8,7 @@
 <form method="post">
   {% csrf_token %}
   <button type="submit" class="btn btn-danger">Si, Borrar</button>
-  <a href="{% url 'core:product_list' %}" class="btn btn-secondary">Cancelar</a>
+  <a href="{% url 'product:product_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}
 

@@ -11,7 +11,7 @@ from .models import Product, Presentation
 # --- LISTADO ---
 class ProductListView(ListView):
     model = Product
-    template_name = "core/product_list.html"
+    template_name = "product/product_list.html"
     context_object_name = "products"
     paginate_by = 20
 
@@ -43,8 +43,8 @@ class ProductListView(ListView):
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
-    template_name = "core/product_form.html"
-    success_url = reverse_lazy("core:product_list")
+    template_name = "product/product_form.html"
+    success_url = reverse_lazy("product:product_list")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -68,8 +68,8 @@ class ProductCreateView(CreateView):
 
 # --- EDITAR ---
 class ProductUpdateView(View):
-    template_name = "core/product_form.html"
-    success_url = reverse_lazy("core:product_list")
+    template_name = "product/product_form.html"
+    success_url = reverse_lazy("product:product_list")
 
     def get(self, request, pk, *args, **kwargs):
         product = get_object_or_404(Product, pk=pk)
@@ -106,7 +106,7 @@ class ProductUpdateView(View):
 # --- ELIMINAR ---
 class ProductDeleteView(DeleteView):
     model = Product
-    template_name = "core/product_confirm_delete.html"
-    success_url = reverse_lazy("core:product_list")
+    template_name = "product/product_confirm_delete.html"
+    success_url = reverse_lazy("product:product_list")
 
 
