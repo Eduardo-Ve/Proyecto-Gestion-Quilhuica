@@ -15,30 +15,6 @@ class ProductListView(ListView):
     context_object_name = "products"
     paginate_by = 20
 
-    def get_queryset(self):
-        total_value_expr = ExpressionWrapper(
-            F("stock_units") * F("content_value"),
-            output_field=DecimalField(max_digits=14, decimal_places=2)
-        )
-        pres_qs = Presentation.objects.annotate(total_value=total_value_expr)
-        return (
-            Product.objects
-            .select_related("category")
-            .prefetch_related(Prefetch("presentations", queryset=pres_qs))
-            .order_by("name_prod")
-        )
-
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        # añade al objeto product un dict con totales por unidad
-        for p in ctx["products"]:
-            acc = {}
-            for pres in p.presentations.all():
-                unit = pres.content_unit
-                acc[unit] = acc.get(unit, 0) + (pres.stock_units or 0) * (pres.content_value or 0)
-            p.totals_by_unit = acc  # <— ahora se puede acceder como p.totals_by_unit en el template
-        return ctx
-
 # --- CREAR ---
 class ProductCreateView(CreateView):
     model = Product

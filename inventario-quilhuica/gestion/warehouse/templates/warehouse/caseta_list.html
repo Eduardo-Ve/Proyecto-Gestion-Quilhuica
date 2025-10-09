@@ -9,6 +9,8 @@
 <body class="container py-4">
     <h1 class="mb-4">Gestión de Casetas</h1>
     <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-primary mb-3">Nueva Caseta</a>
+    <a href="{% url 'warehouse:inventory_list' %}" class="btn btn-primary mb-3">Detalles de productos por casetas</a>
+    
 
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
@@ -37,7 +39,9 @@
                 <td colspan="5" class="text-center">No hay casetas registradas.</td>
             </tr>
             {% endfor %}
+            
         </tbody>
     </table>
+    
 </body>
 </html>

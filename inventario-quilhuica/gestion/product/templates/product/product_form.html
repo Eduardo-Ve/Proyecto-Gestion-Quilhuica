@@ -90,11 +90,6 @@
                 {{ f.content_unit }}
                 {% if f.content_unit.errors %}<div class="text-danger small">{{ f.content_unit.errors }}</div>{% endif %}
               </div>
-              <div class="col-md-3">
-                <label class="form-label" for="{{ f.stock_units.id_for_label }}">Unidades (stock)</label>
-                {{ f.stock_units }}
-                {% if f.stock_units.errors %}<div class="text-danger small">{{ f.stock_units.errors }}</div>{% endif %}
-              </div>
 
               {% if formset.can_delete and f.instance.pk %}
                 <div class="col-12 form-check mt-2">
@@ -125,10 +120,7 @@
               <label class="form-label">Unidad</label>
               {{ formset.empty_form.content_unit }}
             </div>
-            <div class="col-md-3">
-              <label class="form-label">Unidades (stock)</label>
-              {{ formset.empty_form.stock_units }}
-            </div>
+
           </div>
         </div>
       </template>

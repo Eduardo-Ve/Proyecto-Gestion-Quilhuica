@@ -7,4 +7,6 @@ urlpatterns = [
     path('edit/<int:pk>/', views.caseta_edit, name='caseta_edit'),
     path('delete/<int:pk>/', views.caseta_delete, name='caseta_delete'),
     path('transfer-product/', views.transfer_product, name='transfer_product'),
+    path('inventory-list/', views.inventory_list, name='inventory_list'),
+    path('add-entry/', views.add_inventory_entry, name='add_inventory_entry'),
 ]

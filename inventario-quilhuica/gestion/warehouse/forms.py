@@ -1,5 +1,5 @@
 from django import forms
-from .models import Warehouse, Movement
+from .models import Warehouse, Movement, Inventory
 from product.models import Product, Presentation
 
 #FORMULARIO PARA CREAR CASETA
@@ -44,3 +44,44 @@ class TransferForm(forms.ModelForm):
     class Meta:
         model = Movement
         fields = ['product', 'presentation', 'ware_origin', 'ware_destin', 'quantity', 'description']
+
+
+#formulario para registrar el ingreso de productos a la bodega principal
+
+class InventoryEntryForm(forms.ModelForm):
+    class Meta:
+        model = Inventory
+        fields = ["warehouse", "product", "presentation", "quantity_packages"]
+
+    def save(self, commit=True, user=None):
+        instance = super().save(commit=False)
+
+        # Guardamos o actualizamos el inventario
+        existing = Inventory.objects.filter(
+            product=instance.product,
+            presentation=instance.presentation,
+            warehouse=instance.warehouse
+        ).first()
+
+        if existing:
+            existing.quantity_packages += instance.quantity_packages
+            existing.save()
+            inventory = existing
+        else:
+            inventory = instance
+            if commit:
+                inventory.save()
+
+        # Crear registro de movimiento (entrada)
+        if user:
+            Movement.objects.create(
+                product=inventory.product,
+                presentation=inventory.presentation,
+                ware_destin=inventory.warehouse,
+                movement_type="entrada",
+                quantity=instance.quantity_packages,
+                moved_by=user,
+                description="Ingreso inicial o actualización de stock"
+            )
+
+        return inventory

@@ -57,22 +57,19 @@ class ProductForm(forms.ModelForm):
         return super().save(commit=commit)
 
 
-# --- Presentaciones (incluye stock_units) ---
 class PresentationForm(forms.ModelForm):
     class Meta:
         model = Presentation
-        fields = ["package_type", "content_value", "content_unit", "stock_units"]
+        fields = ["package_type", "content_value", "content_unit"]
         labels = {
             "package_type": "Tipo de envase",
             "content_value": "Cantidad",
             "content_unit": "Unidad",
-            "stock_units": "Unidades (stock)",
         }
         widgets = {
             "package_type": forms.Select(attrs={"class": "form-select"}),
             "content_value": forms.NumberInput(attrs={"class": "form-control", "step": "any", "min": "0"}),
             "content_unit": forms.Select(attrs={"class": "form-select"}),
-            "stock_units": forms.NumberInput(attrs={"class": "form-control", "min": "0"}),
         }
 
 PresentationFormSet = inlineformset_factory(
