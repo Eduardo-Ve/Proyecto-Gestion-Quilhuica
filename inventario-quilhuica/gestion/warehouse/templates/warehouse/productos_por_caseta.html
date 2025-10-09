@@ -24,7 +24,6 @@
             </thead>
             <tbody>
                 {% regroup inventarios by warehouse as inventario_por_caseta %}
-
                 {% for grupo in inventario_por_caseta %}
                 <tr class="table-secondary">
                     <th colspan="4">{{ grupo.grouper.name_ware }}</th>

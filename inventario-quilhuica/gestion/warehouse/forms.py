@@ -6,11 +6,10 @@ from product.models import Product, Presentation
 class WarehouseForm(forms.ModelForm):
     class Meta:
         model = Warehouse
-        fields = ['name_ware', 'description', 'type']
+        fields = ['name_ware', 'description']
         widgets = {
             'name_ware': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-            'type': forms.Select(attrs={'class': 'form-select'}),
         }
 
     def save(self, commit=True):
@@ -51,11 +50,12 @@ class TransferForm(forms.ModelForm):
 class InventoryEntryForm(forms.ModelForm):
     class Meta:
         model = Inventory
+        Warehouse.objects.filter(type='shed')
         fields = ["warehouse", "product", "presentation", "quantity_packages"]
 
     def save(self, commit=True, user=None):
         instance = super().save(commit=False)
-
+        #filtramos que solo use las warehouse de tipo shed
         # Guardamos o actualizamos el inventario
         existing = Inventory.objects.filter(
             product=instance.product,
@@ -80,7 +80,7 @@ class InventoryEntryForm(forms.ModelForm):
                 ware_destin=inventory.warehouse,
                 movement_type="entrada",
                 quantity=instance.quantity_packages,
-                moved_by=user,
+                moved_by=user.username,
                 description="Ingreso inicial o actualización de stock"
             )
 

@@ -6,7 +6,7 @@ from .forms import WarehouseForm, TransferForm, InventoryEntryForm
 
 # LISTAR SOLO CASETAS
 def caseta_list(request):
-    casetas = Warehouse.objects.all()
+    casetas = Warehouse.objects.filter(type='shed')
     return render(request, 'warehouse/caseta_list.html', {'casetas': casetas})
 
 def inventory_list(request):
@@ -95,7 +95,7 @@ def transfer_product(request):
 # LISTAR PRODUCTOS POR CASETA
 def productos_por_caseta(request):
     # Obtenemos todas las casetas
-    casetas = Warehouse.objects.filter(type='shed')
+    casetas = Warehouse.objects.all()
 
     # Obtenemos inventario relacionado con esas casetas
     inventarios = Inventory.objects.filter(warehouse__in=casetas).select_related('product', 'presentation', 'warehouse')

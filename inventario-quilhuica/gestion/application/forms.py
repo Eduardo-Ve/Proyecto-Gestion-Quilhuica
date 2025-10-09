@@ -6,7 +6,7 @@ from .models import Application, ApplicationDetail
 class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
-        fields = ['ware'] # Solo pedimos la caseta (warehouse) en el formulario
+        fields = ['ware'] 
         labels = {
             'ware': 'Seleccione la Caseta de Aplicación'
         }
