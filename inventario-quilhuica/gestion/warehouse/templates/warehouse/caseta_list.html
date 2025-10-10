@@ -1,16 +1,14 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Gestión de Casetas</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
+
+{% extends 'base/base.html' %}
+
+{% block title %}Gestión de Casetas{% endblock %}
+
+{% block content %}
+<div class="container py-4">
     <h1 class="mb-4">Gestión de Casetas</h1>
+
     <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-primary mb-3">Nueva Caseta</a>
-    <a href="{% url 'warehouse:inventory_list' %}" class="btn btn-primary mb-3">Detalles de productos por casetas</a>
-    
+    <a href="{% url 'warehouse:inventory_list' %}" class="btn btn-secondary mb-3 ms-2">Detalles de productos por casetas</a>
 
     <table class="table table-striped table-bordered">
         <thead class="table-dark">
@@ -39,9 +37,11 @@
                 <td colspan="5" class="text-center">No hay casetas registradas.</td>
             </tr>
             {% endfor %}
-            
         </tbody>
     </table>
-    
-</body>
-</html>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
