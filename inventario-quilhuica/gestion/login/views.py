@@ -6,6 +6,7 @@ from .forms import CustomLoginForm
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import user_passes_test
 from django.core.exceptions import PermissionDenied
+from .forms import RegistroUsuarioForm  
 class CustomLoginView(LoginView):
     authentication_form = CustomLoginForm
 
@@ -18,7 +19,7 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             auth_login(request, user)
-            return redirect('')  # reemplaza con tu página principal
+            return redirect('')  # manda para el core
     else:
         form = CustomLoginForm()
     return render(request, "login/login.html", {"form": form})
@@ -27,10 +28,6 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
-
-
-from .forms import RegistroUsuarioForm  # <-- aquí importamos el form correcto
-
 
 def es_superusuario(user):
     if not user.is_authenticated or not user.is_superuser:

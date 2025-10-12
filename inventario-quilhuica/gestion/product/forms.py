@@ -77,7 +77,7 @@ PresentationFormSet = inlineformset_factory(
     model=Presentation,
     form=PresentationForm,
     extra=0,
-    can_delete=True,
+    can_delete=False,
     min_num=1,             
     validate_min=True,
 )

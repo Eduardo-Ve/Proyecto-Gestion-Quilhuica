@@ -1,5 +1,7 @@
 {% extends 'base/base.html' %}
 {% block content %}
+{% load static %}
+
 <div class="container mt-4">
   <h2>Registrar nueva entrada a bodega</h2>
   <form method="post">
@@ -19,4 +21,7 @@
     <button type="submit" class="btn btn-primary">Guardar</button>
   </form>
 </div>
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '/form.css' %}">
 {% endblock %}

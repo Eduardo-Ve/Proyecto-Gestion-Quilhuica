@@ -108,7 +108,6 @@ def productos_por_caseta(request):
     return render(request, 'warehouse/productos_por_caseta.html', context)
 
 # agregar producto a bodega
-
 def add_inventory_entry(request):
     if request.method == "POST":
         form = InventoryEntryForm(request.POST)

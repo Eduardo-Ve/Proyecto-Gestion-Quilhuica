@@ -1,0 +1,137 @@
+/* ====== FORMULARIO DE PRODUCTO ====== */
+
+form {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.card {
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+}
+
+.card-header {
+  background-color: #f8f9fa !important;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.card-body {
+  background-color: #fff;
+}
+
+/* ====== CAMPOS Y LABELS ====== */
+
+label.form-label {
+  font-weight: 500;
+  color: #374151;
+}
+
+input.form-control,
+select.form-select,
+textarea.form-control {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+input.form-control:focus,
+select.form-select:focus,
+textarea.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+}
+
+/* ====== CHECKBOX Y RADIO ====== */
+
+.form-check {
+  margin-top: 0.5rem;
+}
+
+.form-check-input {
+  cursor: pointer;
+}
+
+.form-check-label {
+  margin-left: 0.25rem;
+}
+
+/* ====== ERRORES ====== */
+
+.text-danger.small {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* ====== PRESENTACIONES (FORMSET) ====== */
+
+#formset-rows .col-12.border {
+  border: 1px solid #e5e7eb !important;
+  background-color: #f9fafb;
+  border-radius: 10px;
+  padding: 1rem;
+  transition: background-color 0.2s ease;
+}
+
+#formset-rows .col-12.border:hover {
+  background-color: #f1f5f9;
+}
+
+#formset-rows label.form-label {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+#add-row {
+  border-radius: 8px;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+}
+
+/* ====== BOTONES ====== */
+
+button.btn-primary {
+  background-color: #2563eb;
+  border-color: #2563eb;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+button.btn-primary:hover {
+  background-color: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.btn-outline-secondary {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+/* ====== ALERTAS ====== */
+
+.alert {
+  border-radius: 8px;
+  font-size: 0.95rem;
+}
+
+/* ====== RESPONSIVE ====== */
+
+@media (max-width: 768px) {
+  form {
+    padding: 1rem;
+  }
+  .card-body .row.g-3 {
+    row-gap: 0.75rem;
+  }
+}
+@media (max-width: 576px) {
+  #formset-rows .col-12.border {
+    padding: 0.75rem;
+  }
+}
