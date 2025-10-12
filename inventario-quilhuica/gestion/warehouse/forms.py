@@ -80,7 +80,7 @@ class InventoryEntryForm(forms.ModelForm):
                 ware_destin=inventory.warehouse,
                 movement_type="entrada",
                 quantity=instance.quantity_packages,
-                moved_by=user.username,
+                moved_by=user,
                 description="Ingreso inicial o actualización de stock"
             )
 
