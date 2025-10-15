@@ -184,16 +184,23 @@
     color: #1E1E1E;
   }
 }
-/* Solo dentro del card del reset */
-.card input[type="email"] {
+/* ====== Password reset ====== */
+.password-reset input[type="email"],
+.password-reset input[type="password"]{
   width: 100%;
   padding: .6rem .75rem;
   border: 1px solid #ced4da;
   border-radius: .375rem;
   font-size: 1rem;
 }
-.card input[type="email"]:focus {
+.password-reset input:focus{
   outline: 0;
   border-color: #86b7fe;
   box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);
 }
+.password-reset .btn{
+  font-weight: 600;
+}
+
+
+
