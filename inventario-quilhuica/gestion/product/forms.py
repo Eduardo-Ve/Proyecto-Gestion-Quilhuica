@@ -68,13 +68,10 @@ class ProductForm(forms.ModelForm):
 
         return cleaned_data
 
-def save(self, commit=True, user=None):
-        # Primero, verificamos si es una instancia nueva antes de guardarla.
-        is_new_instance = not self.instance.pk
-
+    def save(self, commit=True, user=None):
         product = super().save(commit=False)
 
-        # Crear nueva categoría si se marcó
+        # Crear nueva categoría solo si se marcó
         if self.cleaned_data.get('create_new_category'):
             category = Category.objects.create(
                 name_cat=self.cleaned_data['new_category_name'],
@@ -82,7 +79,7 @@ def save(self, commit=True, user=None):
             )
             product.category = category
 
-        # Crear nueva presentación si se marcó
+        # Crear nueva presentación solo si se marcó
         if self.cleaned_data.get('create_new_presentation'):
             presentation = Presentation.objects.create(
                 package_type=self.cleaned_data['package_type'],
@@ -92,31 +89,21 @@ def save(self, commit=True, user=None):
             product.presentation = presentation
 
         if commit:
-            product.save()
-            self.save_m2m()
+            product.save()  # Obligatorio para generar pk
+            self.save_m2m() # Por si hay relaciones ManyToMany
 
-            # Lógica de inventario y movimiento SÓLO para productos nuevos
+            # Aquí va la lógica de inventario
             stock_inicial = self.cleaned_data.get('stock_inicial')
-            if is_new_instance and stock_inicial is not None and stock_inicial > 0:
+            if stock_inicial is not None:
                 main_warehouse = Warehouse.objects.filter(type='main').first()
                 if main_warehouse:
-                    # 1. Crear o actualizar el registro de inventario (como ya lo hacías)
-                    Inventory.objects.update_or_create(
+                    inventory, created = Inventory.objects.get_or_create(
                         product=product,
                         presentation=product.presentation,
                         warehouse=main_warehouse,
                         defaults={'quantity_packages': stock_inicial}
                     )
-
-                    Movement.objects.create(
-                        product=product,
-                        presentation=product.presentation,
-                        ware_origin=None,  # No hay origen, es una entrada inicial
-                        ware_destin=main_warehouse,
-                        movement_type='entrada',
-                        quantity=stock_inicial,
-                        moved_by=user,  # ¡Importante! El usuario que realiza la acción
-                        description=f"Stock inicial al crear el producto '{product.name_prod}'."
-                    )
-        
+                    if not created:
+                        inventory.quantity_packages = stock_inicial
+                        inventory.save()  # recalcula total_content automáticamente
         return product

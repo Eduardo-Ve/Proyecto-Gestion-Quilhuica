@@ -1,49 +1,53 @@
 ﻿from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.db.models import Sum
 from .models import Product
 from .forms import ProductForm
-from warehouse.models import *
+from warehouse.models import * 
+from django.db.models import Sum
+
 class ProductListView(ListView):
     model = Product
     template_name = 'product/product_list.html'
     context_object_name = 'products'
 
     def get_queryset(self):
-        # Obtener la bodega principal
+        products = Product.objects.all().order_by('name_prod')
+
         main_warehouse = Warehouse.objects.filter(type='main').first()
+        
+        # Si no hay bodega principal, devolvemos los productos con stock 0.
         if not main_warehouse:
-            return Product.objects.none()
+            for p in products:
+                p.total_packages = 0
+                p.total_content = 0
+            return products
 
-        # Obtener todos los productos con inventario en la bodega principal
-        products = Product.objects.filter(
-            inventory__warehouse=main_warehouse
-        ).distinct()
-
-        # Agregar datos de inventario agregados
         inventory_data = (
             Inventory.objects.filter(warehouse=main_warehouse)
-            .values('product')
+            .values('product_id') # Agrupamos por el ID del producto
             .annotate(
                 total_packages=Sum('quantity_packages'),
                 total_content=Sum('total_content')
             )
         )
 
-        # Crear diccionario con los totales
+        # 4. 📇 Crea un 'diccionario' de totales para una búsqueda súper rápida.
+        # La clave es el ID del producto y el valor es su stock.
         totals = {
-            item['product']: {
+            item['product_id']: {
                 'packages': item['total_packages'] or 0,
                 'content': item['total_content'] or 0
             }
             for item in inventory_data
         }
 
-        # Inyectar los totales en cada producto
+        # 5. 🔗 Asigna el stock a cada producto en la lista.
+        # Si un producto no está en el diccionario 'totals', se le asignará 0.
         for p in products:
-            product_key = getattr(p, 'product_id', getattr(p, 'id', None))
-            p.total_packages = totals.get(product_key, {}).get('packages', 0)
-            p.total_content = totals.get(product_key, {}).get('content', 0)
+            # Usamos p.product_id porque así se llama tu llave primaria.
+            product_totals = totals.get(p.product_id, {'packages': 0, 'content': 0})
+            p.total_packages = product_totals['packages']
+            p.total_content = product_totals['content']
 
         return products
 class ProductCreateView(CreateView):
