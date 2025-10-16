@@ -57,11 +57,6 @@ class Presentation(models.Model):
     package_type = models.CharField(max_length=10, choices=PACKAGE_CHOICES)
     content_value = models.FloatField()
     content_unit = models.CharField(max_length=10, choices=UNIT_CHOICES)
-    stock_units = models.PositiveIntegerField(
-        default=0,
-        verbose_name="Unidades en stock",
-        help_text="Número de envases disponibles"
-    )
 
     class Meta:
         db_table = 'PRESENTATION'

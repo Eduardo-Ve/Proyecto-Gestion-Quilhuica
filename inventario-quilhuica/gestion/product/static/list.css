@@ -16,13 +16,13 @@ h1.h3 {
 }
 
 .btn-primary {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: #00C451  ;
+  border-color: #00C451 ;
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
+  background-color: #055526 ;
+  border-color: #055526 ;
 }
 
 /* === Card y tabla === */

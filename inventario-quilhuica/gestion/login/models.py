@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 
+
 class UsuarioManager(BaseUserManager):
     def create_user(self, nombre_usuario, correo, password=None, **extra_fields):
         if not correo:
@@ -33,12 +34,19 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     roles = models.ManyToManyField(Role, related_name="usuarios", through="UserRole")
     objects = UsuarioManager()
+    
 
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
 
     class Meta:
         db_table = "usuario"
+    @property
+
+    def email(self):
+        """Alias para compatibilidad con Django (usa el campo 'correo')"""
+        return self.correo
+
 
 
 class UserRole(models.Model):

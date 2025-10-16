@@ -114,3 +114,18 @@ th, td {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     width: 300px;
 }
+
+/* Solo dentro del card del reset */
+.card input[type="email"] {
+  width: 100%;
+  padding: .6rem .75rem;
+  border: 1px solid #ced4da;
+  border-radius: .375rem;
+  font-size: 1rem;
+}
+.card input[type="email"]:focus {
+  outline: 0;
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);
+}
+

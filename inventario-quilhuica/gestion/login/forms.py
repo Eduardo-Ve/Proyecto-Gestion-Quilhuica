@@ -5,6 +5,7 @@ import re
 from django.core.exceptions import ValidationError
 from login.models import Usuario  # tu modelo de usuarios
 from login.models import Role
+from django.contrib.auth.forms import PasswordResetForm
 User = get_user_model()
 
 class CustomLoginForm(AuthenticationForm):
@@ -101,4 +102,22 @@ class RegistroUsuarioForm(forms.ModelForm):
                 user.roles.set([self.cleaned_data["roles"]])  # crea registros en UserRole
         
         return user
+
+User = get_user_model()
+class CustomPasswordResetForm(PasswordResetForm):
+  
+    email = forms.EmailField(
+        label="Correo electrónico",
+        max_length=254,
+        widget=forms.EmailInput(attrs={'autocomplete': 'email'})
+    )
+   
+    def get_users(self, email):
+        """Busca usuarios usando el campo 'correo' del modelo."""
+        active_users = Usuario._default_manager.filter(
+            correo__iexact=email, 
+            is_active=True
+        )
+        return (u for u in active_users if u.has_usable_password())
+
 

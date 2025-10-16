@@ -1,52 +1,39 @@
 {% load static %}
 
-<!DOCTYPE html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Navbar</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="{% static 'style_nav.css' %}">
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:500&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div class="navbar-container">
-      <header>
-        <a class="logo" href="/"><img src="{% static 'img/FQ_logo.png' %}" alt="logo"></a>
+<div class="navbar-container">
+  <header>
+    <a class="logo" href="/">
+      <img src="{% static 'img/FQ_logo.png' %}" alt="logo">
+    </a>
 
-        <nav>
-          <ul class="nav__links">
-            <li><a href="/">Inicio</a></li>
-            <li><a href="/products/">Productos</a></li>
-            <li><a href="/warehouse/">Casetas</a></li>
-          </ul>
-        </nav>
+    <nav>
+      <ul class="nav__links">
+        <li><a href="/">Inicio</a></li>
+        <li><a href="/products/">Productos</a></li>
+        <li><a href="/warehouse/">Casetas</a></li>
+      </ul>
+    </nav>
 
-        <div class="cta dropdown">
-          <a href="#">Auditoría y alertas ▾</a>
-          <ul class="dropdown-menu">
-            <li><a href="#">Movimientos de Productos</a></li>
-            <li><a href="#">Aplicación de Productos</a></li>
-            <li><a href="#">Alertas</a></li>
-          </ul>
-        </div>
-
-        <p class="menu cta">Menu</p>
-      </header>
-
-      <div id="mobile__menu" class="overlay">
-        <a class="close">&times;</a>
-        <div class="overlay__content">
-          <li><a href="/">Inicio</a></li>
-          <li><a href="#">Productos</a></li>
-          <li><a href="#">Casetas</a></li>
-          <li><a href="#">Movimientos</a></li>
-          <li><a href="#">Aplicaciones</a></li>
-        </div>
-      </div>
+    <div class="cta dropdown">
+      <a href="#">Auditoría y alertas ▾</a>
+      <ul class="dropdown-menu">
+        <li><a href="#">Movimientos de Productos</a></li>
+        <li><a href="/application/">Aplicación de Productos</a></li>
+        <li><a href="#">Alertas</a></li>
+      </ul>
     </div>
 
-    <script src="{% static 'js/navbar.js' %}"></script>
-  </body>
-</html>
+    <p class="menu cta">Menu</p>
+  </header>
+
+  <div id="mobile__menu" class="overlay">
+    <a class="close">&times;</a>
+    <div class="overlay__content">
+      <li><a href="/">Inicio</a></li>
+      <li><a href="/products/">Productos</a></li>
+      <li><a href="/warehouse/">Casetas</a></li>
+      <li><a href="#">Movimientos</a></li>
+      <li><a href="/application/">Aplicaciones</a></li>
+    </div>
+  </div>
+</div>

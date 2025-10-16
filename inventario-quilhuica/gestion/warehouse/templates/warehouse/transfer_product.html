@@ -1,5 +1,6 @@
+{% extends 'base/base.html' %}
 {% load static %}
-<!DOCTYPE html>
+
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -19,7 +20,7 @@
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit" class="btn btn-success">Realizar Traslado</button>
-        <a href="{% url 'caseta_list' %}" class="btn btn-secondary">Volver</a>
+        <a href="{% url 'warehouse:caseta_list' %}" class="btn btn-secondary">Volver</a>
     </form>
 </body>
 </html>

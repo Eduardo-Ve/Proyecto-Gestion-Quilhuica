@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+{% block content %}
+{% load static %}
+
+<div class="container mt-4">
+  <h2>Registrar nueva entrada a bodega</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.warehouse.label_tag }} {{ form.warehouse }}
+    </div>
+    <div class="mb-3">
+      {{ form.product.label_tag }} {{ form.product }}
+    </div>
+    <div class="mb-3">
+      {{ form.presentation.label_tag }} {{ form.presentation }}
+    </div>
+    <div class="mb-3">
+      {{ form.quantity_packages.label_tag }} {{ form.quantity_packages }}
+    </div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+  </form>
+</div>
+{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '/form.css' %}">
+{% endblock %}
