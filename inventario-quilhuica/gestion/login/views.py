@@ -39,7 +39,7 @@ def es_superusuario(user):
 
 
 def success_view(request):
-    return render(request, "registro/success.html")
+    return render(request, "login/success.html")
 
 
 @user_passes_test(es_superusuario)
@@ -49,7 +49,7 @@ def registrar_usuario(request):
         if form.is_valid():
             user = form.save()
             telefono = form.cleaned_data["telefono"]  # aquí ya viene en formato +56
-            return render(request, "registro/success.html", {"telefono": telefono})
+            return render(request, "login/success.html", {"telefono": telefono})
     else:
         form = RegistroUsuarioForm()  # <-- también aquí
     return render(request, 'login/registrar.html', {"form": form})

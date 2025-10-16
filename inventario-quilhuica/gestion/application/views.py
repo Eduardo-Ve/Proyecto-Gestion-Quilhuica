@@ -1,39 +1,63 @@
-from django.shortcuts import render
 from django.shortcuts import render, redirect
-from django.urls import reverse_lazy
+from django.db import transaction
+from django.contrib import messages
 from .forms import ApplicationForm, ApplicationDetailFormSet
-from .models import Application
+from warehouse.models import Inventory
+from product.models import Product
 
-def app_index(request):
-    return render(request, 'application/application.html')
-
-
+@transaction.atomic
 def create_application(request):
+    products = Product.objects.select_related('presentation').all()
+
     if request.method == 'POST':
-        # Instanciamos el formulario principal y el formset con los datos del POST
         form = ApplicationForm(request.POST)
         formset = ApplicationDetailFormSet(request.POST)
 
         if form.is_valid() and formset.is_valid():
-            # Guardamos el formulario principal, pero sin enviarlo a la BD aún
             application = form.save(commit=False)
-            # Asignamos el usuario que está realizando la aplicación
             application.applied_by = request.user
-            application.save() # Ahora sí, guardamos la aplicación en la BD
+            application.save()
 
-            # Vinculamos el formset con la instancia de la aplicación recién creada
             formset.instance = application
-            formset.save() # Guardamos todos los detalles de productos
+            details = formset.save()
 
-            return redirect(reverse_lazy('alguna_url_de_exito')) # Redirige a una página de éxito
+            # Actualizar stock
+            for detail in details:
+                try:
+                    inventory = Inventory.objects.get(
+                        product=detail.product,
+                        presentation=detail.product.presentation,
+                        warehouse=application.ware
+                    )
+                    if detail.quantity_packages > inventory.quantity_packages:
+                        messages.error(
+                            request,
+                            f"Stock insuficiente para {detail.product}. Disponible: {inventory.quantity_packages}."
+                        )
+                        transaction.set_rollback(True)
+                        return redirect('application:create_application')
 
+                    inventory.quantity_packages -= detail.quantity_packages
+                    inventory.save()
+                except Inventory.DoesNotExist:
+                    messages.error(
+                        request,
+                        f"No existe inventario para {detail.product} en {application.ware}."
+                    )
+                    transaction.set_rollback(True)
+                    return redirect('application:create_application')
+
+            messages.success(request, "Aplicación registrada y stock actualizado correctamente.")
+            return redirect('application:create_application')
+
+        else:
+            messages.error(request, "Revisa los errores en el formulario.")
     else:
-        # Si es una petición GET, mostramos los formularios vacíos
         form = ApplicationForm()
         formset = ApplicationDetailFormSet()
 
-    context = {
+    return render(request, 'application/application_form.html', {
         'form': form,
-        'formset': formset
-    }
-    return render(request, 'application/create_application.html', context)
+        'formset': formset,
+        'products': products,
+    })

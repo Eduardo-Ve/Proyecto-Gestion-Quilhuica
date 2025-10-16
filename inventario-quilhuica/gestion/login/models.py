@@ -33,13 +33,10 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     roles = models.ManyToManyField(Role, related_name="usuarios", through="UserRole")
     objects = UsuarioManager()
-
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
-
-    class Meta:
-        db_table = "usuario"
-
+    def __str__(self):
+        return self.nombre_usuario
 
 class UserRole(models.Model):
     user = models.ForeignKey(Usuario, on_delete=models.CASCADE)
