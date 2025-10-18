@@ -80,7 +80,7 @@ class RegistroUsuarioForm(forms.ModelForm):
         patron = r'^[9]\d{8}$'
         if not re.match(patron, telefono):
             raise forms.ValidationError("Debe ingresar un número válido de 9 dígitos, ej: 930806450")
-        return f"+56 {telefono}"
+        return f"+56{telefono}"
 
     def clean(self):
         cleaned_data = super().clean()

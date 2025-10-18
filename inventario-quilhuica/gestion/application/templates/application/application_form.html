@@ -1,4 +1,6 @@
-{% extends 'base/base.html' %}  {% block content %}
+{% extends 'base/base.html' %} 
+
+{% block content %}
 <div class="container mt-4">
     <h2>Crear Nueva Aplicación de Productos</h2>
 
@@ -8,22 +10,40 @@
         <div class="mb-3">
             <label for="{{ form.ware.id_for_label }}" class="form-label">Bodega:</label>
             {{ form.ware }}
+            <div class="text-danger small mt-1">
+                {{ form.ware.errors }}
+            </div>
         </div>
 
         <hr>
         <h3>Productos</h3>
 
-        {{ formset.management_form }}  <div id="product-forms-container">
+        {{ formset.management_form }}
+        
+        {% if formset.non_form_errors %}
+            <div class="alert alert-danger">
+                {{ formset.non_form_errors }}
+            </div>
+        {% endif %}
+        
+        <div id="product-forms-container">
             {% for form in formset %}
                 <div class="form-row border p-3 mb-3">
-                    {{ form.id }} <div class="row">
+                    {{ form.id }}
+                    <div class="row">
                         <div class="col-md-6">
                             <label for="{{ form.product.id_for_label }}">Producto:</label>
                             {{ form.product }}
+                            <div class="text-danger small mt-1">
+                                {{ form.product.errors }}
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <label for="{{ form.quantity_packages.id_for_label }}">Cantidad:</label>
                             {{ form.quantity_packages }}
+                            <div class="text-danger small mt-1">
+                                {{ form.quantity_packages.errors }}
+                            </div>
                         </div>
                         {% if formset.can_delete %}
                         <div class="col-md-2 d-flex align-items-end">
@@ -49,10 +69,16 @@
             <div class="col-md-6">
                 <label for="{{ formset.empty_form.product.id_for_label }}">Producto:</label>
                 {{ formset.empty_form.product }}
+                <div class="text-danger small mt-1">
+                    {{ formset.empty_form.product.errors }}
+                </div>
             </div>
             <div class="col-md-4">
                 <label for="{{ formset.empty_form.quantity_packages.id_for_label }}">Cantidad:</label>
                 {{ formset.empty_form.quantity_packages }}
+                <div class="text-danger small mt-1">
+                    {{ formset.empty_form.quantity_packages.errors }}
+                </div>
             </div>
             {% if formset.can_delete %}
             <div class="col-md-2 d-flex align-items-end">
@@ -66,6 +92,7 @@
     </div>
 </div>
 {% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -74,26 +101,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const emptyFormTemplate = document.getElementById('empty-form').cloneNode(true);
     const totalFormsInput = document.querySelector('#id_details-TOTAL_FORMS');
     
-    // Quita el ID del template clonado para evitar duplicados
     emptyFormTemplate.removeAttribute('id');
 
     addFormButton.addEventListener('click', function() {
-        // Obtiene el número actual de formularios
         let formNum = parseInt(totalFormsInput.value);
-
-        // Clona la plantilla del formulario vacío
         const newForm = emptyFormTemplate.cloneNode(true);
-        
-        // Reemplaza el prefijo "__prefix__" en el HTML del nuevo formulario
-        // Django usa esto para identificar cada nuevo formulario.
         let formHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
         newForm.innerHTML = formHTML;
         
-        // Muestra el nuevo formulario y lo añade al contenedor
         newForm.style.display = 'block';
         formContainer.appendChild(newForm);
         
-        // Incrementa el contador de formularios en el management_form
         totalFormsInput.value = formNum + 1;
     });
 });

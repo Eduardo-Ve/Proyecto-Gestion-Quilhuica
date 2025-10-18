@@ -10,9 +10,12 @@
     <link rel="stylesheet" href="{% static 'style_nav.css' %}">
     <link rel="icon"  href="{% static 'img/FQ_logo.png' %}"/>
     <link href="https://fonts.googleapis.com/css?family=Montserrat:500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <!-- Otros estilos específicos de la aplicación -->
     {% block extra_css %}{% endblock %}
 </head>
+
 <body>
     <!-- Incluir el navbar global -->
     {% include 'base/navbar.html' %}
@@ -26,5 +29,9 @@
     
     <!-- Scripts -->
     {% block extra_js %}{% endblock %}
+{% if user.is_authenticated %}
+  {% include "notification/alert_script.html" %}
+{% endif %}
 </body>
+
 </html>

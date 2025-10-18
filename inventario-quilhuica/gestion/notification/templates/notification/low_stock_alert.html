@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; }
+        h2 { color: #d9534f; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2> Alerta de Stock Bajo en Casetas</h2>
+    <p>Los siguientes productos tienen bajo stock:</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Caseta</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in low_stock_items %}
+            <tr>
+                <td>{{ item.product.name_prod }}</td>
+                <td>{{ item.warehouse.name_ware }}</td>
+                <td>{{ item.quantity_packages }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

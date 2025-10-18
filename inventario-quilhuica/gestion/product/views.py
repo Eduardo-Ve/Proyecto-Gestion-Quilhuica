@@ -27,7 +27,8 @@ class ProductListView(ListView):
             .values('product_id') # Agrupamos por el ID del producto
             .annotate(
                 total_packages=Sum('quantity_packages'),
-                total_content=Sum('total_content')
+                total_content=Sum('total_content'),
+                
             )
         )
 
@@ -48,6 +49,7 @@ class ProductListView(ListView):
             product_totals = totals.get(p.product_id, {'packages': 0, 'content': 0})
             p.total_packages = product_totals['packages']
             p.total_content = product_totals['content']
+            p.unit_type = p.presentation.content_unit
 
         return products
 class ProductCreateView(CreateView):
@@ -66,3 +68,4 @@ class ProductDeleteView(DeleteView):
     model = Product
     template_name = 'product/product_confirm_delete.html'  # Confirmación de eliminación
     success_url = reverse_lazy('product:product_list')
+

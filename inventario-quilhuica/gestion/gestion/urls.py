@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import path, include
 from login.views import registrar_usuario
 from  django.conf.urls import handler400, handler403, handler404, handler500
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,7 +13,8 @@ urlpatterns = [
     path('warehouse/', include(('warehouse.urls', 'warehouse'), namespace='warehouse')), 
     path('base_desing/', include(('base.urls', 'base'), namespace='base')),  
     path('application/', include(('application.urls', 'application'), namespace='application')),
-    
+    path("notification/", include("notification.urls")),
+
     ]
 
 handler400 = "core.views.error_400"

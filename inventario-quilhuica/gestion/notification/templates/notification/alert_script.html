@@ -1,0 +1,60 @@
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 1. Pregunta al servidor si hay notificaciones NO LEÍDAS
+    fetch("{% url 'notification:check_alerts' %}") // Usamos la URL de Django
+        .then(response => response.json())
+        .then(data => {
+            let messages = [];
+            if (data.low_stock && data.low_stock.length > 0) {
+                messages.push('<strong>Productos con bajo stock:</strong><br>' + data.low_stock.join('<br>'));
+            }
+            if (data.expiring && data.expiring.length > 0) {
+                messages.push('<strong>Productos próximos a vencer:</strong><br>' + data.expiring.join('<br>'));
+            }
+
+            if (messages.length > 0) {
+                Swal.fire({
+                    title: 'Alertas de Inventario',
+                    html: messages.join('<hr>'),
+                    icon: 'warning',
+                    confirmButtonText: 'Entendido'
+                }).then((result) => {
+                    // 2. Si el usuario confirma, le AVISA al servidor
+                    if (result.isConfirmed) {
+                        fetch("{% url 'notification:mark_read' %}", { // Usamos la URL de Django
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken'),
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'ok') {
+                                console.log('Notificaciones marcadas como leídas en la base de datos.');
+                            }
+                        })
+                        .catch(error => console.error('Error al marcar notificaciones:', error));
+                    }
+                });
+            }
+        })
+        .catch(error => console.error('Error al obtener notificaciones:', error));
+});
+
+// Función auxiliar para obtener el token CSRF (esencial para POST)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

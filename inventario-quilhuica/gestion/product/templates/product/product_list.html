@@ -1,5 +1,7 @@
 ﻿{% extends 'base/base.html' %}
 {% load static %}
+{% load humanize %}
+
 {% block content %}
 
 <div class="table-container"> 
@@ -24,11 +26,9 @@
                 <td>{{ product.name_prod }}</td>
                 <td>{{ product.category }}</td>
                 <td>{{ product.presentation }}</td>
-                <td>{{ product.total_packages }}</td>
-
-                 <td>{{ product.total_content }}</td>
-       
-                <td>{{ product.expire_at|date:"d/m/Y" }}</td>
+                <td>{{ product.total_packages|floatformat:0|intcomma }}</td>
+                <td>{{ product.total_content|floatformat:0|intcomma }} {{ product.unit_type }}</td>
+                 <td >{{ product.expire_at|date:"d/m/Y" }}</td>
                 <td>
                     <a href="{% url 'product:product_update' product.pk %}" class="btn btn-sm btn-primary">Editar</a>
                     <a href="{% url 'product:product_delete' product.pk %}" class="btn btn-sm btn-danger">Eliminar</a>

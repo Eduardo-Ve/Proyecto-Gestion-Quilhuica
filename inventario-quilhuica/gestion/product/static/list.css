@@ -10,7 +10,7 @@ h2 {
 
 /* Contenedor principal de la tabla para centrar y añadir sombra */
 .table-container {
-    max-width: 1000px;
+    max-width: 80%;
     margin: auto;
     background: #ffffff;
     padding: 2rem;
