@@ -58,7 +58,7 @@ def transfer_product(request):
         ware_origin = Warehouse.objects.get(type='main')
     except Warehouse.DoesNotExist:
         messages.error(request, "Error crítico: No existe una bodega principal configurada.")
-        return redirect('alguna_pagina_de_inicio') # Redirigir a un lugar seguro
+        return redirect('warehouse:caseta_list') # Redirigir a un lugar seguro
 
     # Productos que tienen stock en la bodega principal para popular el dropdown
     products_in_stock = Product.objects.filter(
