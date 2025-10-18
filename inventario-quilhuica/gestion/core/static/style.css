@@ -15,14 +15,7 @@
     --space-l: 24px;
 }
 
-/* ==== Estilo base === */
-body {
-    font-family: var(--font-main);
-    background: var(--color-bg);
-    color: var(--color-text);
-    margin: 40px;
-    line-height: 1.6;
-}
+
 h1, h2, h3 { margin-top: var(--space-l); }
 h1 { font-size: 2rem; }
 h2 { font-size: 1.5rem; }

@@ -4,6 +4,7 @@ from login.views import registrar_usuario
 from login.views import CustomPasswordResetView
 from django.contrib.auth import views as auth_views
 from  django.conf.urls import handler400, handler403, handler404, handler500
+from django.views.generic import TemplateView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -14,6 +15,8 @@ urlpatterns = [
     path('warehouse/', include(('warehouse.urls', 'warehouse'), namespace='warehouse')), 
     path('base_desing/', include(('base.urls', 'base'), namespace='base')),  
     path('application/', include(('application.urls', 'application'), namespace='application')),
+    path("notification/", include("notification.urls")),
+
     path("reset_password/",
          CustomPasswordResetView.as_view(  # ya usa tu form + template propio
              template_name="login/password_reset_form.html"

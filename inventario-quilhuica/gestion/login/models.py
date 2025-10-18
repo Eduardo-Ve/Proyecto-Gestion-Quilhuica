@@ -34,15 +34,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     roles = models.ManyToManyField(Role, related_name="usuarios", through="UserRole")
     objects = UsuarioManager()
-    
-
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
-
     class Meta:
         db_table = "usuario"
     @property
-
     def email(self):
         """Alias para compatibilidad con Django (usa el campo 'correo')"""
         return self.correo

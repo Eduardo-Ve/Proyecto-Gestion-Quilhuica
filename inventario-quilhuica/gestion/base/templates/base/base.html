@@ -16,6 +16,7 @@
   {# Espacio para estilos específicos de cada vista/app #}
   {% block extra_css %}{% endblock %}
 </head>
+
 <body>
   {# Navbar global #}
   {% include 'base/navbar.html' %}
@@ -39,5 +40,8 @@
 
   {# Scripts propios de cada vista/app #}
   {% block extra_js %}{% endblock %}
+  {% if user.is_authenticated %}
+  {% include "notification/alert_script.html" %}
+{% endif %}
 </body>
 </html>

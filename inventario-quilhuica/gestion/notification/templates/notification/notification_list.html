@@ -1,0 +1,29 @@
+{% extends 'base/base.html' %}  {% block content %}
+<div class="container mt-4">
+    <h2>Historial de Notificaciones</h2>
+    <hr>
+
+    {% if notifications %}
+        <ul class="list-group">
+            {% for notif in notifications %}
+                <li class="list-group-item d-flex justify-content-between align-items-center {% if not notif.read %}list-group-item-info{% endif %}">
+                    <div>
+                        <p class="mb-1">{{ notif.message }}</p>
+                        <small class="text-muted">{{ notif.created_at|date:"d M Y, H:i" }}</small>
+                    </div>
+                    {% if not notif.read %}
+                        <span class="badge bg-primary rounded-pill">Nueva</span>
+                    {% else %}
+                        <span class="badge bg-secondary rounded-pill">Leída</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-info" role="alert">
+            No tienes notificaciones en tu historial.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

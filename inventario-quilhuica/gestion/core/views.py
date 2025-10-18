@@ -25,3 +25,7 @@ def error_404(request, exception=None):
 
 def error_500(request):
     return render(request, "errors/error.html", {"code": 500, "message": ERROR_MESSAGES[500]}, status=500)
+
+
+# la funcion para tomar los productos serian 
+# quien(get.user) cuando(filter by date ) donde (warehouse.models inventory && Warehouse) name_warehouse,  que se aplico (get prodcuts filter applyd)

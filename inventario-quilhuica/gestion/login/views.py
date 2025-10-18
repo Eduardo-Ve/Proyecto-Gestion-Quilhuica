@@ -39,7 +39,7 @@ def es_superusuario(user):
 
 
 def success_view(request):
-    return render(request, "registro/success.html")
+    return render(request, "login/success.html")
 
 
 @user_passes_test(es_superusuario)
