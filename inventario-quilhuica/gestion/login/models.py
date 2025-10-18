@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 
+
 class UsuarioManager(BaseUserManager):
     def create_user(self, nombre_usuario, correo, password=None, **extra_fields):
         if not correo:
@@ -35,8 +36,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     objects = UsuarioManager()
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
-    def __str__(self):
-        return self.nombre_usuario
+    class Meta:
+        db_table = "usuario"
+    @property
+    def email(self):
+        """Alias para compatibilidad con Django (usa el campo 'correo')"""
+        return self.correo
+
+
 
 class UserRole(models.Model):
     user = models.ForeignKey(Usuario, on_delete=models.CASCADE)

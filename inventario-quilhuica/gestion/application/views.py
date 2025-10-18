@@ -28,19 +28,17 @@ def create_application(request):
 
             # 4. Validar el formset. Aquí se ejecuta nuestra lógica de stock en forms.py.
             if formset.is_valid():
-                # --- ¡CAMINO FELIZ! TODO ES VÁLIDO ---
-                
-                # Asignamos el usuario y guardamos la aplicación principal en la BD
+                # ya si pasa de aqui es pq va bien xd, mejorar igual la interfaz                
+                # Asignamos el usuario y guardamos la aplicación principal en la Base de datos 
                 application_instance.applied_by = request.user
                 application_instance.save()
                 
                 # Guardamos los detalles del formset (que ya están vinculados a la aplicación)
-                # El método save() del formset se encarga de todo.
                 details = formset.save()
 
                 # 5. Descontar el stock. Esta lógica ahora es segura porque ya validamos todo.
                 for detail in details:
-                    # Usamos un bloque try/except por si acaso, aunque no debería fallar.
+                    # Usamos un bloque try/except por si acaso, aunque no debería fallar pero igual va.
                     try:
                         inventory = Inventory.objects.get(
                             product=detail.product,
@@ -50,7 +48,7 @@ def create_application(request):
                         inventory.save()
                     except Inventory.DoesNotExist:
                         # Este caso es improbable si la validación del formset funcionó,
-                        # pero es una buena práctica de programación defensiva.
+                        # ya aqui mandamos como buena practica que te diga si no encontro el inventario 
                         messages.error(request, f"Error crítico: No se encontró el inventario para {detail.product} al momento de actualizar.")
                         # La transacción se revertirá automáticamente al salir con error.
                         return redirect('application:create_application')

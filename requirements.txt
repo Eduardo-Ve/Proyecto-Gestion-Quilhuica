@@ -1,0 +1,26 @@
+# --- Core Django y complementos ---
+Django==4.2.23
+django-crispy-forms==2.4
+crispy-bootstrap4==2025.6
+crispy-bootstrap5==2025.6
+whitenoise==6.9.0
+gunicorn==23.0.0
+
+# --- API y REST ---
+djangorestframework==3.16.0
+
+# --- Base de datos ---
+psycopg2-binary==2.9.10
+
+# --- Configuración y entorno ---
+python-decouple==3.8
+python-dotenv==1.1.1
+
+# --- Ciencia de datos / utilidades ---
+numpy==2.3.1
+pandas==2.3.1
+joblib==1.5.1
+
+# --- Zona horaria y formatos ---
+pytz==2025.2
+tzdata==2025.2

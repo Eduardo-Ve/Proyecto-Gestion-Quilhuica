@@ -35,6 +35,14 @@ h2 {
 .table td {
     padding: 12px 15px; /* Relleno vertical y horizontal */
     vertical-align: middle; /* Alineación vertical */
+.btn-primary {
+  background-color: #00C451  ;
+  border-color: #00C451 ;
+}
+
+.btn-primary:hover {
+  background-color: #055526 ;
+  border-color: #055526 ;
 }
 
 /* Estilo de las filas del cuerpo de la tabla */
@@ -76,4 +84,4 @@ h2 {
 .btn-success:hover {
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
+}}

@@ -1,5 +1,6 @@
-﻿{% extends 'base/base.html' %}
-
+{% extends "base/base.html" %}
+{% block title %}Delete product{% endblock %}
+{% load static %}
 {% block content %}
 <h2>Eliminar Producto</h2>
 <p>¿Deseas eliminar el producto <strong>{{ object.name_prod }}</strong>?</p>
@@ -8,4 +9,8 @@
     <button type="submit" class="btn btn-danger">Eliminar</button>
     <a href="{% url 'product:product_list' %}" class="btn btn-secondary">Cancelar</a>
 </form>
+{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static '/list.css' %}">
 {% endblock %}

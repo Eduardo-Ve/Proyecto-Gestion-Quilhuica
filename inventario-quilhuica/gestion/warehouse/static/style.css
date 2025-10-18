@@ -1,0 +1,115 @@
+/* === VARIABLES DE COLOR === */
+:root {
+  --color-primary: #00C451;
+  --color-hover: #055526;
+  --color-bg: #FFFFFF;
+  --color-bg-light: #F5F5F5;
+  --color-text: #1E1E1E;
+}
+
+/* === ESTILO GLOBAL === */
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: "Poppins", "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  background-color: var(--color-bg-light);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* === TITULOS === */
+h1, h2, h3, h4, h5 {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* === TABLAS === */
+.table {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table thead {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 600;
+}
+
+.table tbody tr.table-secondary {
+  background-color: var(--color-bg-light);
+  font-weight: 500;
+  color: var(--color-hover);
+}
+
+.table tbody tr:hover {
+  background-color: rgba(0, 196, 81, 0.08);
+  transition: background-color 0.3s ease;
+}
+
+/* === BOTONES === */
+.btn-success, .btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: white !important;
+  transition: all 0.3s ease;
+}
+
+.btn-success:hover, .btn-primary:hover {
+  background-color: var(--color-hover) !important;
+  border-color: var(--color-hover) !important;
+}
+
+/* === BOTÓN SECUNDARIO === */
+.btn-secondary {
+  background-color: #E0E0E0;
+  border-color: #E0E0E0;
+  color: var(--color-text);
+}
+
+.btn-secondary:hover {
+  background-color: #CFCFCF;
+}
+
+/* === FORMULARIOS === */
+form.card {
+  background-color: var(--color-bg);
+  border: 1px solid #EAEAEA;
+  border-radius: 10px;
+}
+
+form label {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+form input, form select, form textarea {
+  border-radius: 6px;
+  border: 1px solid #D8D8D8;
+  padding: 0.5rem 0.75rem;
+  transition: border-color 0.3s;
+}
+
+form input:focus, form select:focus, form textarea:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 4px rgba(0, 196, 81, 0.4);
+  outline: none;
+}
+
+/* === ALERTAS === */
+.alert-warning {
+  background-color: #FFFBEA;
+  border-color: #FFE58F;
+  color: #665C00;
+  border-radius: 10px;
+}
+
+/* === SOMBRAS SUAVES === */
+.shadow-sm {
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05) !important;
+}
