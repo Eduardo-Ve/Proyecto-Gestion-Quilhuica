@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from login.models import Usuario  # tu modelo de usuarios
 from login.models import Role
 from django.contrib.auth.forms import PasswordResetForm
+from warehouse.models import Warehouse
 User = get_user_model()
 
 class CustomLoginForm(AuthenticationForm):
@@ -42,6 +43,13 @@ class RegistroUsuarioForm(forms.ModelForm):
         widget=forms.Select,   
         required=True
     )
+    caseta_asignada = forms.ModelChoiceField(
+            # El queryset filtra para mostrar SÓLO las bodegas de tipo 'shed'
+            queryset=Warehouse.objects.filter(type='shed'),
+            required=False,  # Es opcional a nivel de formulario
+            label="Caseta Asignada",
+            help_text="Requerido solo si el rol es 'Encargado de caseta'."
+        )
     
     class Meta:
         model = Usuario
@@ -87,7 +95,22 @@ class RegistroUsuarioForm(forms.ModelForm):
         cleaned_data = super().clean()
         password1 = cleaned_data.get("password1")
         password2 = cleaned_data.get("password2")
+        rol = cleaned_data.get("roles")
+        caseta = cleaned_data.get("caseta_asignada")
 
+        if rol:
+            # Si el rol es 'Encargado de caseta', la caseta es obligatoria
+            if rol.name_role == 'Encargado de caseta':
+                if not caseta:
+                    # Asigna el error al campo específico 'caseta_asignada'
+                    self.add_error('caseta_asignada', 
+                                   'Debe asignar una caseta para el rol "Encargado de caseta".')
+            
+            # Si es Admin o Auditor, nos aseguramos de que la caseta sea Nula
+            elif rol.name_role in ['Administrador', 'Auditoria']:
+                if caseta:
+                    # Si el usuario seleccionó una por error, la limpiamos
+                    cleaned_data['caseta_asignada'] = None
         if password1 and password2 and password1 != password2:
             raise forms.ValidationError("Las contraseñas no coinciden.")
         return cleaned_data
@@ -95,7 +118,7 @@ class RegistroUsuarioForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.set_password(self.cleaned_data["password1"])  # guarda contraseña encriptada
-        
+        user.caseta_asignada = self.cleaned_data.get('caseta_asignada')
         if commit:
             user.save()
             if self.cleaned_data.get("roles"):

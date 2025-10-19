@@ -3,7 +3,8 @@ from django.contrib import messages
 from .models import Warehouse, Inventory, Movement
 from .forms import *
 from django.db import transaction
-
+from django.contrib.auth.decorators import login_required
+from login.decorators import role_required
 # LISTAR SOLO CASETAS
 def caseta_list(request):
     casetas = Warehouse.objects.filter(type='shed')
@@ -19,6 +20,8 @@ def inventory_list(request):
     }
     return render(request, 'warehouse/productos_por_caseta.html', context)
 # CREAR CASETA
+
+@role_required(allowed_roles=['Administrador'])
 def caseta_create(request):
     if request.method == "POST":
         form = WarehouseForm(request.POST)
@@ -31,6 +34,7 @@ def caseta_create(request):
 
 
 # EDITAR CASETA
+@role_required(allowed_roles=['Administrador'])
 def caseta_edit(request, pk):
     caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
     if request.method == "POST":
@@ -44,6 +48,7 @@ def caseta_edit(request, pk):
 
 
 # ELIMINAR CASETA
+@role_required(allowed_roles=['Administrador'])
 def caseta_delete(request, pk):
     caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
     if request.method == "POST":
@@ -53,12 +58,13 @@ def caseta_delete(request, pk):
 
 
 # TRANSFERIR PRODUCTO A UNA CASETA
+@role_required(allowed_roles=['Administrador'])
 def transfer_product(request):
     try:
         ware_origin = Warehouse.objects.get(type='main')
     except Warehouse.DoesNotExist:
         messages.error(request, "Error crítico: No existe una bodega principal configurada.")
-        return redirect('alguna_pagina_de_inicio') # Redirigir a un lugar seguro
+        return redirect('warehouse:caseta_list') # Redirigir a un lugar seguro
 
     # Productos que tienen stock en la bodega principal para popular el dropdown
     products_in_stock = Product.objects.filter(

@@ -6,8 +6,9 @@
 {% block content %}
 <div class="container py-4">
     <h1 class="mb-4">Gestión de Casetas</h1>
-
+    {% if user.is_authenticated and user.is_admin %}
     <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-primary mb-3">Nueva Caseta</a>
+    {% endif %}
     <a href="{% url 'warehouse:inventory_list' %}" class="btn btn-secondary mb-3 ms-2">Detalles de productos por casetas</a>
 
     <table class="table table-striped table-bordered">
@@ -17,7 +18,9 @@
                 <th>Nombre</th>
                 <th>Descripción</th>
                 <th>Creada en</th>
+                {% if user.is_authenticated and user.is_admin %}
                 <th>Acciones</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -27,10 +30,12 @@
                 <td>{{ caseta.name_ware }}</td>
                 <td>{{ caseta.description }}</td>
                 <td>{{ caseta.created_at|date:"d/m/Y H:i" }}</td>
+                {% if user.is_authenticated and user.is_admin %}
                 <td>
                     <a href="{% url 'warehouse:caseta_edit' caseta.id %}" class="btn btn-sm btn-warning">Editar</a>
                     <a href="{% url 'warehouse:caseta_delete' caseta.id %}" class="btn btn-sm btn-danger">Eliminar</a>
                 </td>
+                {% endif %}
             </tr>
             {% empty %}
             <tr>

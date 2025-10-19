@@ -9,7 +9,7 @@ def style (request):
 
 ERROR_MESSAGES = {
     400: "Solicitud incorrecta (Bad Request).",
-    403: "No tienes permisos para acceder a esta sección.",
+    403: "o tienes permisos para acceder a esta sección.",
     404: "Página no encontrada.",
     500: "Error interno del servidor. Intenta más tarde."
 }

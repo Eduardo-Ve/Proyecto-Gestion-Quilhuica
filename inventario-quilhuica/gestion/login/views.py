@@ -33,7 +33,7 @@ def logout_view(request):
 
 
 def es_superusuario(user):
-    if not user.is_authenticated or not user.is_superuser:
+    if not user.is_authenticated or not user.is_staff:
         raise PermissionDenied
     return True
 
@@ -49,7 +49,7 @@ def registrar_usuario(request):
         if form.is_valid():
             user = form.save()
             telefono = form.cleaned_data["telefono"]
-            return render(request, "registro/success.html", {"telefono": telefono})
+            return render(request, "login/success.html", {"telefono": telefono})
     else:
         form = RegistroUsuarioForm()
     return render(request, 'login/registrar.html', {"form": form})

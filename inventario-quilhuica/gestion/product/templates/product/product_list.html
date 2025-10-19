@@ -11,8 +11,9 @@
 
 <div class="table-container"> 
     <h2>Listado de Productos</h2>
+    {% if user.is_authenticated and user.is_admin %}
     <a href="{% url 'product:product_create' %}" class="btn btn-success mb-3"> Nuevo Producto</a>
-
+    {% endif %}
     <table class="table table-striped">
         <thead>
             <tr>

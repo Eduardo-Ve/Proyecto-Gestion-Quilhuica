@@ -18,7 +18,6 @@ class LoginRequiredMiddleware:
         # Si el usuario no está autenticado
         if not request.user.is_authenticated:
             path = request.path_info
-            # Con esta funcion verificamos si la URL actual está en la lista de URLs exentas
             if not any(path.startswith(url) for url in self.exempt_urls):
                 return redirect('login')  # Redirige al login
         return self.get_response(request)
