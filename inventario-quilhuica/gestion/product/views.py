@@ -1,5 +1,6 @@
 ﻿from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponseRedirect
 from .models import Product
 from .forms import ProductForm
 from warehouse.models import * 
@@ -61,12 +62,20 @@ class ProductCreateView(CreateView):
     form_class = ProductForm
     template_name = 'product/product_create_form.html'  # Formulario de creación
     success_url = reverse_lazy('product:product_list')
-    def form_valid(self, form):
-        """
+
+    # Se reemplaza el código comentado de abajo, por la nueva función que evita que la
+    # categoría se guarde dos veces. El error estaba en 
+    """def form_valid(self, form):
+        
         Sobrescribe el método form_valid para pasar el usuario actual al form.save()
-        """
-        product = form.save(user=self.request.user)
-        return super().form_valid(form)
+        
+        product = form.save(user=self.request.user) # <-- 1er save()
+        return super().form_valid(form)"""          # <-- 2º save() (el de CreateView)
+    
+    def form_valid(self, form):
+        # Guardamos una sola vez y devolvemos el redirect manualmente
+        self.object = form.save(user=self.request.user)
+        return HttpResponseRedirect(self.get_success_url())
     
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
