@@ -1,20 +1,61 @@
-
+{% extends 'base/base.html' %}
+{% block title %}Eliminar Caseta{% endblock %}
 {% load static %}
 
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Eliminar Caseta</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
-    <h1 class="text-danger">Eliminar Caseta</h1>
-    <p>¿Seguro que deseas eliminar la caseta <strong>{{ caseta.name_ware }}</strong>?</p>
+{% block content %}
 
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Sí, eliminar</button>
-        <a href="{% url 'warehouse:caseta_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
-</body>
-</html>
+<style>
+    /* Este CSS se aplica solo a esta página porque está 
+      dentro del bloque 'content'.
+    */
+    .delete-container {
+        max-width: 600px; /* Ancho máximo del contenedor */
+        margin: 4rem auto; /* Centra el bloque vertical y horizontalmente */
+        padding: 2.5rem;
+        background-color: #ffffff; /* Fondo blanco */
+        border: 1px solid #e9ecef; /* Borde sutil */
+        border-radius: 0.5rem; /* Bordes redondeados */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra suave */
+        text-align: center; /* Centra el texto y los botones */
+    }
+
+    .delete-container h1 {
+        margin-bottom: 1.5rem; /* Espacio bajo el título */
+    }
+
+    .delete-container p {
+        font-size: 1.15rem; /* Texto de confirmación más grande */
+        margin-bottom: 2rem; /* Espacio bajo el párrafo */
+    }
+
+    .delete-container .action-buttons {
+        /* Contenedor para alinear los botones */
+        display: flex;
+        justify-content: center; /* Centra los botones */
+        gap: 1rem; /* Espacio entre los botones */
+    }
+
+    .delete-container .action-buttons .btn {
+        min-width: 100px; /* Ancho mínimo para los botones */
+        font-weight: 500; /* Texto de botón un poco más grueso */
+    }
+</style>
+
+<div class="container">
+    <div class="delete-container">
+        
+        <h1 class="text-danger">Eliminar Caseta</h1>
+        <p>¿Seguro que deseas eliminar la caseta <strong>{{ caseta.name_ware }}</strong>?</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+                <a href="{% url 'warehouse:caseta_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
+{% endblock %}

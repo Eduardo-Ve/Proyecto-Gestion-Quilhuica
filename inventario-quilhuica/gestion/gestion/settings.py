@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'warehouse',
     'application',
     'base',
-    'notification'
+    'notification',
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -58,8 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gestion.middleware.LoginRequiredMiddleware',
-
+    'gestion.middleware.AuthRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion.urls'
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'gestion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

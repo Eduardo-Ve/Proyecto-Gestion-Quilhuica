@@ -61,6 +61,13 @@ class ProductCreateView(CreateView):
     form_class = ProductForm
     template_name = 'product/product_create_form.html'  # Formulario de creación
     success_url = reverse_lazy('product:product_list')
+    def form_valid(self, form):
+        """
+        Sobrescribe el método form_valid para pasar el usuario actual al form.save()
+        """
+        product = form.save(user=self.request.user)
+        return super().form_valid(form)
+    
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductUpdateView(UpdateView):
@@ -74,4 +81,3 @@ class ProductDeleteView(DeleteView):
     model = Product
     template_name = 'product/product_confirm_delete.html'  # Confirmación de eliminación
     success_url = reverse_lazy('product:product_list')
-

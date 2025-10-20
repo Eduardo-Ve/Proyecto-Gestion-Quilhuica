@@ -130,3 +130,6 @@ h2 {
 .product-form input[type="checkbox"]:checked::before {
     color: white;
 }
+input[type="checkbox"][name$="DELETE"] {
+  display: none !important;
+}

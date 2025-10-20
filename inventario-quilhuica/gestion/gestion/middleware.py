@@ -1,23 +1,32 @@
 from django.shortcuts import redirect
 from django.urls import reverse
 
-class LoginRequiredMiddleware:
+class AuthRequiredMiddleware:
     """
     Middleware que bloquea el acceso a todas las vistas
-    excepto las de login y admin, si el usuario no está autenticado.
+    excepto las exentas si el usuario no está autenticado.
     """
     def __init__(self, get_response):
         self.get_response = get_response
-        self.exempt_urls = [
-            reverse('login'),      # Vista de login (de igual manera deberiamos mostrar una pagina como de No autorizado o algo asi xd)
-            reverse('admin:login'), 
-            '/admin/',             # Panel de administración del Django
+        # Rutas que NO requieren autenticación
+        self.exempt_paths = [
+            '/admin/',
+            '/login/',
+            '/register/',
+            '/reset_password/',
+            '/reset_password_sent/',
+            '/reset/',
+            '/reset_password_complete/',
+            '/cambiar-contrasena-inicial/',
         ]
 
     def __call__(self, request):
-        # Si el usuario no está autenticado
+        # Permitir acceso a las URLs exentas
+        if any(request.path.startswith(path) for path in self.exempt_paths):
+            return self.get_response(request)
+
+        # Si el usuario no está autenticado, redirigir a login
         if not request.user.is_authenticated:
-            path = request.path_info
-            if not any(path.startswith(url) for url in self.exempt_urls):
-                return redirect('login')  # Redirige al login
+            return redirect('login')
+
         return self.get_response(request)

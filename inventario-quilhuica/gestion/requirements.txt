@@ -1,0 +1,43 @@
+Django==4.2.23
+python-decouple==3.8
+python-dotenv==1.1.1
+pytz==2025.2
+tzlocal==5.3.1
+sqlparse==0.5.3
+# --- Formularios y estilos ---
+django-crispy-forms==2.4
+crispy-bootstrap5==2025.6
+crispy-bootstrap4==2025.6  # opcional pero mejor tener en caso de 
+# --- Base de datos ---
+psycopg2-binary==2.9.10  # PostgreSQL
+# sqlite3 viene incluido con Python
+# --- Notificaciones y tareas programadas ---
+APScheduler==3.11.0
+django-apscheduler==0.7.0
+twilio==9.8.4
+pyfcm==2.1.0  # si usas notificaciones push (Firebase)
+# --- Archivos y reportes (PDF, Excel, etc.) ---
+pillow==12.0.0
+openpyxl==3.1.5
+reportlab==4.4.4
+xhtml2pdf==0.2.17
+svglib==1.6.0
+tinycss2==1.4.0
+cssselect2==0.8.0
+lxml==6.0.2
+# --- REST / API  ---
+djangorestframework==3.16.0
+# --- Seguridad y despliegue ---
+whitenoise==6.9.0  # servir archivos estáticos en producción
+gunicorn==23.0.0   # servidor WSGI para despliegue
+# --- Utilidades ---
+user-agents==2.2.0
+django-user-agents==0.4.0
+# --- Testing y calidad ---
+pytest==8.3.3
+pytest-django==4.8.0
+coverage==7.6.0
+flake8==7.1.1
+black==24.8.0
+ruff==0.6.9
+pandas==2.3.3

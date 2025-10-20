@@ -1,6 +1,10 @@
 from django import forms
 from .models import Warehouse, Movement, Inventory
 from product.models import Product, Presentation
+from django.forms import formset_factory
+from .models import Warehouse, Movement, Inventory
+from product.models import Product
+
 
 #FORMULARIO PARA CREAR CASETA
 class WarehouseForm(forms.ModelForm):
@@ -22,12 +26,6 @@ class WarehouseForm(forms.ModelForm):
 #FORMULARIO PARA REGISTRAR EL TRASLADO DE PRODUCTOS HACIA LAS CASETAS
 # warehouse/forms.py
 
-from django import forms
-from django.forms import formset_factory
-from .models import Warehouse, Movement, Inventory
-from product.models import Product
-
-# ... (tus otros forms como WarehouseForm se mantienen igual) ...
 
 # 1. FORMULARIO MAESTRO: Para seleccionar el destino una sola vez.
 class TransferForm(forms.Form):
@@ -57,43 +55,3 @@ TransferDetailFormSet = formset_factory(
     extra=1,  # Empezar con un formulario
     can_delete=True # Permitir eliminar filas
 )
-#formulario para registrar el ingreso de productos a la bodega principal
-
-class InventoryEntryForm(forms.ModelForm):
-    class Meta:
-        model = Inventory
-        Warehouse.objects.filter(type='shed')
-        fields = ["warehouse", "product", "presentation", "quantity_packages"]
-
-    def save(self, commit=True, user=None):
-        instance = super().save(commit=False)
-        #filtramos que solo use las warehouse de tipo shed
-        # Guardamos o actualizamos el inventario
-        existing = Inventory.objects.filter(
-            product=instance.product,
-            presentation=instance.presentation,
-            warehouse=instance.warehouse
-        ).first()
-
-        if existing:
-            existing.quantity_packages += instance.quantity_packages
-            existing.save()
-            inventory = existing
-        else:
-            inventory = instance
-            if commit:
-                inventory.save()
-
-        # Crear registro de movimiento (entrada)
-        if user:
-            Movement.objects.create(
-                product=inventory.product,
-                presentation=inventory.presentation,
-                ware_destin=inventory.warehouse,
-                movement_type="entrada",
-                quantity=instance.quantity_packages,
-                moved_by=user,
-                description="Ingreso inicial o actualización de stock"
-            )
-
-        return inventory

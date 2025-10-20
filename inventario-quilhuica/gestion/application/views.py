@@ -4,76 +4,90 @@ from django.contrib import messages
 from .forms import ApplicationForm, ApplicationDetailFormSet
 from warehouse.models import Inventory, Warehouse
 from product.models import Product
+from django.http import JsonResponse
 
-# El decorador asegura que todas las operaciones de la base de datos
-# (crear aplicación, crear detalles, descontar stock) ocurran como una sola transacción.
-# Si algo falla, todo se revierte.
 @transaction.atomic
 def create_application(request):
-    products = Product.objects.select_related('presentation').all()
+    user = request.user
+    user_warehouse = user.caseta_asignada if not user.is_staff else None
+
+    if not user.is_staff and not user_warehouse:
+        messages.error(request, "No tienes una caseta asignada. Contacta al administrador.")
+        return redirect('/')
 
     if request.method == 'POST':
-        # 1. Instanciar el formulario principal con los datos del POST
-        form = ApplicationForm(request.POST)
+        form = ApplicationForm(request.POST, user=user)
 
-        # 2. Validar el formulario principal (para asegurarnos de que se seleccionó una bodega)
+        if user.is_staff:
+            selected_warehouse = Warehouse.objects.filter(id=request.POST.get('ware')).first()
+        else:
+            selected_warehouse = user_warehouse
+
         if form.is_valid():
-            # Creamos una instancia de Application en memoria (sin guardarla aún)
-            # para poder pasársela al formset.
-            application_instance = form.save(commit=False)
-            
-            # 3. Instanciar el formset, vinculándolo a la instancia de la aplicación.
-            # Esto es CRUCIAL para que nuestro `clean()` en forms.py pueda acceder a la bodega.
-            formset = ApplicationDetailFormSet(request.POST, instance=application_instance)
+            app_instance = form.save(commit=False)
+            app_instance.applied_by = user
+            app_instance.ware = selected_warehouse
 
-            # 4. Validar el formset. Aquí se ejecuta nuestra lógica de stock en forms.py.
+            formset = ApplicationDetailFormSet(request.POST, instance=app_instance, warehouse=selected_warehouse)
+
+            # Validar formset y que haya al menos un producto válido
             if formset.is_valid():
-                # ya si pasa de aqui es pq va bien xd, mejorar igual la interfaz                
-                # Asignamos el usuario y guardamos la aplicación principal en la Base de datos 
-                application_instance.applied_by = request.user
-                application_instance.save()
-                
-                # Guardamos los detalles del formset (que ya están vinculados a la aplicación)
+                # Verificamos que no todos los forms estén vacíos o eliminados
+                valid_forms = [
+                    f for f in formset.forms
+                    if f.cleaned_data and not f.cleaned_data.get('DELETE', False)
+                ]
+                if not valid_forms:
+                    messages.warning(request, "Debes agregar al menos un producto antes de guardar la aplicación.")
+                    return render(request, 'application/application_form.html', {
+                        'form': form,
+                        'formset': formset,
+                    })
+
+                # Si hay productos válidos, guardamos todo
+                app_instance.save()
                 details = formset.save()
 
-                # 5. Descontar el stock. Esta lógica ahora es segura porque ya validamos todo.
-                for detail in details:
-                    # Usamos un bloque try/except por si acaso, aunque no debería fallar pero igual va.
-                    try:
-                        inventory = Inventory.objects.get(
-                            product=detail.product,
-                            warehouse=application_instance.ware
-                        )
-                        inventory.quantity_packages -= detail.quantity_packages
-                        inventory.save()
-                    except Inventory.DoesNotExist:
-                        # Este caso es improbable si la validación del formset funcionó,
-                        # ya aqui mandamos como buena practica que te diga si no encontro el inventario 
-                        messages.error(request, f"Error crítico: No se encontró el inventario para {detail.product} al momento de actualizar.")
-                        # La transacción se revertirá automáticamente al salir con error.
-                        return redirect('application:create_application')
+                for d in details:
+                    inv = Inventory.objects.get(product=d.product, warehouse=selected_warehouse)
+                    inv.quantity_packages -= d.quantity_packages
+                    inv.save()
 
-
-                messages.success(request, "Aplicación registrada y stock actualizado correctamente.")
+                messages.success(request, "Aplicación creada y stock actualizado correctamente.")
                 return redirect('application:create_application')
+            else:
+                messages.error(request, "Corrige los errores del formulario de productos.")
         else:
-            # Si el form principal no es válido (ej. no se eligió bodega),
-            # instanciamos el formset con los datos del POST para que el usuario no pierda lo que escribió.
-            formset = ApplicationDetailFormSet(request.POST)
-        
-        # Si llegamos aquí es porque 'form' o 'formset' no fueron válidos.
-        # Mostramos un mensaje de error general. Los errores específicos de cada campo
-        # se mostrarán automáticamente en el template.
-        messages.error(request, "Por favor, corrige los errores en el formulario.")
+            messages.error(request, "Corrige los errores en el formulario principal.")
+            formset = ApplicationDetailFormSet(request.POST, warehouse=selected_warehouse)
+    else:
+        form = ApplicationForm(user=user)
+        selected_warehouse = user_warehouse if user_warehouse else None
+        formset = ApplicationDetailFormSet(warehouse=selected_warehouse)
 
-    else: # request.method == 'GET'
-        # Si es la primera vez que se carga la página, creamos formularios vacíos.
-        form = ApplicationForm()
-        formset = ApplicationDetailFormSet()
-
-    # Este return se ejecuta para las peticiones GET y para las POST que fallaron la validación.
     return render(request, 'application/application_form.html', {
         'form': form,
         'formset': formset,
-        'products': products,
     })
+
+
+def get_products_by_warehouse(request):
+    """
+    Retorna los productos disponibles en una caseta en formato JSON.
+    """
+    warehouse_id = request.GET.get("warehouse_id")
+    if not warehouse_id:
+        return JsonResponse({"error": "No se envió un warehouse_id"}, status=400)
+
+    inventories = Inventory.objects.filter(warehouse_id=warehouse_id).select_related('product', 'presentation')
+    data = [
+        {
+            "id": inv.product.product_id,
+            "name": inv.product.name_prod,
+            "presentation": f"{inv.product.presentation.package_type} {inv.product.presentation.content_value} {inv.product.presentation.content_unit}",
+            "stock": inv.quantity_packages,
+        }
+        for inv in inventories
+    ]
+
+    return JsonResponse({"products": data})

@@ -106,4 +106,17 @@ class ProductForm(forms.ModelForm):
                     if not created:
                         inventory.quantity_packages = stock_inicial
                         inventory.save()  # recalcula total_content automáticamente
+        
+                if user and user.is_authenticated:
+                    Movement.objects.create(
+                        product=product,
+                        presentation=product.presentation,
+                        ware_origin=None,
+                        ware_destin=main_warehouse,
+                        movement_type='entrada',
+                        quantity=stock_inicial,
+                        moved_by=user,
+                        description=f"Entrada inicial de {stock_inicial} unidades al crear el producto."
+                    )
+                
         return product

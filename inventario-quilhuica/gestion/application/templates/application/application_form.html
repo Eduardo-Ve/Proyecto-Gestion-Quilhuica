@@ -1,119 +1,94 @@
-{% extends 'base/base.html' %} 
+{% extends 'base/base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="container mt-4">
-    <h2>Crear Nueva Aplicación de Productos</h2>
+  <h2>Crear Nueva Aplicación de Productos</h2>
 
-    <form method="post">
-        {% csrf_token %}
+  <form method="post">
+    {% csrf_token %}
 
-        <div class="mb-3">
-            <label for="{{ form.ware.id_for_label }}" class="form-label">Bodega:</label>
-            {{ form.ware }}
-            <div class="text-danger small mt-1">
-                {{ form.ware.errors }}
-            </div>
-        </div>
-
-        <hr>
-        <h3>Productos</h3>
-
-        {{ formset.management_form }}
-        
-        {% if formset.non_form_errors %}
-            <div class="alert alert-danger">
-                {{ formset.non_form_errors }}
-            </div>
-        {% endif %}
-        
-        <div id="product-forms-container">
-            {% for form in formset %}
-                <div class="form-row border p-3 mb-3">
-                    {{ form.id }}
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="{{ form.product.id_for_label }}">Producto:</label>
-                            {{ form.product }}
-                            <div class="text-danger small mt-1">
-                                {{ form.product.errors }}
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="{{ form.quantity_packages.id_for_label }}">Cantidad:</label>
-                            {{ form.quantity_packages }}
-                            <div class="text-danger small mt-1">
-                                {{ form.quantity_packages.errors }}
-                            </div>
-                        </div>
-                        {% if formset.can_delete %}
-                        <div class="col-md-2 d-flex align-items-end">
-                            <div class="form-check">
-                                {{ form.DELETE }}
-                                <label class="form-check-label" for="{{ form.DELETE.id_for_label }}">Eliminar</label>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-
-        <button type="button" id="add-product-form" class="btn btn-secondary mb-3">Añadir otro producto</button>
-        
-        <br>
-        <button type="submit" class="btn btn-primary">Guardar Aplicación</button>
-    </form>
-
-    <div id="empty-form" class="form-row border p-3 mb-3" style="display: none;">
-        <div class="row">
-            <div class="col-md-6">
-                <label for="{{ formset.empty_form.product.id_for_label }}">Producto:</label>
-                {{ formset.empty_form.product }}
-                <div class="text-danger small mt-1">
-                    {{ formset.empty_form.product.errors }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <label for="{{ formset.empty_form.quantity_packages.id_for_label }}">Cantidad:</label>
-                {{ formset.empty_form.quantity_packages }}
-                <div class="text-danger small mt-1">
-                    {{ formset.empty_form.quantity_packages.errors }}
-                </div>
-            </div>
-            {% if formset.can_delete %}
-            <div class="col-md-2 d-flex align-items-end">
-                <div class="form-check">
-                    {{ formset.empty_form.DELETE }}
-                    <label class="form-check-label" for="{{ formset.empty_form.DELETE.id_for_label }}">Eliminar</label>
-                </div>
-            </div>
-            {% endif %}
-        </div>
+    <div class="mb-3">
+      <label for="{{ form.ware.id_for_label }}" class="form-label">Bodega:</label>
+      {{ form.ware }}
+      <div class="text-danger small mt-1">
+        {{ form.ware.errors }}
+      </div>
     </div>
+
+    <hr>
+    <h3>Productos</h3>
+
+    {{ formset.management_form }}
+
+    {% if formset.non_form_errors %}
+    <div class="alert alert-danger">
+      {{ formset.non_form_errors }}
+    </div>
+    {% endif %}
+
+    <div id="product-forms-container">
+      {% for form in formset %}
+      <div class="form-row border p-3 mb-3">
+        {{ form.id }}
+        <div class="row">
+          <div class="col-md-6">
+            <label for="{{ form.product.id_for_label }}">Producto:</label>
+            {{ form.product }}
+            <div class="text-danger small mt-1">
+              {{ form.product.errors }}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <label for="{{ form.quantity_packages.id_for_label }}">Cantidad:</label>
+            {{ form.quantity_packages }}
+            <div class="text-danger small mt-1">
+              {{ form.quantity_packages.errors }}
+            </div>
+          </div>
+          <div class="col-md-2 d-flex align-items-end delete-column">
+            <button type="button" class="btn btn-outline-danger remove-form-btn">
+              <i class="bi bi-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <button type="button" id="add-product-form" class="btn btn-secondary mb-3">
+      Añadir otro producto
+    </button>
+
+    <br />
+    <button type="submit" class="btn btn-primary">Guardar Aplicación</button>
+  </form>
+
+  <!-- 🧩 Formulario vacío (para clonar dinámicamente en JS) -->
+  <div id="empty-form" class="form-row border p-3 mb-3" style="display: none;">
+    <div class="row">
+      <div class="col-md-6">
+        <label for="{{ formset.empty_form.product.id_for_label }}">Producto:</label>
+        {{ formset.empty_form.product }}
+      </div>
+      <div class="col-md-4">
+        <label for="{{ formset.empty_form.quantity_packages.id_for_label }}">Cantidad:</label>
+        {{ formset.empty_form.quantity_packages }}
+      </div>
+      <div class="col-md-2 d-flex align-items-end delete-column"></div>
+    </div>
+  </div>
 </div>
+
+<style>
+  /* Oculta los checkboxes DELETE de Django */
+  input[type="checkbox"][name$="DELETE"] {
+    display: none !important;
+  }
+</style>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const addFormButton = document.getElementById('add-product-form');
-    const formContainer = document.getElementById('product-forms-container');
-    const emptyFormTemplate = document.getElementById('empty-form').cloneNode(true);
-    const totalFormsInput = document.querySelector('#id_details-TOTAL_FORMS');
-    
-    emptyFormTemplate.removeAttribute('id');
-
-    addFormButton.addEventListener('click', function() {
-        let formNum = parseInt(totalFormsInput.value);
-        const newForm = emptyFormTemplate.cloneNode(true);
-        let formHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
-        newForm.innerHTML = formHTML;
-        
-        newForm.style.display = 'block';
-        formContainer.appendChild(newForm);
-        
-        totalFormsInput.value = formNum + 1;
-    });
-});
-</script>
+  <!-- Script principal de manejo dinámico -->
+  <script src="{% static 'js/application_dynamic.js' %}"></script>
 {% endblock %}

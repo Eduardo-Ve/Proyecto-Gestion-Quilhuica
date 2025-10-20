@@ -6,6 +6,7 @@ from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from login.decorators import role_required
 # LISTAR SOLO CASETAS
+
 def caseta_list(request):
     casetas = Warehouse.objects.filter(type='shed')
     return render(request, 'warehouse/caseta_list.html', {'casetas': casetas})
@@ -154,4 +155,3 @@ def productos_por_caseta(request):
     }
 
     return render(request, 'warehouse/productos_por_caseta.html', context)
-

@@ -4,6 +4,8 @@ from .models import Notification
 from .services import create_notifications
 from django.shortcuts import render
 from django.utils import timezone 
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
 @login_required
 def notification_list(request):
     """
@@ -58,3 +60,33 @@ def mark_notifications_read(request):
         )
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
+
+
+def send_welcome_email(user, temp_password):
+    """Envía correo de bienvenida con contraseña temporal."""
+    subject = "Bienvenido a Gestión Quilhuica"
+    from_email = "no-reply@quilhuica.cl"
+    to = [user.correo]
+
+    context = {
+        'nombre_usuario': user.nombre_usuario,
+        'temp_password': temp_password,
+        'login_url': "http://127.0.0.1:8000/",  # cambiar por el dominio cuando temos en producción
+        'year': timezone.now().year,
+    }
+
+    html_content = render_to_string("notification/welcome_email.html", context)
+    text_content = f"""
+    Hola {user.nombre_usuario},
+
+    Tu cuenta ha sido creada exitosamente en Gestión Quilhuica.
+    Tu contraseña temporal es: {temp_password}
+
+    Al iniciar sesión se te pedirá cambiarla.
+
+    Ingresa aquí: http://127.0.0.1:8000/
+    """
+
+    msg = EmailMultiAlternatives(subject, text_content, from_email, to)
+    msg.attach_alternative(html_content, "text/html")
+    msg.send()

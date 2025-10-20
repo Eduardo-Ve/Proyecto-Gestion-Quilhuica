@@ -11,7 +11,6 @@ class UsuarioManager(BaseUserManager):
         user.set_password(password)
         user.save(using=self._db)
         return user
-
     def create_superuser(self, nombre_usuario, correo, password=None, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
@@ -34,6 +33,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     roles = models.ManyToManyField(Role, related_name="usuarios", through="UserRole")
     objects = UsuarioManager()
+    must_change_password = models.BooleanField(default=True)
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
     caseta_asignada = models.ForeignKey(
@@ -46,8 +46,6 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
             # Limita las opciones solo a las 'Casetas'
             limit_choices_to={'type': 'shed'} 
         )
-    class Meta:
-        db_table = "usuario"
     @property
     def email(self):
         """Alias para compatibilidad con Django (usa el campo 'correo')"""
