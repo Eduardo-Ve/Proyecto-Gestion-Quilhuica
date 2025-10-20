@@ -1,0 +1,75 @@
+body {
+    background-color: #f8f9fa;
+    font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+    padding: 1.5rem;
+}
+
+h2 {
+    font-weight: 600;
+    font-size: 1.8rem;
+}
+
+.chart-card {
+    height: 100%;
+    padding: 1rem;
+}
+
+.small-muted {
+    color: #6c757d;
+    font-size: 0.85rem;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    color: #0d6efd;
+}
+
+.table th {
+    background-color: #f1f3f5;
+    color: #495057;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+    padding: 0.75rem 0.5rem;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Aumenta separación entre secciones */
+.row.g-3.mb-4 {
+    margin-bottom: 2rem;
+}
+
+/* Gráficos lado a lado con más ancho */
+.graph-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.graph-row .col-graph {
+    flex: 1 1 48%;
+}
+
+.graph-card h6 {
+    margin-bottom: 1rem;
+}
+
+/* Tabla más amplia */
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.table-container table {
+    min-width: 800px; /* para que la tabla no se compacte */
+}

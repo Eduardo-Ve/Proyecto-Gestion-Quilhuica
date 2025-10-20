@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Dashboard Inventario</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.24.2.min.js"></script>
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="{% static 'dashboard/static/style.css' %}">
+</head>
+
+<body>
+    <div class="container py-4">
+        <!-- Encabezado -->
+        <div class="d-flex align-items-center mb-4 border-bottom pb-2">
+            <h2 class="me-auto"><i class="bi bi-box-seam me-2"></i>Dashboard Inventario</h2>
+            <small class="text-muted">Minimal • Bootstrap • Plotly</small>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-cube stat-icon"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ total_products }}</h5>
+                        <small class="text-muted">Productos registrados</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-house-door stat-icon"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ total_warehouses }}</h5>
+                        <small class="text-muted">Casetas / Bodegas</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-box2-heart stat-icon"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ total_stock_packages|floatformat:2 }}</h5>
+                        <small class="text-muted">Paquetes en stock</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card p-3 d-flex flex-row align-items-center">
+                    <div class="me-3">
+                        <i class="bi bi-exclamation-triangle text-danger stat-icon"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">{{ low_stock_list.count }}</h5>
+                        <small class="text-muted">Alertas (≤ {{ low_stock_threshold }})</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="card p-3 chart-card">
+                    <h6>Stock por Caseta (paquetes)</h6>
+                    <div id="bar-warehouses" style="width:100%;height:340px;"></div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card p-3 chart-card">
+                    <h6>Movimientos — últimos {{ mov_dates|length }} días</h6>
+                    <div id="line-movements" style="width:100%;height:340px;"></div>
+                </div>
+            </div>
+        </div>
+<span> </span>
+
+<!-- Movimientos recientes -->
+<div class="card p-3 mb-4 table-container">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2 text-secondary"></i>Movimientos recientes</h6>
+        <form method="get" class="d-flex align-items-center">
+            <select name="warehouse" class="form-select form-select-sm" onchange="this.form.submit()">
+                <option value="">Todas las casetas</option>
+                {% for w in warehouses %}
+                <option value="{{ w.id }}" {% if w.id == selected_warehouse_id %}selected{% endif %}>{{ w.name_ware }}</option>
+                {% endfor %}
+            </select>
+            {% if selected_warehouse_id %}
+            <a href="?warehouse=" class="btn btn-sm btn-outline-secondary ms-2">Reset</a>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Tipo</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Origen → Destino</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in recent_movements %}
+                <tr>
+                    <td class="small-muted">{{ m.moved_at|date:"Y-m-d H:i" }}</td>
+                    <td>{{ m.get_movement_type_display }}</td>
+                    <td>{{ m.product.name_prod }} ({{ m.presentation.package_type }})</td>
+                    <td>{{ m.quantity }}</td>
+                    <td>{% if m.ware_origin %}{{ m.ware_origin.name_ware }}{% else %}main{% endif %} → {{ m.ware_destin.name_ware }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="small-muted text-center">No hay movimientos recientes.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Paginación -->
+    {% if recent_movements.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-3">
+        <ul class="pagination pagination-sm justify-content-center">
+            {% if recent_movements.has_previous %}
+            <li class="page-item"><a class="page-link" href="?warehouse={{ selected_warehouse_id }}&page={{ recent_movements.previous_page_number }}">←</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">←</span></li>
+            {% endif %}
+
+            {% for num in recent_movements.paginator.page_range %}
+            {% if recent_movements.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > recent_movements.number|add:'-3' and num < recent_movements.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?warehouse={{ selected_warehouse_id }}&page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+            {% endfor %}
+
+            {% if recent_movements.has_next %}
+            <li class="page-item"><a class="page-link" href="?warehouse={{ selected_warehouse_id }}&page={{ recent_movements.next_page_number }}">→</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">→</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+
+        <!-- Footer -->
+        <div class="text-center text-muted small mt-4">
+            <i class="bi bi-heart-fill text-danger"></i> Hecho con cariño — Dashboard minimalista
+        </div>
+    </div>
+
+    <!-- Plotly -->
+    <script>
+        const wareNames = {{ warehouse_names| safe }};
+        const warePackages = {{ warehouse_packages| safe }};
+        Plotly.newPlot('bar-warehouses', [{
+            x: wareNames, y: warePackages, type: 'bar', marker: { color: '#0d6efd', opacity: 0.8 }
+        }], { margin: { t: 20, r: 10, l: 40, b: 60 } }, { displayModeBar: false });
+
+        const movDates = {{ mov_dates| safe }};
+        const movTotals = {{ mov_totals| safe }};
+        Plotly.newPlot('line-movements', [{
+            x: movDates,
+            y: movTotals,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#198754' },
+            hovertemplate: '%{x|%Y-%m-%d %H:%M}<extra></extra>'
+        }], {
+            margin: { t: 20, r: 10, l: 40, b: 80 },
+            xaxis: {
+                tickangle: -25,
+                tickformat: "%Y-%m-%d %H:%M", 
+                title: "Fecha y hora"
+            },
+            yaxis: { title: "Cantidad de movimientos" }
+        }, { displayModeBar: false });
+
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

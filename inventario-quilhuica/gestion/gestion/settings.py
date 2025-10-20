@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     'crispy_bootstrap5',
     'core',
     'login',
-    'product',
-    'warehouse',
+    'product.apps.ProductConfig', # La app debe estar referenciada como Clase de Configuración, no como string simple.
+    'warehouse.apps.WarehouseConfig', # La app debe estar referenciada como Clase de Configuración, no como string simple.
     'application',
     'base',
+    'dashboard',
 ]
 
 MIDDLEWARE = [
@@ -140,6 +141,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#UMBRAL GLOBAL DE STOCK
+LOW_STOCK_THRESHOLD_PACKAGES = 5
+DASHBOARD_MOVEMENTS_DAYS = 30
 
 AUTH_USER_MODEL = "login.Usuario"  
 AUTHENTICATION_BACKENDS = [
