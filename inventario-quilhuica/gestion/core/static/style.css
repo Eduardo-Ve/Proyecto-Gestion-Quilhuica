@@ -15,14 +15,7 @@
     --space-l: 24px;
 }
 
-/* ==== Estilo base === */
-body {
-    font-family: var(--font-main);
-    background: var(--color-bg);
-    color: var(--color-text);
-    margin: 40px;
-    line-height: 1.6;
-}
+
 h1, h2, h3 { margin-top: var(--space-l); }
 h1 { font-size: 2rem; }
 h2 { font-size: 1.5rem; }
@@ -114,3 +107,18 @@ th, td {
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     width: 300px;
 }
+
+/* Solo dentro del card del reset */
+.card input[type="email"] {
+  width: 100%;
+  padding: .6rem .75rem;
+  border: 1px solid #ced4da;
+  border-radius: .375rem;
+  font-size: 1rem;
+}
+.card input[type="email"]:focus {
+  outline: 0;
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 .25rem rgba(13,110,253,.25);
+}
+

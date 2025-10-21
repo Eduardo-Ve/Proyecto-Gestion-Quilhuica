@@ -8,10 +8,10 @@ def style (request):
     return render(request, 'core/style.html', {})
 
 ERROR_MESSAGES = {
-    400: "Solicitud incorrecta (Bad Request).",
+    400: "Parece que algo salió mal con la información. Revisa los datos o recarga la pagina",
     403: "No tienes permisos para acceder a esta sección.",
-    404: "Página no encontrada.",
-    500: "Error interno del servidor. Intenta más tarde."
+    404: "La página que buscas no existe o fue movida. Verifica la dirección o regresa al inicio.",
+    500: "Ocurrió un problema inesperado en el sistema. Estamos trabajando para solucionarlo, por favor inténtalo más tarde."
 }
 
 def error_400(request, exception=None):
@@ -25,3 +25,10 @@ def error_404(request, exception=None):
 
 def error_500(request):
     return render(request, "errors/error.html", {"code": 500, "message": ERROR_MESSAGES[500]}, status=500)
+
+
+# la funcion para tomar los productos serian 
+# quien(get.user) cuando(filter by date ) donde (warehouse.models inventory && Warehouse) name_warehouse,  que se aplico (get prodcuts filter applyd)
+
+def test_error_page(request):
+    return render(request, "errors/error.html", {"code": 404, "message": ERROR_MESSAGES[404] })

@@ -1,52 +1,49 @@
+
+{% extends 'base/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="es">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Productos por Caseta</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+{% block title %}Productos por Caseta{% endblock %}
 
-<body class="bg-light">
-    <div class="container mt-5">
-        <h2 class="mb-4 text-center text-primary">📦 Productos por Caseta</h2>
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static '/style.css' %}">
+{% endblock %}
 
-        {% if inventarios %}
-        <table class="table table-bordered table-hover shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th>Caseta</th>
-                    <th>Producto</th>
-                    <th>Presentación</th>
-                    <th>Cantidad (envases)</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% regroup inventarios by warehouse as inventario_por_caseta %}
-                {% for grupo in inventario_por_caseta %}
-                <tr class="table-secondary">
-                    <th colspan="4">{{ grupo.grouper.name_ware }}</th>
-                </tr>
-                {% for inv in grupo.list %}
-                <tr>
-                    <td></td>
-                    <td>{{ inv.product.name_prod }}</td>
-                    <td>{{ inv.presentation.content_value }} {{ inv.presentation.content_unit }}</td>
-                    <td>{{ inv.quantity_packages }}</td>
-                </tr>
-                {% endfor %}
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <div class="alert alert-warning text-center">
-            No hay productos registrados en las casetas.
-        </div>
-        {% endif %}
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4 text-center text-primary">Productos por Caseta</h2>
 
-
+    {% if inventarios %}
+    <table class="table table-bordered table-hover shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Caseta</th>
+                <th>Producto</th>
+                <th>Presentación</th>
+                <th>Cantidad (envases)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% regroup inventarios by warehouse as inventario_por_caseta %}
+            {% for grupo in inventario_por_caseta %}
+            <tr class="table-secondary">
+                <th colspan="4">{{ grupo.grouper.name_ware }}</th>
+            </tr>
+            {% for inv in grupo.list %}
+            <tr>
+                <td></td>
+                <td>{{ inv.product.name_prod }}</td>
+                <td>{{ inv.presentation.content_value }} {{ inv.presentation.content_unit }}</td>
+                <td>{{ inv.quantity_packages }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="alert alert-warning text-center">
+        No hay productos registrados en las casetas.
     </div>
-</body>
-
-</html>
+    {% endif %}
+</div>
+{% endblock %}

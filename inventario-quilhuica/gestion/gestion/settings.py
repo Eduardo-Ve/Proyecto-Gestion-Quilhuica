@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
+    'django_apscheduler', 
     'crispy_forms',
     'crispy_bootstrap5',
     'core',
@@ -46,6 +48,8 @@ INSTALLED_APPS = [
     'application',
     'base',
     'dashboard',
+    'notification',
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -56,8 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gestion.middleware.LoginRequiredMiddleware',
-
+    'gestion.middleware.AuthRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion.urls'
@@ -65,7 +68,7 @@ ROOT_URLCONF = 'gestion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -77,7 +80,9 @@ TEMPLATES = [
         },
     },
 ]
+LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/' 
 
 WSGI_APPLICATION = 'gestion.wsgi.application'
 
@@ -120,17 +125,17 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-CL'  # O el código que prefieras que use puntos.
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+# Esta es la configuración clave que activa el formato localizado.
+USE_L10N = True
 
-CRISPY_TEMPLATE_PACK = 'bootstrap5'
-
-
+# Y esta activa el separador de miles por defecto.
+USE_THOUSAND_SEPARATOR = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
@@ -150,3 +155,22 @@ AUTHENTICATION_BACKENDS = [
     "login.backends.UsuarioBackend",  
     "django.contrib.auth.backends.ModelBackend",  
 ]
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# settings.py
+
+EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
+
+account_sid = config("TWILIO_ACCOUNT_SID")
+auth_token = config("TWILIO_AUTH_TOKEN")
+from_whatsapp = config("TWILIO_WHATSAPP_FROM")
+to_whatsapp = config("TWILIO_WHATSAPP_TO")  
+
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"

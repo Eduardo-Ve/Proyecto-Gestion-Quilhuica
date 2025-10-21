@@ -1,0 +1,59 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Reportes del Sistema</h2>
+
+  <form method="get" action="{% url 'reports:export_report' %}" class="mb-3">
+    <div class="row">
+      <div class="col-md-3">
+        <label>Desde</label>
+        <input type="date" name="start" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <label>Hasta</label>
+        <input type="date" name="end" class="form-control">
+      </div>
+      <div class="col-md-3">
+        <label>Tipo de reporte</label>
+        <select name="report" class="form-select">
+          <option value="movimientos">Movimientos</option>
+          <option value="aplicaciones">Aplicaciones</option>
+          <option value="inventario">Inventario</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Ver reporte</button>
+      </div>
+    </div>
+  </form>
+
+  {% if data %}
+  <div class="text-end mb-3">
+    <a href="?report={{ report_type }}&export=csv" class="btn btn-outline-success">CSV</a>
+    <a href="?report={{ report_type }}&export=xlsx" class="btn btn-outline-info">Excel</a>
+    <a href="?report={{ report_type }}&export=pdf" class="btn btn-outline-danger">PDF</a>
+  </div>
+
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr>
+        {% for key, value in data.0.items %}
+        <th>{{ key }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
+      <tr>
+        {% for key, value in row.items %}
+        <td>{{ value }}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+/* --- Importación de Fuente (Opcional, pero recomendado) --- */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+/* --- Variables de Color para fácil personalización --- */
+:root {
+    --primary-color: #0d6efd; /* Azul de Bootstrap */
+    --success-color: #198754; /* Verde de Bootstrap */
+    --danger-color: #dc3545;  /* Rojo de Bootstrap */
+    --light-gray: #f8f9fa;
+    --border-color: #dee2e6;
+    --shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+/* --- Estilos Generales del Body --- */
+body {
+    background-color: var(--light-gray);
+    font-family: 'Roboto', sans-serif;
+}
+
+/* --- Estilo del Título Principal --- */
+h2 {
+    color: #333;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+}
+
+/* --- Estilo de las Tarjetas (Cards) --- */
+.card {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    transition: box-shadow 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+/* --- Estilos de los Campos del Formulario --- */
+.form-label, label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.form-control, .form-select {
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* --- Estilo específico para la presentación del producto --- */
+.presentation-label {
+    display: block; /* Asegura que esté en su propia línea */
+    margin-top: 6px;
+    font-style: italic;
+    color: #6c757d;
+    font-size: 0.9em;
+    min-height: 1.2em; /* Evita que el layout salte al cargar */
+}
+
+/* --- Estilos de los Botones --- */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    box-shadow: 0 2px 4px rgba(13, 110, 253, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+}
+
+.btn-outline-success:hover {
+    transform: scale(1.05);
+}
+
+
+/* --- Estilo Mejorado para el Checkbox de Eliminar --- */
+.product-form input[type="checkbox"] {
+    /* Ocultamos el checkbox por defecto */
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+
+    /* Creamos una caja personalizada */
+    width: 38px;
+    height: 38px;
+    border: 2px solid var(--danger-color);
+    border-radius: 6px;
+    position: relative;
+    transition: background-color 0.2s ease;
+}
+
+/* Creamos una 'X' dentro de la caja con pseudo-elementos */
+.product-form input[type="checkbox"]::before {
+    content: '✖';
+    font-size: 1.2rem;
+    color: var(--danger-color);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    transition: color 0.2s ease;
+}
+
+/* Estilo cuando el checkbox está seleccionado (marcado para borrar) */
+.product-form input[type="checkbox"]:checked {
+    background-color: var(--danger-color);
+}
+
+.product-form input[type="checkbox"]:checked::before {
+    color: white;
+}
+input[type="checkbox"][name$="DELETE"] {
+  display: none !important;
+}

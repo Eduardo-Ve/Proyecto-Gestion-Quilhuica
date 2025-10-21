@@ -1,110 +1,85 @@
-/* === General Layout === */
-body {
-  background-color: #f8fafc;
-  font-family: "Inter", system-ui, sans-serif;
+/* Estilo para el título principal */
+h2 {
+    text-align: center;
+    color: #343a40;
+    margin-bottom: 1.5rem;
+    font-weight: 300; /* Un peso de fuente más ligero */
 }
 
-/* Centrado de contenido */
-.container {
-  max-width: 1200px;
+/* Contenedor principal de la tabla para centrar y añadir sombra */
+.table-container {
+    max-width: 110%;
+    margin: auto;
+    background: #ffffff;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-/* === Page Header === */
-h1.h3 {
-  color: #1e293b;
-  font-weight: 600;
+/* Estilos de la tabla */
+.table {
+    border-collapse: collapse; /* Bordes más limpios */
+    width: 100%;
 }
 
+/* Cabecera de la tabla */
+.table thead tr {
+    background-color: #007bff; /* Azul primario de Bootstrap */
+    color: #ffffff;
+    text-align: left;
+}
+
+.table th,
+.table td {
+    padding: 12px 15px; /* Relleno vertical y horizontal */
+    vertical-align: middle; /* Alineación vertical */
 .btn-primary {
-  background-color: #2563eb;
-  border-color: #2563eb;
+  background-color: #00C451  ;
+  border-color: #00C451 ;
 }
 
 .btn-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
+  background-color: #055526 ;
+  border-color: #055526 ;
 }
 
-/* === Card y tabla === */
-.card {
-  border: none;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+/* Estilo de las filas del cuerpo de la tabla */
+.table tbody tr {
+    border-bottom: 1px solid #dee2e6;
 }
 
-.table thead {
-  background-color: #f1f5f9;
-  color: #334155;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  font-size: 0.85rem;
-}
-
-.table th, .table td {
-  padding: 0.9rem;
-  vertical-align: middle;
-}
-
-.table tbody tr:nth-child(odd) {
-  background-color: #f9fafb;
-}
-
+/* Efecto hover para las filas */
 .table tbody tr:hover {
-  background-color: #e2e8f0;
-  transition: background-color 0.2s ease-in-out;
+    background-color: #f1f8ff; /* Un azul muy claro al pasar el mouse */
+    cursor: pointer;
 }
 
-/* === Botones de acción === */
-.btn {
-  border-radius: 10px;
-  font-weight: 500;
-  padding: 0.4rem 0.75rem;
-  transition: all 0.2s ease-in-out;
+/* Mensaje para cuando no hay productos */
+.table tbody tr td[colspan="5"] {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+    padding: 20px 0;
 }
 
-.btn-outline-primary {
-  color: #2563eb;
-  border-color: #2563eb;
+/* Estilos para los botones de acción */
+.table td .btn {
+    padding: 0.3rem 0.75rem; /* Botones un poco más pequeños */
+    margin-right: 5px; /* Espacio entre botones */
+    transition: all 0.2s ease-in-out; /* Transición suave */
 }
 
-.btn-outline-primary:hover {
-  background-color: #2563eb;
-  color: #fff;
+.table td .btn:hover {
+    transform: translateY(-2px); /* Efecto de "levantarse" al pasar el mouse */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
-.btn-outline-danger {
-  color: #dc2626;
-  border-color: #dc2626;
+/* Botón "Nuevo Producto" */
+.btn-success {
+    transition: all 0.2s ease-in-out;
 }
 
-.btn-outline-danger:hover {
-  background-color: #dc2626;
-  color: #fff;
-}
-
-/* === Badges (Presentaciones) === */
-.badge.text-bg-secondary {
-  background-color: #e2e8f0;
-  color: #1e293b;
-  border-radius: 8px;
-  font-weight: 500;
-}
-
-/* === Paginación === */
-.pagination .page-link {
-  color: #2563eb;
-  border-radius: 8px;
-}
-
-.pagination .active .page-link {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-
-/* === Texto y estado vacío === */
-.text-muted {
-  color: #94a3b8 !important;
-}
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}}

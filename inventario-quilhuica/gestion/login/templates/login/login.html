@@ -1,61 +1,57 @@
 {% load static %} {% load crispy_forms_tags %}
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Inicia Sesión en Gestión Quilhuica</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
-    />
-    <link rel="stylesheet" href="{% static 'style_login.css' %}" />
-  </head>
-  <body>
-    <div class="container-login">
-      <div class="login-left"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      <div class="login-right">
-        <form action="" method="post" class="login-form">
-          <h2>Iniciar Sesión</h2>
-          {% csrf_token %} {{ form.username|as_crispy_field }}
+  <title>Inicia Sesión en Gestión Quilhuica</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+  <link rel="stylesheet" href="{% static 'style_login.css' %}" />
+</head>
 
-          <div class="mb-3">
-            {{ form.password.label_tag }}
-            <div class="input-group">
-              {{ form.password }}
-              <button
-                type="button"
-                class="c btn-outline-secondary btn-password-toggle"
-                id="toggleBtn"
-              >
-                <i class="bi bi-eye-slash" id="toggleIcon"></i>
-                <span id="toggleText">Mostrar</span>
-              </button>
-              {% if form.non_field_errors %}
-              <div class="alert alert-danger">
-                {% for error in form.non_field_errors %}
-                <p>{{ error }}</p>
-                {% endfor %}
-              </div>
-              {% endif %}
+<body>
+  <div class="container-login">
+    <div class="login-left"></div>
+
+    <div class="login-right">
+      <form action="" method="post" class="login-form">
+        <h2>Iniciar Sesión</h2>
+        {% csrf_token %} {{ form.username|as_crispy_field }}
+
+        <div class="mb-3">
+          {{ form.password.label_tag }}
+          <div class="input-group">
+            {{ form.password }}
+            <button type="button" class="c btn-outline-secondary btn-password-toggle" id="toggleBtn">
+              <i class="bi bi-eye-slash" id="toggleIcon"></i>
+              <span id="toggleText">Mostrar</span>
+            </button>
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+              <p>{{ error }}</p>
+              {% endfor %}
             </div>
+            {% endif %}
           </div>
-          <div class="options">
-            <div class="remember-me">
-              <label>
-                <input type="checkbox" name="remember" />
-              </label>
-              <span>Recuérdame</span>
-            </div>
-            <a href="#">¿Olvidaste tu contraseña?</a>
+        </div>
+        <div class="options">
+          <div class="remember-me">
+            <label>
+              <input type="checkbox" name="remember_me" />
+            </label>
+            <span>Recuérdame</span>
           </div>
-          <button type="submit" class="btn-login">Ingresar</button>
-        </form>
-      </div>
+          <a href="{% url 'reset_password' %}">¿Olvidaste tu contraseña?</a>
+        </div>
+        <button type="submit" class="btn-login">Ingresar</button>
+      </form>
     </div>
-        <script src="{% static 'js/toggle_password.js' %}"></script>
+  </div>
+  <script src="{% static 'js/toggle_password.js' %}"></script>
 
-  </body>
+</body>
+
 </html>
