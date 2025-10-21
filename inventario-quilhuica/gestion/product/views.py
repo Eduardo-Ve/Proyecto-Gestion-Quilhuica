@@ -64,7 +64,7 @@ class ProductCreateView(CreateView):
     success_url = reverse_lazy('product:product_list')
 
     # Se reemplaza el código comentado de abajo, por la nueva función que evita que la
-    # categoría se guarde dos veces. El error estaba en 
+    # categoría se guarde dos veces.
     """def form_valid(self, form):
         
         Sobrescribe el método form_valid para pasar el usuario actual al form.save()

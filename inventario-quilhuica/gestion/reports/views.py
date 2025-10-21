@@ -55,7 +55,7 @@ class ExportReportView(View):
                     "Tipo": m.get_movement_type_display(),
                     "Producto": m.product.name_prod,
                     "Presentación": str(m.presentation),
-                    "Origen": m.ware_origin.name_ware if m.ware_origin else "Proovedor",
+                    "Origen": m.ware_origin.name_ware if m.ware_origin else "Proveedor",
                     "Destino": m.ware_destin.name_ware,
                     "Cantidad": m.quantity,
                     "Usuario": m.moved_by.nombre_usuario if m.moved_by else "-",
