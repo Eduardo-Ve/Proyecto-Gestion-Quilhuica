@@ -1,0 +1,253 @@
+/* === DASHBOARD GENERAL === */
+.dashboard-container {
+  max-width: 1250px;
+  margin: 0 auto;
+}
+
+.page-header {
+  border-bottom: 2px solid #f0f2f5;
+  padding-bottom: 0.5rem;
+}
+
+.dashboard-title {
+  font-weight: 700;
+  font-size: 1.8rem;
+  color: #1e293b;
+}
+
+/* === KPI SECTION === */
+.kpi-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.4rem;
+  margin-top: 1.5rem;
+}
+
+.kpi-card {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  transition: all 0.25s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.09);
+}
+
+/* === ICONOS === */
+.kpi-icon {
+  font-size: 2rem;
+  margin-right: 1rem;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.kpi-card.success .kpi-icon { color: #22c55e; background: #ecfdf5; }
+.kpi-card.info .kpi-icon { color: #3b82f6; background: #eff6ff; }
+.kpi-card.accent .kpi-icon { color: #6366f1; background: #eef2ff; }
+.kpi-card.warn .kpi-icon { color: #f59e0b; background: #fffbeb; }
+.kpi-card.danger .kpi-icon { color: #ef4444; background: #fef2f2; }
+
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.kpi-label {
+  font-size: 0.9rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.2rem;
+}
+
+.kpi-card {
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+.kpi-card:nth-child(2) { animation-delay: 0.1s; }
+.kpi-card:nth-child(3) { animation-delay: 0.2s; }
+.kpi-card:nth-child(4) { animation-delay: 0.3s; }
+.kpi-card:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .kpi-card {
+    flex-direction: row;
+    text-align: left;
+  }
+}
+
+/* === SECCIÓN DE FILTRADO === */
+
+.shed-filter-compact {
+  font-size: 0.9rem;
+}
+
+.shed-filter-compact .bi-funnel {
+  font-size: 1rem;
+  opacity: 0.7;
+}
+
+.filter-select-compact {
+  min-width: 150px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  font-size: 0.85rem;
+}
+
+.filter-select-compact:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  outline: none;
+}
+
+/* Para pantallas pequeñas */
+@media (max-width: 768px) {
+  .shed-filter-compact {
+    flex-wrap: wrap;
+  }
+  .filter-select-compact {
+    width: 100%;
+  }
+}
+
+/* === CHARTS === */
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.chart-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.chart-card h3 {
+  font-weight: 600;
+  color: #334155;
+  font-size: 1.05rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+/* === FIX para Plotly dentro de grid === */
+/* === FIX PARA QUE LOS GRÁFICOS RESPETEN EL GRID === */
+.charts-grid>.chart-card {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-card .js-plotly-plot,
+.chart-card .plotly,
+.chart-card iframe {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 400px !important;
+  /* altura uniforme */
+  margin: 0 auto;
+}
+
+/* Evita que Plotly use el ancho de viewport */
+.js-plotly-plot .main-svg {
+  width: 100% !important;
+}
+
+/* Si Plotly aplica display:block de 100vw, lo forzamos a inline-block */
+.plotly-graph-div {
+  display: inline-block !important;
+  width: 100% !important;
+}
+
+/* Responsivo */
+@media (max-width: 992px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* === TABLE / NOTIFICATIONS === */
+.notifications-wrap {
+  margin-top: 2rem;
+}
+
+.notifications-table {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.notifications-table tr.unread {
+  background-color: #fff9e6;
+}
+
+.notifications-table td,
+.notifications-table th {
+  padding: 0.75rem 1rem;
+}
+
+.message-cell {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* === EMPTY STATE === */
+.card.empty-state {
+  border: 1px dashed #d1d5db;
+  background: #f9fafb;
+  color: #6b7280;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

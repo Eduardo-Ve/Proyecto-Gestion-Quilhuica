@@ -20,6 +20,7 @@ urlpatterns = [
     path("notification/", include("notification.urls")),
     path("reports/", include("reports.urls")),
     path('cambiar-contrasena-inicial/', change_new_password, name='cambiar_contrasena_inicial'),
+    path("", include("dashboard.urls")),
 
     path("reset_password/",
          CustomPasswordResetView.as_view(  # ya usa tu form + template propio

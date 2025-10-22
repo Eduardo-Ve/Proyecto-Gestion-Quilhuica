@@ -1,0 +1,164 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <h1 class="dashboard-title">📊 Panel de Inventario</h1>
+
+    {% if is_staff and sheds %}
+    <form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-funnel text-primary"></i>
+      <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
+      <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
+        onchange="this.form.submit()">
+        <option value="">Todas</option>
+        {% for s in sheds %}
+        <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
+          {{ s.name_ware }}
+        </option>
+        {% endfor %}
+      </select>
+    </form>
+    {% endif %}
+
+  </div>
+
+  {% if no_access %}
+  <div class="card empty-state text-center py-4">
+    <h4>🚫 Sin casetas asignadas</h4>
+    <p>No tienes casetas disponibles para visualizar. Si crees que es un error, contacta a un administrador.</p>
+  </div>
+
+  {% else %}
+  <!-- KPIs -->
+  <!-- KPI SECTION -->
+  <div class="kpi-section">
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">SKUs en Caseta(s)</div>
+        <div class="kpi-value">{{ total_skus }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-stack"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Paquetes Totales</div>
+        <div class="kpi-value">{{ total_packages|floatformat:0 }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card accent">
+      <div class="kpi-icon"><i class="bi bi-speedometer2"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Contenido Total</div>
+        <div class="kpi-value">{{ total_content|floatformat:0 }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card warn">
+      <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Bajo stock (≤ {{ LOW_STOCK_THRESHOLD }})</div>
+        <div class="kpi-value">{{ low_stock_count }}</div>
+      </div>
+    </div>
+
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Próximos a vencer (≤ {{ EXPIRING_DAYS }} días)</div>
+        <div class="kpi-value">{{ expiring_products }}</div>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- Charts -->
+  <div class="charts-grid mt-4">
+    <div class="chart-card">
+      <h3>Top Stock por Producto</h3>
+      {{ plot_stock|safe }}
+    </div>
+    <div class="chart-card">
+      <h3>Aplicaciones (últimos {{ WINDOW_DAYS }} días)</h3>
+      {{ plot_apps|safe }}
+    </div>
+    <div class="chart-card">
+      <h3>Traslados a Casetas (últimos {{ WINDOW_DAYS }} días)</h3>
+      {{ plot_moves|safe }}
+    </div>
+    <div class="chart-card">
+      <h3>Distribución de Stock por Categoría</h3>
+      {{ plot_cat|safe }}
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div class="notifications-wrap mt-5">
+    <div class="section-head d-flex justify-content-between align-items-center mb-3">
+      <h2 class="fw-bold">🔔 Últimas Notificaciones</h2>
+    </div>
+
+    {% if notifications %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle notifications-table">
+        <thead class="table-light">
+          <tr>
+            <th>Fecha</th>
+            <th>Tipo</th>
+            <th>Producto</th>
+            <th>Caseta</th>
+            <th>Mensaje</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for n in notifications %}
+          <tr class="{% if not n.read %}unread{% endif %}">
+            <td>{{ n.created_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ n.get_notif_type_display }}</td>
+            <td>{{ n.product.name_prod }}</td>
+            <td>{% if n.warehouse %}{{ n.warehouse.warehouse.name_ware }}{% else %}—{% endif %}</td>
+            <td class="message-cell">{{ n.message }}</td>
+            <td>
+              {% if n.read %}
+              <span class="badge bg-success">Leída</span>
+              {% else %}
+              <span class="badge bg-warning text-dark">No leída</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="card empty-state text-center py-4">
+      <p>No hay notificaciones recientes.</p>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+{% block extra_js %}
+<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+{% endblock %}
+
+{% endblock %}
