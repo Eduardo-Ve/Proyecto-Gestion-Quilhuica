@@ -16,7 +16,7 @@
 {% block content %}
 <div class="dashboard-container">
   <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
-    <h1 class="dashboard-title">📊 Panel de Inventario</h1>
+    <h1 class="dashboard-title">Panel de Inventario</h1>
 
     {% if is_staff and sheds %}
     <form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
@@ -112,12 +112,18 @@
   <!-- Notifications -->
   <div class="notifications-wrap mt-5">
     <div class="section-head d-flex justify-content-between align-items-center mb-3">
-      <h2 class="fw-bold">🔔 Últimas Notificaciones</h2>
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-bell-fill text-primary fs-4"></i>
+        <h2 class="fw-bold mb-0">Últimas Notificaciones</h2>
+      </div>
+      <span class="text-muted small">
+        Mostrando las 10 notificaciones más recientes
+      </span>
     </div>
 
     {% if notifications %}
     <div class="table-responsive">
-      <table class="table table-hover align-middle notifications-table">
+      <table class="table table-hover align-middle notifications-table shadow-sm">
         <thead class="table-light">
           <tr>
             <th>Fecha</th>
@@ -130,17 +136,55 @@
         </thead>
         <tbody>
           {% for n in notifications %}
-          <tr class="{% if not n.read %}unread{% endif %}">
-            <td>{{ n.created_at|date:"Y-m-d H:i" }}</td>
-            <td>{{ n.get_notif_type_display }}</td>
-            <td>{{ n.product.name_prod }}</td>
-            <td>{% if n.warehouse %}{{ n.warehouse.warehouse.name_ware }}{% else %}—{% endif %}</td>
+          <tr class="notification-row {% if not n.read %}unread{% endif %}">
+            <td class="text-muted small">{{ n.created_at|date:"Y-m-d H:i" }}</td>
+
+            <!-- Tipo de notificación -->
+            <td>
+              {% if n.notif_type == "low_stock" %}
+              <span class="badge bg-warning-subtle text-warning fw-semibold">
+                <i class="bi bi-exclamation-triangle-fill me-1"></i> Stock Bajo
+              </span>
+              {% elif n.notif_type == "expiring" %}
+              <span class="badge bg-danger-subtle text-danger fw-semibold">
+                <i class="bi bi-hourglass-split me-1"></i> Por Vencer
+              </span>
+              {% elif n.notif_type == "transfer" %}
+              <span class="badge bg-info-subtle text-info fw-semibold">
+                <i class="bi bi-box-arrow-in-right me-1"></i> Traslado
+              </span>
+              {% else %}
+              <span class="badge bg-secondary-subtle text-secondary fw-semibold">
+                <i class="bi bi-info-circle me-1"></i> General
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Producto -->
+            <td class="fw-semibold text-dark">{{ n.product.name_prod }}</td>
+
+            <!-- Caseta -->
+            <td>
+              {% if n.warehouse %}
+              <i class="bi bi-house-door text-secondary me-1"></i>{{ n.warehouse.warehouse.name_ware }}
+              {% else %}
+              <span class="text-muted">—</span>
+              {% endif %}
+            </td>
+
+            <!-- Mensaje -->
             <td class="message-cell">{{ n.message }}</td>
+
+            <!-- Estado -->
             <td>
               {% if n.read %}
-              <span class="badge bg-success">Leída</span>
+              <span class="badge bg-success-subtle text-success fw-semibold">
+                <i class="bi bi-check-circle me-1"></i> Leída
+              </span>
               {% else %}
-              <span class="badge bg-warning text-dark">No leída</span>
+              <span class="badge bg-warning-subtle text-warning fw-semibold">
+                <i class="bi bi-envelope-fill me-1"></i> No Leída
+              </span>
               {% endif %}
             </td>
           </tr>
@@ -154,6 +198,7 @@
     </div>
     {% endif %}
   </div>
+
   {% endif %}
 </div>
 

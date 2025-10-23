@@ -82,3 +82,30 @@
     charts.cat.innerHTML = "<div class='text-muted text-center p-3'>Sin datos de consumo</div>";
   }
 })();
+
+/* ANIMACIÓN DE TABLA NOTIFICACIONES */
+document.addEventListener("DOMContentLoaded", () => {
+  // Simulación: cuando se hace clic en una fila no leída → animación "leída"
+  const unreadRows = document.querySelectorAll(".notification-row.unread");
+
+  unreadRows.forEach((row) => {
+    row.addEventListener("click", () => {
+      // agrega una clase temporal para animar el cambio
+      row.classList.add("read-transition");
+
+      // elimina la animación luego de unos segundos
+      setTimeout(() => {
+        row.classList.remove("unread", "read-transition");
+      }, 1500);
+    });
+  });
+});
+
+/* GRÁFICOS DEL DASHBOARD */
+document.querySelectorAll(".chart-card").forEach((card, i) => {
+  card.style.opacity = 0;
+  setTimeout(() => {
+    card.style.transition = "opacity 0.6s ease";
+    card.style.opacity = 1;
+  }, 150 * i);
+});

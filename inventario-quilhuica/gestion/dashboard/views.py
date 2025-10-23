@@ -4,6 +4,8 @@ from django.db.models import Sum, Q
 from django.shortcuts import render
 from django.utils import timezone
 
+# 🎨 Configuración de estilo global para Plotly
+import plotly.io as pio
 import plotly.express as px
 from plotly.offline import plot
 
@@ -15,6 +17,21 @@ from notification.models import Notification
 LOW_STOCK_THRESHOLD = 100     # Bajo este valor se definirá si el stock es bajo.
 EXPIRING_DAYS = 60            # Bajo este valor se definirá la alerta de producto próximo a vencer.
 WINDOW_DAYS = 30              # Cantidad de días hacia atrás para visualizar gráficos.
+
+pio.templates["custom_dashboard"] = pio.templates["plotly_white"]
+pio.templates["custom_dashboard"].layout.update(
+    font=dict(family="Inter, Montserrat, sans-serif", size=13, color="#1e293b"),
+    title=dict(
+        font=dict(size=17, color="#1e293b", family="Inter, sans-serif"),
+        x=0.5,  # centrado
+        xanchor="center"
+    ),
+    paper_bgcolor="white",
+    plot_bgcolor="white",
+    hoverlabel=dict(bgcolor="white", font_size=12),
+    margin=dict(l=40, r=40, t=60, b=40),
+)
+pio.templates.default = "custom_dashboard"
 
 def _user_is_shed_manager(user):
     try:
@@ -74,11 +91,14 @@ def dashboard(request):
         .annotate(packages=Sum("quantity_packages"), content=Sum("total_content"))
         .order_by("-packages")[:top_n]
     )
+    
+    # GRÁFICO DE STOCK, CON DISEÑO
     fig_stock = px.bar(
         x=[s["product__name_prod"] for s in stock_by_product],
         y=[s["packages"] or 0 for s in stock_by_product],
         labels={"x": "Producto", "y": "Paquetes"},
-        title="Top productos por stock (paquetes)"
+        title="Top productos por stock (paquetes)",
+        color_discrete_sequence=["#3b82f6"]  # azul coherente con “info”
     )
     plot_stock = plot(fig_stock, output_type="div", include_plotlyjs=True)
 
@@ -91,11 +111,15 @@ def dashboard(request):
         .annotate(total=Sum("details__quantity_packages"))
         .order_by("applied_at__date")
     )
+
+    #GRÁFICO DE APLICACIONES DE PRODUCTOS, CON DISEÑO
     fig_apps = px.line(
         x=[a["applied_at__date"] for a in apps_qs],
         y=[a["total"] or 0 for a in apps_qs],
         labels={"x": "Fecha", "y": "Paquetes Aplicados"},
-        title=f"Aplicaciones (últimos {WINDOW_DAYS} días)"
+        title=f"Aplicaciones (últimos {WINDOW_DAYS} días)",
+        markers=True,
+        color_discrete_sequence=["#22c55e"]  # verde “éxito”
     )
     plot_apps = plot(fig_apps, output_type="div", include_plotlyjs=True)
 
@@ -109,11 +133,15 @@ def dashboard(request):
         .annotate(total=Sum("quantity"))
         .order_by("moved_at__date")
     )
+
+    # GRÁFICO DE MOVIMIENTO DE PRODUCTOS, CON DISEÑO
     fig_moves = px.line(
         x=[m["moved_at__date"] for m in moves_qs],
         y=[m["total"] or 0 for m in moves_qs],
         labels={"x": "Fecha", "y": "Cantidad Trasladada"},
-        title=f"Traslados a casetas (últimos {WINDOW_DAYS} días)"
+        title=f"Traslados a casetas (últimos {WINDOW_DAYS} días)",
+        markers=True,
+        color_discrete_sequence=["#6366f1"]  # índigo “contenido”
     )
     plot_moves = plot(fig_moves, output_type="div", include_plotlyjs=True)
 
@@ -122,10 +150,13 @@ def dashboard(request):
         .annotate(total=Sum("quantity_packages"))
         .order_by("-total")
     )
+
+    # GRÁFICO DE DISTRIBUCIÓN POR !!CATEGORÍA!! DE PRODUCTOS.
     fig_cat = px.pie(
         names=[c["product__category__name_cat"] or "Sin categoría" for c in cat_dist],
         values=[c["total"] or 0 for c in cat_dist],
-        title="Distribución de stock por categoría"
+        title="Distribución de stock por categoría",
+        color_discrete_sequence=["#3b82f6", "#22c55e", "#6366f1", "#f59e0b", "#ef4444"]
     )
     plot_cat = plot(fig_cat, output_type="div", include_plotlyjs=True)
 

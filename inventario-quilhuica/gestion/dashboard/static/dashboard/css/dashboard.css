@@ -10,33 +10,91 @@
 }
 
 .dashboard-title {
-  font-weight: 700;
-  font-size: 1.8rem;
+  font-weight: 800;
+  font-size: 3.2rem;
   color: #1e293b;
 }
 
-/* === KPI SECTION === */
+/* === KPI SECTION (Uniforme y Responsiva) === */
 .kpi-section {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-  gap: 1.4rem;
-  margin-top: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1rem;
+  margin-bottom: 1.5rem;
 }
 
+/* Tarjeta KPI */
 .kpi-card {
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 16px;
+  gap: 1rem;
+  background: #fff;
+  border-radius: 14px;
   padding: 1.2rem 1.4rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb;
   transition: all 0.25s ease;
+  min-height: 100px;
 }
 
 .kpi-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.09);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* Ícono */
+.kpi-icon {
+  flex-shrink: 0;
+  font-size: 2rem;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+/* Colores coherentes con tus KPI */
+.kpi-card.success .kpi-icon { background-color: #22c55e; }
+.kpi-card.info .kpi-icon { background-color: #3b82f6; }
+.kpi-card.accent .kpi-icon { background-color: #6366f1; }
+.kpi-card.warn .kpi-icon { background-color: #f59e0b; }
+.kpi-card.danger .kpi-icon { background-color: #ef4444; }
+
+/* Información */
+.kpi-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.kpi-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.kpi-value {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+/* Adaptable para pantallas pequeñas */
+@media (max-width: 768px) {
+  .kpi-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .kpi-section {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* === ICONOS === */
@@ -149,22 +207,25 @@
 }
 
 .chart-card {
-  background: #fff;
+  background: #ffffff;
   border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   padding: 1rem 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.chart-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
 }
 
 .chart-card h3 {
+  font-family: "Inter", sans-serif;
   font-weight: 600;
-  color: #334155;
+  color: #1e293b;
   font-size: 1.05rem;
   margin-bottom: 0.75rem;
-  text-align: center;
 }
 
 /* === FIX para Plotly dentro de grid === */
@@ -204,32 +265,84 @@
   }
 }
 
-/* === TABLE / NOTIFICATIONS === */
-.notifications-wrap {
-  margin-top: 2rem;
-}
-
+/* === NOTIFICATIONS TABLE === */
 .notifications-table {
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #e5e7eb;
-  font-size: 0.95rem;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  font-size: 0.93rem;
 }
 
-.notifications-table tr.unread {
-  background-color: #fff9e6;
+.notifications-table thead th {
+  font-weight: 600;
+  color: #475569;
+  background-color: #f8fafc !important;
+  border-bottom: 2px solid #e2e8f0;
 }
 
-.notifications-table td,
-.notifications-table th {
-  padding: 0.75rem 1rem;
+.notification-row.unread {
+  background-color: #fffef8;
+  border-left: 4px solid #facc15;
+}
+
+.notification-row:hover {
+  background-color: #f9fafb;
+  transition: background-color 0.2s ease;
 }
 
 .message-cell {
   max-width: 400px;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.badge {
+  font-size: 0.78rem;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+
+/* Subtle color classes */
+.bg-warning-subtle { background-color: #fff7e6 !important; }
+.bg-danger-subtle { background-color: #fee2e2 !important; }
+.bg-success-subtle { background-color: #ecfdf5 !important; }
+.bg-info-subtle { background-color: #e0f2fe !important; }
+.bg-secondary-subtle { background-color: #f1f5f9 !important; }
+
+/* === ANIMACIONES DE NOTIFICACIONES === */
+
+/* 💡 Animación de brillo lateral (para nuevas notificaciones no leídas) */
+@keyframes unreadPulse {
+  0% {
+    box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0, 0, 0, 0);
+  }
+  50% {
+    box-shadow: inset 3px 0 0 #facc15, 0 0 6px rgba(250, 204, 21, 0.4);
+  }
+  100% {
+    box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0, 0, 0, 0);
+  }
+}
+
+.notification-row.unread {
+  background-color: #fffef8;
+  border-left: 4px solid #facc15;
+  animation: unreadPulse 1.8s ease-in-out infinite;
+}
+
+/* 🌿 Transición suave al marcar como leída */
+.notification-row {
+  transition: background-color 0.4s ease, box-shadow 0.4s ease, border-left-color 0.4s ease;
+}
+
+/* Al volverse leída, se desvanece el brillo */
+.notification-row.unread.read-transition {
+  animation: none;
+  background-color: #f9fafb;
+  border-left-color: #22c55e;
+  box-shadow: inset 3px 0 0 #22c55e;
 }
 
 /* === EMPTY STATE === */
