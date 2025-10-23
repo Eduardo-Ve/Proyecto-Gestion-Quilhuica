@@ -4,6 +4,7 @@ from product.models import Product, Presentation
 from django.forms import formset_factory
 from .models import Warehouse, Movement, Inventory
 from product.models import Product
+from django.http import JsonResponse
 
 
 #FORMULARIO PARA CREAR CASETA
@@ -29,6 +30,11 @@ class WarehouseForm(forms.ModelForm):
 
 # 1. FORMULARIO MAESTRO: Para seleccionar el destino una sola vez.
 class TransferForm(forms.Form):
+    ware_origin = forms.ModelChoiceField(
+        queryset=Warehouse.objects.all(),
+        label="Origen del Producto",
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'})
+    )
     ware_destin = forms.ModelChoiceField(
         queryset=Warehouse.objects.filter(type='shed'),
         label="Caseta de Destino",
@@ -55,3 +61,12 @@ TransferDetailFormSet = formset_factory(
     extra=1,  # Empezar con un formulario
     can_delete=True # Permitir eliminar filas
 )
+
+
+def get_products_by_warehouse(request, warehouse_id):
+    inventory = Inventory.objects.filter(warehouse_id=warehouse_id, total_content__gt=0)
+    data = [
+        {"id": inv.product.id, "name": inv.product.name_prod, "presentation": inv.product.presentation.name}
+        for inv in inventory
+    ]
+    return JsonResponse(data, safe=False)

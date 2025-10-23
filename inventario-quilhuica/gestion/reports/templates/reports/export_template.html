@@ -1,59 +1,159 @@
 {% extends "base/base.html" %}
 {% load static %}
 
+{% block extra_css %}
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Flatpickr base -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- CSS personalizado -->
+<link rel="stylesheet" href="{% static 'report_style.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-4">
-  <h2>Reportes del Sistema</h2>
+  <h2 class="fw-bold mb-3">Reportes del Sistema</h2>
 
-  <form method="get" action="{% url 'reports:export_report' %}" class="mb-3">
-    <div class="row">
-      <div class="col-md-3">
+  <!-- ================= FILTROS ================= -->
+  <form method="get" action="{% url 'reports:export_report' %}" class="mb-4">
+    <div class="row g-3">
+      <div class="col-md-2">
         <label>Desde</label>
-        <input type="date" name="start" class="form-control">
+        <input type="date" name="start" class="form-control" value="{{ start }}">
       </div>
-      <div class="col-md-3">
+
+      <div class="col-md-2">
         <label>Hasta</label>
-        <input type="date" name="end" class="form-control">
+        <input type="date" name="end" class="form-control" value="{{ end }}">
       </div>
-      <div class="col-md-3">
-        <label>Tipo de reporte</label>
-        <select name="report" class="form-select">
-          <option value="movimientos">Movimientos</option>
-          <option value="aplicaciones">Aplicaciones</option>
-          <option value="inventario">Inventario</option>
+
+      <div class="col-md-2">
+        <label>Usuario</label>
+        <select name="user" class="form-select">
+          <option value="">Todos</option>
+          {% for user in users %}
+            <option value="{{ user.id_user }}" {% if user.id_user|stringformat:"s" == selected_user %}selected{% endif %}>
+              {{ user.nombre_usuario }}
+            </option>
+          {% endfor %}
         </select>
       </div>
-      <div class="col-md-3 d-flex align-items-end">
+
+      <div class="col-md-2">
+        <label>Caseta</label>
+        <select name="warehouse" class="form-select">
+          <option value="">Todas</option>
+          {% for ware in warehouses %}
+            <option value="{{ ware.id }}" {% if ware.id|stringformat:"s" == selected_warehouse %}selected{% endif %}>
+              {{ ware.name_ware }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-2">
+        <label>Tipo de reporte</label>
+        <select name="report" class="form-select">
+          <option value="movimientos" {% if report_type == "movimientos" %}selected{% endif %}>Movimientos</option>
+          <option value="aplicaciones" {% if report_type == "aplicaciones" %}selected{% endif %}>Aplicaciones</option>
+          <option value="inventario" {% if report_type == "inventario" %}selected{% endif %}>Inventario</option>
+        </select>
+      </div>
+
+      <div class="col-md-2 d-flex align-items-end">
         <button type="submit" class="btn btn-primary w-100">Ver reporte</button>
       </div>
     </div>
   </form>
 
+  <!-- ================= TABLA DE RESULTADOS ================= -->
   {% if data %}
   <div class="text-end mb-3">
-    <a href="?report={{ report_type }}&export=csv" class="btn btn-outline-success">CSV</a>
-    <a href="?report={{ report_type }}&export=xlsx" class="btn btn-outline-info">Excel</a>
-    <a href="?report={{ report_type }}&export=pdf" class="btn btn-outline-danger">PDF</a>
+    <a href="?report={{ report_type }}&export=csv&start={{ start }}&end={{ end }}&user={{ selected_user }}&warehouse={{ selected_warehouse }}" class="btn btn-outline-success btn-sm">CSV</a>
+    <a href="?report={{ report_type }}&export=xlsx&start={{ start }}&end={{ end }}&user={{ selected_user }}&warehouse={{ selected_warehouse }}" class="btn btn-outline-info btn-sm">Excel</a>
+    <a href="?report={{ report_type }}&export=pdf&start={{ start }}&end={{ end }}&user={{ selected_user }}&warehouse={{ selected_warehouse }}" class="btn btn-outline-danger btn-sm">PDF</a>
   </div>
 
-  <table class="table table-striped table-bordered">
-    <thead class="table-dark">
-      <tr>
-        {% for key, value in data.0.items %}
-        <th>{{ key }}</th>
+  <div class="table-responsive">
+    <table class="table table-striped table-bordered">
+      <thead class="table-dark">
+        <tr>
+          {% for key, value in data.0.items %}
+            <th>{{ key }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in data %}
+          <tr>
+            {% for key, value in row.items %}
+              <td>{{ value }}</td>
+            {% endfor %}
+          </tr>
         {% endfor %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for row in data %}
-      <tr>
-        {% for key, value in row.items %}
-        <td>{{ value }}</td>
-        {% endfor %}
-      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ================= PAGINADOR ================= -->
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3" data-total="{{ page_obj.paginator.num_pages|default:1 }}">
+
+      {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page' }}">«</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">«</span></li>
+      {% endif %}
+
+      {% for i in page_obj.paginator.page_range %}
+        {% if i <= 2 or i > page_obj.paginator.num_pages|add:"-2" or i >= page_obj.number|add:"-2" and i <= page_obj.number|add:"2" %}
+          <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+            <a class="page-link"
+               href="?page={{ i }}{% if start %}&start={{ start }}{% endif %}{% if end %}&end={{ end }}{% endif %}{% if report_type %}&report={{ report_type }}{% endif %}{% if selected_user %}&user={{ selected_user }}{% endif %}{% if selected_warehouse %}&warehouse={{ selected_warehouse }}{% endif %}">
+              {{ i }}
+            </a>
+          </li>
+        {% elif i == 3 and page_obj.number > 5 %}
+          <li class="page-item">
+            <a href="#" class="page-link jump-page">…</a>
+            <div class="page-input d-none position-relative">
+              <input type="number" min="1" class="form-control form-control-sm page-jump-input" placeholder="#" />
+            </div>
+          </li>
+        {% elif i == page_obj.paginator.num_pages|add:"-2" and page_obj.number < page_obj.paginator.num_pages|add:"-4" %}
+          <li class="page-item">
+            <a href="#" class="page-link jump-page">…</a>
+            <div class="page-input d-none position-relative">
+              <input type="number" min="1" class="form-control form-control-sm page-jump-input" placeholder="#" />
+            </div>
+          </li>
+        {% endif %}
       {% endfor %}
-    </tbody>
-  </table>
+
+      {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode|cut:'page' }}">»</a>
+        </li>
+      {% else %}
+        <li class="page-item disabled"><span class="page-link">»</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+
+  {% else %}
+    <div class="alert alert-warning text-center mt-4">
+      No hay datos para mostrar. Ajusta el rango de fechas o el tipo de reporte.
+    </div>
   {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'js/calendar_picker.js' %}"></script>
+<script src="{% static 'js/search_page.js' %}"></script>
 {% endblock %}

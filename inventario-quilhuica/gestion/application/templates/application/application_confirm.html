@@ -1,0 +1,215 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Confirmar Aplicación{% endblock %}
+
+{% block extra_css %}
+<style>
+  .confirmation-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  .warning-banner {
+    background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
+  
+  .warning-banner h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .warning-banner p {
+    margin: 0;
+    opacity: 0.95;
+  }
+  
+  .warehouse-info {
+    background: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    border-left: 4px solid #055526 ;
+  }
+  
+  .warehouse-info strong {
+    color: #055526 ;
+    font-size: 1.1rem;
+  }
+  
+  .products-table {
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  
+  .products-table table {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .products-table thead {
+    background: #343a40;
+    color: white;
+  }
+  
+  .products-table th {
+    padding: 1rem;
+    font-weight: 600;
+    text-align: left;
+    border: none;
+  }
+  
+  .products-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .products-table tbody tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .products-table tbody tr:hover {
+    background: #f8f9fa;
+  }
+  
+  .quantity-badge {
+    background: #00C451 ;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  
+  .stock-info {
+    font-size: 0.9rem;
+  }
+  
+  .stock-before {
+    color: #6c757d;
+  }
+  
+  .stock-after {
+    color: #198754;
+    font-weight: 600;
+  }
+  
+  .stock-after.warning {
+    color: #dc3545;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 2px solid #dee2e6;
+  }
+  
+  .btn-confirm {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: white;
+    border-radius: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  
+  .btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(40, 167, 69, 0.3);
+    color: white;
+  }
+  
+  .btn-cancel {
+    background: white;
+    border: 2px solid #dc3545;
+    color: #dc3545;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+  
+  .btn-cancel:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+  <div class="warning-banner">
+    <h3> Confirma los Datos de la Aplicación</h3>
+    <p>Revisa cuidadosamente la información antes de confirmar. Esta acción actualizará el inventario y no podrá deshacerse fácilmente.</p>
+  </div>
+
+  <div class="warehouse-info">
+    <strong> Caseta/Bodega:</strong> {{ warehouse_name }}
+  </div>
+
+  <div class="products-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Presentación</th>
+          <th style="text-align: center;">Cantidad a Aplicar</th>
+          <th style="text-align: right;">Stock Disponible</th>
+          <th style="text-align: right;">Stock Resultante</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr>
+          <td><strong>{{ product.product_name }}</strong></td>
+          <td>{{ product.presentation }}</td>
+          <td style="text-align: center;">
+            <span class="quantity-badge">{{ product.quantity }}</span>
+          </td>
+          <td style="text-align: right;" class="stock-info stock-before">
+            {{ product.stock_available }}
+          </td>
+          <td style="text-align: right;" class="stock-info">
+            <span class="stock-after {% if product.stock_after < 10 %}warning{% endif %}">
+              {{ product.stock_after }}
+              {% if product.stock_after < 10 %}
+                no hay stock
+              {% endif %}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="action-buttons">
+    <form method="post" style="display: inline;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-confirm">
+         Confirmar y Guardar Aplicación
+      </button>
+    </form>
+    
+    <a href="{% url 'application:cancel_application' %}" class="btn btn-cancel">
+       Cancelar
+    </a>
+  </div>
+</div>
+{% endblock %}

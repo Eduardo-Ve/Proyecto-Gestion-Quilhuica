@@ -1,81 +1,105 @@
 {% extends 'base/base.html' %}
 {% load crispy_forms_tags %}
-<title>{% block title %}Formulario de Creacion de producto{% endblock %}</title>
-
 {% load static %}
-{% block content %}
 
-<h2>Crear Producto</h2>
-<form method="post">
+{% block title %}Crear Producto{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+  <h2 class="fw-bold text-primary mb-4">Crear Producto</h2>
+
+  <form method="post" class="needs-validation" novalidate>
     {% csrf_token %}
 
-    <h4>Datos del Producto</h4>
-    <div class="row mb-3">
+    <!-- CARD: Datos del producto -->
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+      <div class="card-header bg-success text-white fw-semibold">
+        Datos del Producto
+      </div>
+      <div class="card-body row g-3">
         <div class="col-md-6">
-            {{ form.name_prod|as_crispy_field }}
+          {{ form.name_prod|as_crispy_field }}
         </div>
-        <div class="col-md-6">
-            {{ form.category|as_crispy_field }}
+        <div class="col-md-6" id="category-select-wrapper">
+          {{ form.category|as_crispy_field }}
         </div>
-    </div>
 
-    <h4>Opciones de Categoría</h4>
-    <div class="row mb-3">
-        <div class="col-md-4">
-            {{ form.create_new_category|as_crispy_field }}
+        <div class="col-12">
+          <div class="form-check mt-2">
+            {{ form.create_new_category }}
+            <label class="form-check-label ms-1">{{ form.create_new_category.label }}</label>
+          </div>
         </div>
-        <div class="col-md-4">
+
+        <div class="row g-3 mt-1" id="new-cat">
+          <div class="col-md-6">
             {{ form.new_category_name|as_crispy_field }}
-        </div>
-        <div class="col-md-4">
+          </div>
+          <div class="col-md-6">
             {{ form.new_category_description|as_crispy_field }}
+          </div>
         </div>
+      </div>
     </div>
 
-    <h4>Presentación</h4>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            {{ form.presentation|as_crispy_field }}
+    <!-- CARD: Presentación -->
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+      <div class="card-header bg-light fw-semibold">Presentación</div>
+      <div class="card-body">
+        <div class="row g-3 mb-2" id="presentation-select-wrapper">
+          <div class="col-md-4">{{ form.presentation|as_crispy_field }}</div>
         </div>
-        <div class="col-md-3">
-            {{ form.create_new_presentation|as_crispy_field }}
+
+        <div class="form-check mb-3">
+          {{ form.create_new_presentation }}
+          <label class="form-check-label ms-1">{{ form.create_new_presentation.label }}</label>
         </div>
-        <div class="col-md-2">
-            {{ form.package_type|as_crispy_field }}
+
+        <div class="row g-3" id="new-presentation">
+          <div class="col-md-3">{{ form.package_type|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.content_value|as_crispy_field }}</div>
+          <div class="col-md-3">{{ form.content_unit|as_crispy_field }}</div>
         </div>
-        <div class="col-md-2">
-            {{ form.content_value|as_crispy_field }}
-        </div>
-        <div class="col-md-2">
-            {{ form.content_unit|as_crispy_field }}
-        </div>
+      </div>
     </div>
 
-    <h4>Stock Inicial</h4>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            {{ form.stock_inicial|as_crispy_field }}
+    <!-- CARD: Stock -->
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+      <div class="card-header bg-light fw-semibold">Stock Inicial</div>
+      <div class="card-body row g-3">
+        <div class="col-md-4">
+          {{ form.stock_inicial|as_crispy_field }}
         </div>
-    </div>
-    <h4>Fecha de vencimiento del producto</h4>
-    <div class="row mb-3">
-        <div class="col-md-3">
-            {{ form.expire_at|as_crispy_field }}
-        </div>
+      </div>
     </div>
 
-    <button type="submit" class="btn btn-success">Guardar</button>
-    <a  class="btn btn-secondary mt-3" href="{% url 'product:product_list' %}">Cancelar</a>
+    <!-- CARD: Vencimiento -->
+    <div class="card mb-4 shadow-sm border-0 rounded-4">
+      <div class="card-header bg-light fw-semibold">Fecha de vencimiento del producto</div>
+      <div class="card-body row g-3">
+        <div class="col-md-4">
+          {{ form.expire_at|as_crispy_field }}
+        </div>
+      </div>
+    </div>
 
-
-</form>
-
+    <!-- BOTONES -->
+    <div class="text-end">
+      <button type="submit" class="btn btn-success px-4 me-2">Guardar</button>
+      <a href="{% url 'product:product_list' %}" class="btn btn-secondary px-4">Cancelar</a>
+    </div>
+  </form>
+</div>
 {% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static '/form_style.css' %}">
+<link rel="stylesheet" href="{% static 'form_style.css' %}">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/toggle_form_fields.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'js/toggle_form_fields.js' %}"></script>
+<script src="{% static 'js/calendar_picker.js' %}"></script>
 {% endblock %}

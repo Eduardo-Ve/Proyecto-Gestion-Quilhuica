@@ -51,17 +51,18 @@ class ApplicationDetailForm(forms.ModelForm):
 
 class BaseApplicationDetailFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
-        # ⚙️ Capturamos warehouse y lo sacamos de kwargs ANTES del super
         self.warehouse = kwargs.pop('warehouse', None)
         super().__init__(*args, **kwargs)
 
-        # Si hay una bodega, filtramos los productos disponibles en ella
+        # ✅ Asignar queryset de productos por bodega
         if self.warehouse:
+            product_ids = Inventory.objects.filter(
+                warehouse=self.warehouse
+            ).values_list('product_id', flat=True)
+
             for form in self.forms:
                 form.fields['product'].queryset = Product.objects.filter(
-                    product_id__in=Inventory.objects.filter(
-                        warehouse=self.warehouse
-                    ).values_list('product_id', flat=True)
+                    product_id__in=product_ids
                 )
         else:
             for form in self.forms:

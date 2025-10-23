@@ -20,10 +20,16 @@ class ProductForm(forms.ModelForm):
 
     # Campo stock inicial
     stock_inicial = forms.FloatField(required=False, min_value=0, label="Stock Inicial")
-
     class Meta:
         model = Product
         fields = ['name_prod', 'category', 'presentation', 'expire_at', 'stock_inicial']
+        labels = {
+            'name_prod': 'Nombre del producto',
+            'category': 'Categoría',
+            'presentation': 'Presentación',
+            'expire_at': 'Fecha de vencimiento',
+            'stock_inicial': 'Stock inicial',
+        }
         widgets = {
             'expire_at': forms.DateInput(attrs={'type': 'date'}),
         }

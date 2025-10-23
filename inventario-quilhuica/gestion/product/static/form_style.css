@@ -1,137 +1,160 @@
-/* ====== FORMULARIO DE PRODUCTO ====== */
-
-form {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 1.5rem;
+/* ===== FORMULARIO GENERAL ===== */
+.container {
+  max-width: 1000px;
 }
-
-h1, h2, h3 {
-  font-weight: 600;
-  color: #2d3436;
-}
-
 .card {
-  border: 1px solid #dee2e6;
-  border-radius: 10px;
+  border-radius: 1rem;
+  margin-bottom: 1.5rem;
+}
+.card-header {
+  font-size: 1rem;
+  letter-spacing: 0.3px;
+  padding: 0.8rem 1rem;
+}
+input, select, textarea {
+  border-radius: 0.5rem !important;
+}
+.btn-success {
+  background-color: #198754 !important;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.4rem;
+  transition: all 0.2s ease;
+}
+.btn-success:hover {
+  background-color: #157347 !important;
+  transform: translateY(-1px);
 }
 
-.card-header {
-  background-color: #f8f9fa !important;
+.flatpickr-calendar {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  color: var(--fp-text, #1E1E1E);
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden !important;
+  position: absolute !important;
+  z-index: 9999 !important;
+}
+
+/* ===== CABECERA ===== */
+.flatpickr-months {
+  background-color: var(--fp-primary, #00C451) !important;
+  color: #fff !important;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.flatpickr-current-month {
   font-weight: 600;
   font-size: 1rem;
 }
 
-.card-body {
+/* ===== DÍAS ===== */
+.flatpickr-day {
+  border-radius: 6px;
+  transition: all 0.2s ease-in-out;
+}
+
+.flatpickr-day:hover {
+  background-color: rgba(0, 196, 81, 0.1);
+  border-color: var(--fp-primary, #00C451);
+}
+
+.flatpickr-day.selected {
+  background-color: var(--fp-primary, #00C451) !important;
+  color: #fff !important;
+}
+
+.flatpickr-day.today {
+  border: 1px solid var(--fp-primary, #00C451);
+  color: var(--fp-primary-hover, #055526);
+}
+
+/* ====== CONTENEDOR INTERNO ====== */
+.flatpickr-innerContainer {
+  position: relative;
+  background: #fff;
+}
+
+/* ====== GRILLAS DE AÑOS / MESES ====== */
+.fp-grid-container {
+  padding: 1rem 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background: #fff;
+  width: 100%;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* === Distribución visual ordenada === */
+.fp-months-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 columnas */
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+  width: 100%;
+}
+
+.fp-years-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 4 columnas */
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  width: 100%;
+}
+
+/* === Botones de mes/año === */
+.fp-month-btn,
+.fp-year-btn {
+  text-align: center;
+  padding: 0.6rem 0;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  color: #1e1e1e;
   background-color: #fff;
-}
-
-/* ====== CAMPOS Y LABELS ====== */
-
-label.form-label {
-  font-weight: 500;
-  color: #374151;
-}
-
-input.form-control,
-select.form-select,
-textarea.form-control {
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-input.form-control:focus,
-select.form-select:focus,
-textarea.form-control:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
-}
-
-/* ====== CHECKBOX Y RADIO ====== */
-
-.form-check {
-  margin-top: 0.5rem;
-}
-
-.form-check-input {
+  transition: all 0.2s ease-in-out;
   cursor: pointer;
+  user-select: none;
+  box-shadow: 0 0 0 1px #e5e5e5 inset;
 }
 
-.form-check-label {
-  margin-left: 0.25rem;
+.fp-month-btn:hover,
+.fp-year-btn:hover {
+  background-color: rgba(0, 196, 81, 0.12);
+  color: #055526;
+  box-shadow: 0 0 0 1px var(--fp-primary, #00C451) inset;
 }
 
-/* ====== ERRORES ====== */
-
-.text-danger.small {
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-}
-
-/* ====== PRESENTACIONES (FORMSET) ====== */
-
-#formset-rows .col-12.border {
-  border: 1px solid #e5e7eb !important;
-  background-color: #f9fafb;
-  border-radius: 10px;
-  padding: 1rem;
-  transition: background-color 0.2s ease;
-}
-
-#formset-rows .col-12.border:hover {
-  background-color: #f1f5f9;
-}
-
-#formset-rows label.form-label {
-  font-weight: 500;
-  color: #1f2937;
-}
-
-#add-row {
-  border-radius: 8px;
-  font-weight: 500;
-  padding: 0.35rem 0.75rem;
-}
-
-/* ====== BOTONES ====== */
-
-button.btn-primary {
-  background-color: #2563eb;
-  border-color: #2563eb;
-  border-radius: 8px;
-  font-weight: 500;
-}
-
-button.btn-primary:hover {
-  background-color: #1d4ed8;
-  border-color: #1d4ed8;
-}
-
-.btn-outline-secondary {
-  border-radius: 8px;
-  font-weight: 500;
-}
-
-/* ====== ALERTAS ====== */
-
-.alert {
-  border-radius: 8px;
+/* ====== NAVEGACIÓN ENTRE DÉCADAS ====== */
+.fp-nav-decade {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 85%;
+  font-weight: 600;
+  color: #1e1e1e;
+  margin-bottom: 0.5rem;
   font-size: 0.95rem;
 }
 
-/* ====== RESPONSIVE ====== */
-
-@media (max-width: 768px) {
-  form {
-    padding: 1rem;
-  }
-  .card-body .row.g-3 {
-    row-gap: 0.75rem;
-  }
+.fp-decade-arrow {
+  cursor: pointer;
+  padding: 0.2rem 0.6rem;
+  font-size: 1.2rem;
+  border-radius: 4px;
+  transition: 0.2s;
 }
-@media (max-width: 576px) {
-  #formset-rows .col-12.border {
-    padding: 0.75rem;
-  }
+
+.fp-decade-arrow:hover {
+  background-color: rgba(0, 196, 81, 0.15);
+  color: #055526;
 }

@@ -1,95 +1,79 @@
-/* style.css */
-
-/* --- Estilos Generales --- */
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f4f7f6; /* Un fondo gris claro para la página */
-    color: #333;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh; /* Asegura que el contenedor esté centrado verticalmente */
+/* 🎨 Estilo general para formularios unificados */
+.form-section {
+  background: #fff;
+  border: 1px solid #e3e3e3;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
-/* --- Contenedor Principal del Formulario --- */
-.container {
-    background-color: #ffffff;
-    padding: 40px;
-    border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 650px; /* Ancho máximo del formulario */
-    border: 1px solid #e0e0e0;
+.form-section h5,
+.form-section h4 {
+  background: #2e7d32;
+  color: white;
+  margin: -1.5rem -1.5rem 1rem -1.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px 8px 0 0;
+  font-size: 1.05rem;
+  font-weight: 600;
 }
 
-/* --- Título del Formulario --- */
-h2 {
-    text-align: center;
-    color: #00C451; /* Verde principal */
-    margin-bottom: 30px;
-    font-weight: 600;
+.form-group {
+  margin-bottom: 1rem;
 }
 
-/* --- Estructura de cada campo (Label + Input) --- */
-.mb-3 {
-    display: flex;
-    flex-direction: column; /* Apila la etiqueta sobre el campo de entrada */
-    margin-bottom: 22px !important; /* Aumenta el espacio entre campos */
+label {
+  font-weight: 500;
+  margin-bottom: 0.4rem;
+  display: block;
+  color: #333;
 }
 
-/* --- Etiquetas de los Campos (Label) --- */
-.mb-3 label {
-    font-weight: 500;
-    margin-bottom: 8px; /* Espacio entre la etiqueta y el campo */
-    color: #555;
-    font-size: 1rem;
+.form-control,
+.form-select {
+  border-radius: 8px;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #ccc;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* --- Campos de Entrada (Inputs y Selects) --- */
-/*
-  Esta regla se aplica a los campos que Django genera (<input>, <select>)
-*/
-form input,
-form select {
-    width: 100%;
-    padding: 12px 15px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    font-size: 1rem;
-    color: #333;
-    background-color: #fdfdfd;
-    box-sizing: border-box; /* Evita que el padding afecte el ancho total */
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+.form-control:focus,
+.form-select:focus {
+  border-color: #2e7d32;
+  box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.15);
+  outline: none;
 }
 
-/* --- Efecto de Foco en los Campos --- */
-/*
-  Se activa cuando el usuario hace clic en un campo
-*/
-form input:focus,
-form select:focus {
-    outline: none;
-    border-color: #0d6efd; /* Resalta el borde con el color primario */
-    box-shadow: 0 0 8px rgba(13, 110, 253, 0.25); /* Agrega un brillo sutil */
-}
-
-/* --- Botón de Envío --- */
+/* Botones */
 .btn-primary {
-    width: 100%;
-    padding: 14px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    margin-top: 15px; /* Espacio extra sobre el botón */
-    background-color: #00C451;
-    color: white;
+  background-color: #007bff;
+  border-color: #007bff;
+  border-radius: 8px;
+  font-weight: 500;
 }
 
 .btn-primary:hover {
-    background-color: #055526 ; /* Un verde más oscuro al pasar el cursor */
-    transform: translateY(-2px); /* Efecto de "levantamiento" */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    color: white;
+  background-color: #0069d9;
+  border-color: #0062cc;
+}
+
+.btn-success {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.btn-secondary,
+.btn-danger {
+  border-radius: 8px;
+}
+
+/* Espaciado en secciones internas */
+.row + .row {
+  margin-top: 1rem;
+}
+
+/* Texto pequeño de ayuda */
+.text-muted {
+  font-size: 0.875rem;
 }

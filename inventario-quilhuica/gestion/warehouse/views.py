@@ -155,3 +155,28 @@ def productos_por_caseta(request):
     }
 
     return render(request, 'warehouse/productos_por_caseta.html', context)
+
+
+def get_products_by_warehouse(request, warehouse_id):
+    try:
+        inventory = (
+            Inventory.objects
+            .filter(warehouse_id=warehouse_id, total_content__gt=0)
+            .select_related('product__presentation')
+        )
+
+        data = [
+            {
+                "id": inv.product.product_id,
+                "name": inv.product.name_prod,
+                "presentation": str(inv.product.presentation),  # usa __str__ de Presentation
+                "quantity": inv.quantity_packages  
+            }
+            for inv in inventory
+        ]
+
+        return JsonResponse(data, safe=False)
+
+    except Exception as e:
+        print(f"[ERROR get_products_by_warehouse] {e}")
+        return JsonResponse({"error": str(e)}, status=500)

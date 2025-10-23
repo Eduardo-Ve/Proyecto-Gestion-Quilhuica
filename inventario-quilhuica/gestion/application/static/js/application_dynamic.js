@@ -1,140 +1,195 @@
 document.addEventListener("DOMContentLoaded", () => {
   const warehouseSelect = document.getElementById("id_ware");
-  const addFormButton = document.getElementById("add-product-form");
-  const formContainer = document.getElementById("product-forms-container");
-  const emptyFormTemplate = document.getElementById("empty-form").cloneNode(true);
-  const totalFormsInput = document.querySelector("#id_details-TOTAL_FORMS");
+  const formContainer = document.getElementById("formset-container");
+  const addFormButton = document.getElementById("add-form");
+  const totalFormsInput = document.querySelector("input[name$='TOTAL_FORMS']");
+  const emptyFormTemplate = document.getElementById("empty-form-template");
 
-  emptyFormTemplate.removeAttribute("id");
-
-  // 🔄 Cargar productos disponibles según caseta
+  // 🔄 Cargar productos según caseta seleccionada
   async function loadProducts(warehouseId) {
-    const productSelects = document.querySelectorAll("select[name$='product']");
+    const selects = document.querySelectorAll("select[name$='product']");
     if (!warehouseId) {
-      productSelects.forEach((select) => {
-        select.innerHTML = "<option value=''>Seleccione una caseta</option>";
-      });
+      selects.forEach(s => (s.innerHTML = "<option value=''>Seleccione una caseta</option>"));
       return;
     }
 
     try {
-      const response = await fetch(`/application/api/products/?warehouse_id=${warehouseId}`);
-      const data = await response.json();
+      const res = await fetch(`/application/api/products/?warehouse_id=${warehouseId}`);
+      const data = await res.json();
 
-      if (data.products) {
-        const options = data.products
-          .map(
-            (p) =>
-              `<option value="${p.id}">
-                ${p.name} (${p.presentation}) — Stock: ${p.stock}
-              </option>`
-          )
-          .join("");
+      if (!data.products) return;
 
-        productSelects.forEach((select) => {
-          const currentValue = select.value;
-          select.innerHTML = `<option value="">Seleccione un producto</option>${options}`;
-          select.value = currentValue;
-        });
+      const options = data.products.map(
+        (p) =>
+          `<option value="${p.id}">${p.name} (${p.presentation}) — Stock: ${p.stock}</option>`
+      );
 
-        updateAvailableProducts();
-      }
-    } catch (error) {
-      console.error("Error al cargar productos:", error);
+      selects.forEach((select) => {
+        const current = select.value;
+        select.innerHTML = `<option value="">Seleccione un producto</option>${options.join("")}`;
+        if (current && Array.from(select.options).some(o => o.value === current)) {
+          select.value = current;
+        }
+      });
+
+      updateAvailableProducts();
+    } catch (err) {
+      console.error("❌ Error al cargar productos:", err);
     }
   }
 
-  // 🚫 Evita duplicados en selects
+  // 🚫 Elimina completamente productos ya seleccionados
   function updateAvailableProducts() {
-    const allSelects = document.querySelectorAll("select[name$='product']");
-    const selectedValues = Array.from(allSelects)
+    const selects = document.querySelectorAll("select[name$='product']");
+    const selectedValues = Array.from(selects)
       .map((s) => s.value)
       .filter((v) => v);
 
-    allSelects.forEach((select) => {
-      const currentValue = select.value;
-      Array.from(select.options).forEach((option) => {
-        if (selectedValues.includes(option.value) && option.value !== currentValue && option.value !== "") {
-          option.disabled = true;
-          option.style.color = "#999";
-        } else {
-          option.disabled = false;
-          option.style.color = "";
+    selects.forEach((select) => {
+      const current = select.value;
+      const options = Array.from(select.options);
+
+      options.forEach((opt) => {
+        if (opt.value !== "" && selectedValues.includes(opt.value) && opt.value !== current) {
+          opt.remove();
         }
       });
     });
   }
 
-  // 🧹 Botón "Eliminar" con animación fade
-  function addRemoveButtonListeners() {
-    document.querySelectorAll(".form-row").forEach((row) => {
-      // Evita duplicar botones
-      if (!row.querySelector(".remove-form-btn")) {
-        const deleteColumn = row.querySelector(".delete-column");
-        if (deleteColumn) {
-          deleteColumn.innerHTML = `
-            <button type="button" class="btn btn-outline-danger remove-form-btn">
-              <i class="bi bi-trash"></i> Eliminar
-            </button>
-          `;
-        }
-      }
-    });
-
-    // Evento de eliminación
-    document.querySelectorAll(".remove-form-btn").forEach((btn) => {
-      btn.onclick = (e) => {
-        e.preventDefault();
-        const formRow = btn.closest(".form-row");
-
-        // Efecto fade-out
-        formRow.style.transition = "opacity 0.3s ease";
-        formRow.style.opacity = "0";
-
+  // 🗑️ Eliminar fila de producto
+  function addRemoveListeners() {
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.onclick = () => {
+        const formDiv = btn.closest(".product-form");
+        
+        // ✅ Usar animación de fade out antes de eliminar
+        formDiv.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+        formDiv.style.opacity = "0";
+        formDiv.style.transform = "scale(0.95)";
+        
         setTimeout(() => {
-          formRow.remove();
-          // Actualizamos TOTAL_FORMS
-          const forms = document.querySelectorAll(".form-row");
-          totalFormsInput.value = forms.length;
+          formDiv.remove();
+          updateFormCount();
           updateAvailableProducts();
         }, 300);
       };
     });
   }
 
-  // ➕ Añadir nuevo producto
+  // ➕ Agregar nuevo producto
   addFormButton.addEventListener("click", () => {
-    let formNum = parseInt(totalFormsInput.value);
-    const newForm = emptyFormTemplate.cloneNode(true);
-    newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
-    newForm.style.display = "block";
+    const formCount = parseInt(totalFormsInput.value);
+    const templateHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, formCount);
 
-    formContainer.appendChild(newForm);
-    totalFormsInput.value = formNum + 1;
+    const wrapper = document.createElement("div");
+    wrapper.classList.add("product-form", "mb-3", "border", "p-3", "rounded");
+    wrapper.innerHTML = templateHTML;
 
-    // Cargar productos del almacén actual
-    const currentWarehouse = warehouseSelect.value;
-    if (currentWarehouse) {
-      loadProducts(currentWarehouse);
-    }
+    // ✅ Animación de entrada
+    wrapper.style.opacity = "0";
+    wrapper.style.transform = "translateY(-10px)";
+    
+    formContainer.appendChild(wrapper);
+    
+    // Trigger animation
+    setTimeout(() => {
+      wrapper.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+      wrapper.style.opacity = "1";
+      wrapper.style.transform = "translateY(0)";
+    }, 10);
+    
+    updateFormCount();
 
-    addRemoveButtonListeners();
+    const warehouseId = warehouseSelect.value;
+    if (warehouseId) loadProducts(warehouseId);
+
+    addRemoveListeners();
   });
 
-  // 🔁 Detectar cambio en productos y caseta
-  document.addEventListener("change", (e) => {
-    if (e.target.name && e.target.name.endsWith("product")) {
-      updateAvailableProducts();
-    }
-    if (e.target === warehouseSelect) {
-      loadProducts(warehouseSelect.value);
-    }
-  });
-
-  // Cargar productos al iniciar si ya hay caseta seleccionada
-  if (warehouseSelect.value) {
-    loadProducts(warehouseSelect.value);
+  // 🔢 Actualizar contador de formularios
+  function updateFormCount() {
+    const forms = document.querySelectorAll(".product-form");
+    totalFormsInput.value = forms.length;
+    
+    // Actualizar los índices de cada formulario
+    forms.forEach((form, index) => {
+      const inputs = form.querySelectorAll("input, select");
+      inputs.forEach(input => {
+        if (input.name) {
+          input.name = input.name.replace(/details-\d+-/, `details-${index}-`);
+          input.id = input.id.replace(/id_details-\d+-/, `id_details-${index}-`);
+        }
+      });
+    });
   }
 
-  addRemoveButtonListeners(); // <- ✅ se aplica al cargar la página
+  // 🧹 Resetear formulario si cambia la caseta
+  warehouseSelect.addEventListener("change", () => {
+    formContainer.innerHTML = "";
+    totalFormsInput.value = 0;
+    loadProducts(warehouseSelect.value);
+  });
+
+  // 🔁 Eventos generales
+  document.addEventListener("change", (e) => {
+    if (e.target.name && e.target.name.endsWith("product")) updateAvailableProducts();
+  });
+
+  // ✅ Validación antes de enviar el formulario
+  const form = document.querySelector("form");
+  if (form) {
+    form.addEventListener("submit", (e) => {
+      const productForms = document.querySelectorAll(".product-form");
+      let hasValidProduct = false;
+
+      productForms.forEach(productForm => {
+        const productSelect = productForm.querySelector("select[name$='product']");
+        const quantityInput = productForm.querySelector("input[name$='quantity_packages']");
+        
+        if (productSelect && productSelect.value && quantityInput && quantityInput.value) {
+          hasValidProduct = true;
+        }
+      });
+
+      if (!hasValidProduct) {
+        e.preventDefault();
+        alert("⚠️ Debes agregar al menos un producto con cantidad antes de guardar.");
+        return false;
+      }
+
+      // Validar que todos los productos seleccionados tengan cantidad
+      let isValid = true;
+      productForms.forEach(productForm => {
+        const productSelect = productForm.querySelector("select[name$='product']");
+        const quantityInput = productForm.querySelector("input[name$='quantity_packages']");
+        
+        if (productSelect && productSelect.value && (!quantityInput || !quantityInput.value || quantityInput.value <= 0)) {
+          isValid = false;
+          quantityInput.style.border = "2px solid #dc3545";
+          setTimeout(() => {
+            quantityInput.style.border = "";
+          }, 2000);
+        }
+        
+        if (quantityInput && quantityInput.value && (!productSelect || !productSelect.value)) {
+          isValid = false;
+          productSelect.style.border = "2px solid #dc3545";
+          setTimeout(() => {
+            productSelect.style.border = "";
+          }, 2000);
+        }
+      });
+
+      if (!isValid) {
+        e.preventDefault();
+        alert("⚠️ Todos los productos deben tener una cantidad válida y viceversa.");
+        return false;
+      }
+    });
+  }
+
+  // Inicialización
+  if (warehouseSelect.value) loadProducts(warehouseSelect.value);
+  addRemoveListeners();
 });

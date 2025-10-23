@@ -1,148 +1,59 @@
-{% extends 'base/base.html' %}
+{% extends "base/form_base.html" %}
 {% load static %}
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Traslado de Producto</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="container py-4">
-    <h1 class="mb-4">Trasladar Productos a Caseta</h1>
+{% block title %}Trasladar Productos a Caseta{% endblock %}
 
-{% block content %}
-<div class="container mt-5">
-    <h2>{{ title }}</h2>
-
-    <form method="post" class="mt-4">
-        {% csrf_token %}
-
-        <div class="card shadow-sm mb-4">
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <label for="{{ master_form.ware_destin.id_for_label }}" class="form-label">{{ master_form.ware_destin.label }}</label>
-                        {{ master_form.ware_destin }}
-                    </div>
-                    <div class="col-md-6">
-                        <label for="{{ master_form.description.id_for_label }}" class="form-label">{{ master_form.description.label }}</label>
-                        {{ master_form.description }}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <h4 class="mt-4">Productos a Trasladar</h4>
-        <div id="formset-container">
-            {{ formset.management_form }}
-            {% for form in formset %}
-            <div class="card mb-3 product-form">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-5">
-                            <label>Producto</label>
-                            {{ form.product }}
-                            <small class="text-muted presentation-text d-block mt-1"></small>
-                        </div>
-                        <div class="col-md-4">
-                            <label>Cantidad a Mover</label>
-                            {{ form.quantity }}
-                        </div>
-                        <div class="col-md-1 text-center">
-                            {% if formset.can_delete %}
-                                <label>Borrar</label>
-                                {{ form.DELETE }}
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-
-        <button type="button" id="add-form" class="btn btn-outline-success mt-2">➕ Agregar Producto</button>
-        <hr>
-        <button type="submit" class="btn btn-primary btn-lg">Realizar Traslado</button>
-        <a href="{% url 'warehouse:caseta_list' %}" class="btn btn-secondary btn-lg">Volver</a>
-    </form>
-</div>
-
-<div id="empty-form-template" style="display: none;">
-    <div class="card mb-3 product-form">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-5">
-                    <label>Producto</label>
-                    {{ formset.empty_form.product }}
-                    <small class="text-muted presentation-text d-block mt-1"></small>
-                </div>
-                <div class="col-md-4">
-                    <label>Cantidad a Mover</label>
-                    {{ formset.empty_form.quantity }}
-                </div>
-                <div class="col-md-1 text-center">
-                    {% if formset.can_delete %}
-                        <label>Borrar</label>
-                        {{ formset.empty_form.DELETE }}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+{% block form_content %}
+<div class="form-section">
+  <h5 class="section-title">Datos del Traslado</h5>
+  <div class="form-content">
+    <div class="row">
+      <div class="col-md-6">{{ master_form.ware_origin }}</div>
+      <div class="col-md-6">{{ master_form.ware_destin }}</div>
+      <div class="col-md-12 mt-3">{{ master_form.description }}</div>
     </div>
+  </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 1. Diccionario de Producto -> Presentación para autocompletar
-    const presentations = {
-        {% for p in products_in_stock %}
-            "{{ p.pk }}": "{{ p.presentation }}",
-        {% endfor %}
-    };
+<div class="form-section">
+  <h5 class="section-title">Productos a Trasladar</h5>
+  <div class="form-content">
+    {{ formset.management_form }}
+    <div id="formset-container">
+      {% for form in formset %}
+      <div class="product-form border rounded p-3 mb-3">
+        <div class="row align-items-center">
+          <div class="col-md-6">{{ form.product }}</div>
+          <div class="col-md-4">{{ form.quantity }}</div>
+          
+          <div class="d-none">{{ form.DELETE }}</div>
 
-    const formsetContainer = document.getElementById('formset-container');
-    const addButton = document.getElementById('add-form');
-    const totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
-    const template = document.getElementById('empty-form-template');
+          <div class="col-md-2 d-flex align-items-center">
+            <button type="button" class="btn btn-outline-danger delete-btn">Eliminar</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
 
-    // 2. Función para actualizar la presentación mostrada
-    function updatePresentation(selectElement) {
-        const productId = selectElement.value;
-        const presentationText = selectElement.closest('.product-form').querySelector('.presentation-text');
-        if (productId && presentations[productId]) {
-            presentationText.textContent = `Presentación: ${presentations[productId]}`;
-        } else {
-            presentationText.textContent = '';
-        }
-    }
-
-    // 3. Lógica para agregar un nuevo formulario
-    addButton.addEventListener('click', function() {
-        const formNum = parseInt(totalFormsInput.value);
-        let newForm = template.innerHTML.replace(/__prefix__/g, formNum);
-        const newElement = document.createElement('div');
-        newElement.innerHTML = newForm;
-        
-        formsetContainer.appendChild(newElement.firstElementChild);
-        totalFormsInput.value = formNum + 1;
-
-        // Añadir listener al nuevo select de producto
-        const newSelect = formsetContainer.querySelector(`[name="form-${formNum}-product"]`);
-        newSelect.addEventListener('change', () => updatePresentation(newSelect));
-    });
-
-    // 4. Asignar listeners a los formularios que ya existen al cargar la página
-    formsetContainer.addEventListener('change', function(event) {
-        if (event.target.classList.contains('product-select')) {
-            updatePresentation(event.target);
-        }
-    });
-
-    // Ejecutar una vez al cargar por si hay datos previos
-    document.querySelectorAll('.product-select').forEach(updatePresentation);
-});
-</script>
+    <button type="button" id="add-form" class="btn btn-outline-success mt-2">+ Agregar Producto</button>
+    
+    <template id="empty-form-template">
+        <div class="product-form border rounded p-3 mb-3">
+            <div class="row align-items-center">
+                <div class="col-md-6">{{ formset.empty_form.product }}</div>
+                <div class="col-md-4">{{ formset.empty_form.quantity }}</div>
+                <div class="d-none"></div>
+                <div class="col-md-2 d-flex align-items-center">
+                    <button type="button" class="btn btn-outline-danger delete-btn">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+  </div>
+</div>
 {% endblock %}
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'list.css' %}">
+
+{% block extra_js %}
+<script src="{% static 'js/transfer.js' %}"></script>
 {% endblock %}
