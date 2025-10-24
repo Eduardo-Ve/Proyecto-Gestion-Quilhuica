@@ -1,4 +1,3 @@
-
 {% extends 'base/base.html' %}
 {% load static %}
 
@@ -7,43 +6,88 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="{% static '/style.css' %}">
+<style>
+  .filter-card{
+    background:#fff;border-radius:12px;box-shadow:0 8px 20px rgba(0,0,0,.06);
+    padding:16px;margin-bottom:18px;border:1px solid #eef2f7;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4 text-center text-primary">Productos por Caseta</h2>
+  <h2 class="mb-4 text-center text-primary">Productos por Caseta</h2>
 
-    {% if inventarios %}
+  <!-- Filtro de Caseta -->
+  <div class="filter-card">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-sm-8 col-md-6">
+        <label for="id_caseta" class="form-label fw-semibold">Caseta</label>
+        <select id="id_caseta" name="caseta" class="form-select">
+          <option value="">Todas</option>
+          {% for c in casetas %}
+            <option value="{{ c.id }}" {% if caseta_seleccionada|default:'' == c.id|stringformat:'s' %}selected{% endif %}>
+              {{ c.name_ware }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-sm-4 col-md-3 d-grid">
+        <button class="btn btn-primary" type="submit">Aplicar</button>
+      </div>
+      {% if caseta_seleccionada %}
+      <div class="col-sm-4 col-md-3 d-grid">
+        <a class="btn btn-outline-secondary" href="{% url 'warehouse:productos_por_caseta' %}">Quitar filtro</a>
+
+      </div>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if inventarios %}
     <table class="table table-bordered table-hover shadow-sm">
-        <thead class="table-dark">
+      <thead class="table-dark">
+        <tr>
+          <th>Caseta</th>
+          <th>Producto</th>
+          <th>Presentación</th>
+          <th>Cantidad (envases)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if caseta_seleccionada %}
+          {# Si hay caseta filtrada, no hace falta agrupar #}
+          {% for inv in inventarios %}
             <tr>
-                <th>Caseta</th>
-                <th>Producto</th>
-                <th>Presentación</th>
-                <th>Cantidad (envases)</th>
+              <td>{{ inv.warehouse.name_ware }}</td>
+              <td>{{ inv.product.name_prod }}</td>
+              <td>{{ inv.presentation.content_value }} {{ inv.presentation.content_unit }}</td>
+              <td>{{ inv.quantity_packages }}</td>
             </tr>
-        </thead>
-        <tbody>
-            {% regroup inventarios by warehouse as inventario_por_caseta %}
-            {% for grupo in inventario_por_caseta %}
+          {% endfor %}
+        {% else %}
+          {# Sin filtro: agrupar por caseta como tenías #}
+          {% regroup inventarios by warehouse as inventario_por_caseta %}
+          {% for grupo in inventario_por_caseta %}
             <tr class="table-secondary">
-                <th colspan="4">{{ grupo.grouper.name_ware }}</th>
+              <th colspan="4">{{ grupo.grouper.name_ware }}</th>
             </tr>
             {% for inv in grupo.list %}
-            <tr>
+              <tr>
                 <td></td>
                 <td>{{ inv.product.name_prod }}</td>
                 <td>{{ inv.presentation.content_value }} {{ inv.presentation.content_unit }}</td>
                 <td>{{ inv.quantity_packages }}</td>
-            </tr>
+              </tr>
             {% endfor %}
-            {% endfor %}
-        </tbody>
+          {% endfor %}
+        {% endif %}
+      </tbody>
     </table>
-    {% else %}
+  {% else %}
     <div class="alert alert-warning text-center">
-        No hay productos registrados en las casetas.
+      No hay productos registrados en las casetas.
     </div>
-    {% endif %}
+  {% endif %}
 </div>
 {% endblock %}
