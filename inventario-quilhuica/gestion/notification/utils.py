@@ -6,6 +6,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
+
 # --- Configuración de servicios ---
 # Twilio WhatsApp
 TWILIO_SID = config("TWILIO_ACCOUNT_SID")
@@ -20,14 +21,14 @@ EMAIL_FROM = config("EMAIL_HOST_USER")
 def send_low_stock_alert(threshold=100):
     """
     Revisa el inventario y envía alertas de bajo stock a los administradores
-    por WhatsApp y correo electrónico.
+    por WhatsApp y correo electrónico, con formato mejorado.
     """
-    # 1. Definimos los tipos de bodega a revisar
+
     tipos_de_bodega = ['shed', 'main']
-    
-    # 2. Buscamos productos con bajo stock en esas bodegas
+
+    # Buscar productos con bajo stock
     low_stock_items = Inventory.objects.filter(
-        warehouse__type__in=tipos_de_bodega, 
+        warehouse__type__in=tipos_de_bodega,
         quantity_packages__lte=threshold
     )
 
@@ -35,28 +36,40 @@ def send_low_stock_alert(threshold=100):
         print("No se encontraron productos con bajo stock. Tarea finalizada.")
         return
 
-    # 3. Buscamos a los administradores con datos de contacto válidos (forma robusta)
-    print("Buscando administradores con datos de contacto...")
+    # Buscar administradores con datos válidos
     admins = Usuario.objects.filter(
-        roles__name_role="Administrador",  # Filtra a través de la relación
+        roles__name_role="Administrador",
         telefono__isnull=False,
         correo__isnull=False
     ).distinct()
 
     if not admins.exists():
-        print("Productos con bajo stock encontrados, pero no hay administradores para notificar.")
+        print("No hay administradores para notificar.")
         return
-    
-    print(f"Se encontraron {admins.count()} administradores para notificar.")
 
-    # 4. Construimos el mensaje de alerta
-    whatsapp_msg = " Alerta de Stock Bajo:\n"
+    # ============================
+    # 📱 Mensaje de WhatsApp (formato tipo tabla)
+    # ============================
+    whatsapp_msg = (
+        "🚨 *Alerta de Stock Bajo*\n\n"
+        "```\n"
+        "Producto           | Ubicación       | Cantidad\n"
+        "──────────────────────────────────────\n"
+    )
+
     for item in low_stock_items:
-        whatsapp_msg += f"- {item.product.name_prod} | Ubicación: {item.warehouse.name_ware} | Cantidad: {item.quantity_packages}\n"
+        prod = item.product.name_prod[:18].ljust(18)
+        ware = item.warehouse.name_ware[:15].ljust(15)
+        qty = str(round(item.quantity_packages, 1)).rjust(6)
+        whatsapp_msg += f"{prod} | {ware} | {qty}\n"
 
-    # 5. Enviamos las alertas a cada administrador
+    whatsapp_msg += "```\n\n_Por favor revise los niveles de inventario en el sistema._"
+
+    # ============================
+    # Envío de mensajes
+    # ============================
     for admin in admins:
-        # --- Envío por WhatsApp ---
+        # WhatsApp
         try:
             message = client.messages.create(
                 from_=TWILIO_WHATSAPP_FROM,
@@ -67,14 +80,15 @@ def send_low_stock_alert(threshold=100):
         except Exception as e:
             print(f"Error enviando WhatsApp a {admin.nombre_usuario}: {str(e)}")
 
-        # --- Envío por Email ---
+        # Email
         try:
-            # Preparamos el contenido del correo desde una plantilla HTML
-            html_content = render_to_string('notification/low_stock_alert.html', {'low_stock_items': low_stock_items, 'admin_name': admin.nombre_usuario})
+            html_content = render_to_string(
+                'notification/low_stock_alert.html',
+                {'low_stock_items': low_stock_items, 'admin_name': admin.nombre_usuario}
+            )
             text_content = strip_tags(html_content)
-            
             email = EmailMultiAlternatives(
-                subject="Alerta de Stock Bajo",
+                subject="🚨 Alerta de Stock Bajo",
                 body=text_content,
                 from_email=EMAIL_FROM,
                 to=[admin.correo],

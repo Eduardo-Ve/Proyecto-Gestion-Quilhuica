@@ -1,35 +1,77 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; }
-        h2 { color: #d9534f; }
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background-color: #f2f2f2; }
-    </style>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      max-width: 600px;
+      margin: 0 auto;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #c0392b;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9em;
+      color: #777;
+    }
+  </style>
 </head>
 <body>
-    <h2> Alerta de Stock Bajo en Casetas</h2>
-    <p>Los siguientes productos tienen bajo stock:</p>
+  <div class="container">
+    <h2>🚨 Alerta de Stock Bajo</h2>
+    <p>Estimado/a <strong>{{ admin_name }}</strong>,</p>
+    <p>Se han detectado los siguientes productos con niveles de inventario por debajo del umbral establecido:</p>
+
     <table>
-        <thead>
-            <tr>
-                <th>Producto</th>
-                <th>Caseta</th>
-                <th>Cantidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in low_stock_items %}
-            <tr>
-                <td>{{ item.product.name_prod }}</td>
-                <td>{{ item.warehouse.name_ware }}</td>
-                <td>{{ item.quantity_packages }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Ubicación</th>
+          <th>Cantidad</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in low_stock_items %}
+        <tr>
+          <td>{{ item.product.name_prod }}</td>
+          <td>{{ item.warehouse.name_ware }}</td>
+          <td>{{ item.quantity_packages }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
     </table>
+
+    <p class="footer">
+      Este mensaje se ha generado automáticamente por el sistema de inventario.<br>
+      Por favor revise el panel de administración para tomar las acciones correspondientes.
+    </p>
+  </div>
 </body>
 </html>
