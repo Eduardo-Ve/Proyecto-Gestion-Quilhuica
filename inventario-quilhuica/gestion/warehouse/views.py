@@ -30,19 +30,30 @@ def productos_por_caseta(request):
     Vista principal para ver productos por caseta.
     - Si viene ?caseta=<id> se filtra y se renderiza listado plano.
     - Si NO hay filtro, se agrupa por caseta (regroup en el template).
+    Importante: ordenamos por warehouse__name_ware para que regroup no repita grupos.
     """
     casetas = Warehouse.objects.filter(type='shed').order_by('name_ware')
 
     caseta_id = request.GET.get('caseta')  # puede venir None/'' si no hay filtro
-    inventarios = (
+    qs = (
         Inventory.objects
-        .filter(warehouse__in=casetas)
         .select_related('product', 'presentation', 'warehouse')
-        .order_by('warehouse__name_ware', 'product__name_prod')
+        .filter(warehouse__type='shed')
     )
 
     if caseta_id:
-        inventarios = inventarios.filter(warehouse_id=caseta_id)
+        inventarios = qs.filter(warehouse_id=caseta_id).order_by(
+            'product__name_prod',
+            'presentation__content_unit',
+            'presentation__content_value',
+        )
+    else:
+        inventarios = qs.order_by(
+            'warehouse__name_ware',               # clave para que regroup funcione
+            'product__name_prod',
+            'presentation__content_unit',
+            'presentation__content_value',
+        )
 
     context = {
         'casetas': casetas,

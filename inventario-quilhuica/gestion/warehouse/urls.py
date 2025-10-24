@@ -11,7 +11,6 @@ urlpatterns = [
     path('transfer-product/', views.transfer_product, name='transfer_product'),
     path('inventario/', views.productos_por_caseta, name='productos_por_caseta'),
     path('inventario/', views.productos_por_caseta, name='inventory_list'),
-
     path('ajax/products/<int:warehouse_id>/', views.get_products_by_warehouse, name='get_products_by_warehouse'),
 ]
 
