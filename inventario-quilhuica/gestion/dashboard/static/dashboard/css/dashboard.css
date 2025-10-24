@@ -1,7 +1,8 @@
 /* === DASHBOARD GENERAL === */
 .dashboard-container {
-  max-width: 1250px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
+  padding: 0 2rem; /* deja un pequeño espacio de respiración a los lados */
 }
 
 .page-header {
@@ -201,7 +202,7 @@
 /* === CHARTS === */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(450px, 1fr));
   gap: 1.5rem;
   margin-top: 1.5rem;
 }
@@ -363,4 +364,153 @@
   .kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+}
+
+/* === TABLA DE NOTIFICACIONES RESPONSIVA === */
+
+/* Vista de escritorio (normal) */
+.notifications-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+
+.notifications-table th,
+.notifications-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.notifications-table thead {
+  background: #f8fafc;
+  font-weight: 600;
+  color: #475569;
+}
+
+.notifications-table tr.unread {
+  background-color: #fffef6;
+  border-left: 4px solid #facc15;
+}
+
+/* Vista móvil */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: visible !important; /* Evita el scroll horizontal */
+  }
+
+  /* Ocultar el encabezado en móvil */
+  .notifications-table thead {
+    display: none;
+  }
+
+  /* Cada fila será una "card" */
+  .notifications-table tbody tr {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 0.8rem 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Cada celda se convierte en una línea con etiqueta */
+  .notifications-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0;
+    font-size: 0.9rem;
+    border: none;
+  }
+
+  .notifications-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: capitalize;
+  }
+
+  /* Mensaje ocupa más espacio */
+  .notifications-table .message-cell {
+    white-space: normal;
+    text-overflow: initial;
+    overflow: visible;
+  }
+
+  /* Estado visualmente destacado */
+  .notifications-table td:last-child {
+    justify-content: flex-start;
+  }
+}
+
+/* === OPTIMIZACIÓN DE ESPACIO === */
+
+/* Título más compacto */
+.dashboard-title {
+  font-size: 2.2rem; /* antes 3.2rem */
+  margin-bottom: 0.2rem;
+}
+
+/* Menor separación entre secciones */
+.page-header {
+  padding-bottom: 0.3rem;
+  margin-bottom: 0.8rem;
+}
+
+/* Compactar KPIs */
+.kpi-section {
+  margin-top: 0.5rem;
+  margin-bottom: 0.8rem;
+  gap: 0.8rem;
+}
+
+.kpi-card {
+  padding: 0.8rem 1rem;
+  min-height: 80px;
+}
+
+.kpi-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 1.4rem;
+}
+
+/* Compactar texto en KPI */
+.kpi-label {
+  font-size: 0.8rem;
+}
+.kpi-value {
+  font-size: 1.4rem;
+}
+
+/* Compactar gráficos */
+.charts-grid {
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+
+/* Altura reducida de gráficos Plotly */
+.chart-card .js-plotly-plot,
+.chart-card .plotly,
+.chart-card iframe {
+  height: 280px !important; /* antes 400px */
+}
+
+/* Compactar tabla */
+.notifications-wrap {
+  margin-top: 1.2rem;
+}
+.notifications-table th,
+.notifications-table td {
+  padding: 0.4rem 0.6rem;
+}
+.notifications-table {
+  font-size: 0.85rem;
+}
+
+/* Compactar espacio vacío */
+.card.empty-state {
+  padding: 1rem;
 }
