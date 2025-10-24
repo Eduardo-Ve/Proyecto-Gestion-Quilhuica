@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Bienvenido a Gestión Quilhuica</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f6f7f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background-color: #00C451 ;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .content {
+      padding: 25px;
+    }
+    .content h2 {
+      color: #00C451 ;
+      margin-top: 0;
+    }
+    .password-box {
+      background-color: #f0f4ff;
+      border: 1px solid #d5e0ff;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      letter-spacing: 1px;
+      color: #afd8c0ff ;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #666;
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>¡Bienvenido a Gestión Quilhuica!</h1>
+    </div>
+    <div class="content">
+      <h2>Hola {{ nombre_usuario }},</h2>
+      <p>Tu cuenta ha sido creada exitosamente en el sistema <strong>Gestión Quilhuica</strong>.</p>
+
+      <p>Tu contraseña temporal es:</p>
+      <div class="password-box">{{ temp_password }}</div>
+
+      <p>Por razones de seguridad, deberás cambiar esta contraseña al ingresar por primera vez al sistema.</p>
+
+      <p>👉 Puedes acceder al sistema desde:  
+        <a href="{{ login_url }}">{{ login_url }}</a>
+      </p>
+
+      <p>Si no solicitaste este acceso, por favor comunícate con el administrador.</p>
+      <p>No entregues este codigo de acceso a nadie, puedes copiarlo y pegarlo en el acceso del sistema.</p>
+
+    </div>
+    <div class="footer">
+      &copy; {{ year }} Gestión Quilhuica — Todos los derechos reservados.
+    </div>
+  </div>
+</body>
+</html>

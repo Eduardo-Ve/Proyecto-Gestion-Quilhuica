@@ -1,0 +1,25 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '/form_global.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+  <h2 class="form-title text-center mb-4">{{ title }}</h2>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% block form_content %}{% endblock %}
+    <div class="text-end mt-4">
+      <button type="submit" class="btn btn-success px-4">{{ submit_text|default:"Guardar" }}</button>
+      {% if cancel_url %}
+      <a href="{{ cancel_url }}" class="btn btn-secondary px-4">Cancelar</a>
+      {% endif %}
+    </div>
+  </form>
+</div>
+{% endblock %}

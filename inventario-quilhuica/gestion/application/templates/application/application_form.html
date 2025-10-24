@@ -1,0 +1,88 @@
+{% extends "base/form_base.html" %}
+{% load static %}
+
+{% block title %}Crear Nueva Aplicación de Productos{% endblock %}
+
+{% block form_content %}
+<div class="form-section">
+  <h5 class="section-title">Datos de la Aplicación</h5>
+  <div class="form-content">
+    <div class="row">
+      <div class="col-md-6">
+        <label>{{ form.ware.label }}</label>
+        {{ form.ware }}
+        {% if form.ware.errors %}
+          <div class="text-danger mt-1">{{ form.ware.errors }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="form-section">
+  <h5 class="section-title">Productos</h5>
+  <div class="form-content">
+    {{ formset.management_form }}
+
+    <!-- Contenedor principal del formset -->
+    <div id="formset-container">
+      {% for form in formset %}
+      <div class="product-form">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-5">
+            <label>{{ form.product.label }}</label>
+            {{ form.product }}
+            {% if form.product.errors %}
+              <div class="text-danger mt-1 small">{{ form.product.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-3">
+            <label>{{ form.quantity_packages.label }}</label>
+            {{ form.quantity_packages }}
+            {% if form.quantity_packages.errors %}
+              <div class="text-danger mt-1 small">{{ form.quantity_packages.errors }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-1 d-flex justify-content-end">
+            <button type="button" class="btn btn-outline-danger delete-btn w-100">
+              Eliminar 
+            </button>
+          </div>
+        </div>
+        <div class="d-none">{{ form.DELETE }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Botón para añadir nuevo producto -->
+    <button type="button" id="add-form" class="btn btn-success mt-3">
+       Añadir otro producto
+    </button>
+
+    <!-- Plantilla de formulario vacío -->
+    <template id="empty-form-template">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-5">
+          <label>{{ formset.empty_form.product.label }}</label>
+          {{ formset.empty_form.product }}
+        </div>
+        <div class="col-md-3">
+          <label>{{ formset.empty_form.quantity_packages.label }}</label>
+          {{ formset.empty_form.quantity_packages }}
+        </div>
+
+        <div class="col-md-1 d-flex justify-content-end">
+          <button type="button" class="btn btn-outline-danger delete-btn w-100">
+            Eliminar
+          </button>
+        </div>
+        <div class="d-none">{{ formset.empty_form.DELETE }}</div>
+      </div>
+    </template>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/application_dynamic.js' %}"></script>
+{% endblock %}

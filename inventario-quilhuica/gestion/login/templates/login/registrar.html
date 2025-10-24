@@ -1,31 +1,12 @@
-{% load static %}
+{% extends "base/form_base.html" %}
 
-<!DOCTYPE html>
-<html lang="es">
-  <link rel="stylesheet" href="{% static 'style_register.css' %}" />
+{% block title %}Registrar Nuevo Usuario{% endblock %}
 
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registrar Usuario</title>
-  </head>
-
-  <body>
-    <h2>Registrar Nuevo Usuario</h2>
-    <form method="post">
-      {% csrf_token %} {{ form.as_p }}
-      <button type="submit">Registrar</button>
-    </form>
-  </body>
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-    integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9"
-    crossorigin="anonymous"
-  />
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
-    crossorigin="anonymous"
-  ></script>
-</html>
+{% block form_content %}
+<div class="form-section">
+  <h5 class="section-title">Datos del Usuario</h5>
+  <div class="form-content">
+    {{ form.as_p }}
+  </div>
+</div>
+{% endblock %}

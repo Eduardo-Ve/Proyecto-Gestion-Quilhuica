@@ -42,6 +42,7 @@ class Inventory(models.Model):
     presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     warehouse  = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
     quantity_packages = models.FloatField(default=0)
+    total_content = models.FloatField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -49,3 +50,8 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.product.name_prod} ({self.quantity_packages} unidades en {self.warehouse.name_ware})"
+    def save(self, *args, **kwargs):
+        """Actualizar total_content automáticamente"""
+        if self.presentation:
+            self.total_content = self.quantity_packages * self.presentation.content_value
+        super().save(*args, **kwargs)

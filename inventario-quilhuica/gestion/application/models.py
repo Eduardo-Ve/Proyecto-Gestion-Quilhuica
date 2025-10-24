@@ -15,7 +15,6 @@ class Application(models.Model):
 class ApplicationDetail(models.Model):
     application = models.ForeignKey(Application, related_name='details', on_delete=models.CASCADE)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
     quantity_packages = models.FloatField()
 
     def __str__(self):
