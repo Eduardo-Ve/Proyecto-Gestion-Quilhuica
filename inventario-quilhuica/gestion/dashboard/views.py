@@ -3,49 +3,36 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
 from django.shortcuts import render
 from django.utils import timezone
-
-# 🎨 Configuración de estilo global para Plotly
-import plotly.io as pio
-import plotly.express as px
-from plotly.offline import plot
+import json
 
 from warehouse.models import Warehouse, Inventory, Movement
 from product.models import Product
 from application.models import Application
 from notification.models import Notification
 
-LOW_STOCK_THRESHOLD = 100     # Bajo este valor se definirá si el stock es bajo.
-EXPIRING_DAYS = 60            # Bajo este valor se definirá la alerta de producto próximo a vencer.
-WINDOW_DAYS = 30              # Cantidad de días hacia atrás para visualizar gráficos.
+LOW_STOCK_THRESHOLD = 100     # Stock bajo
+EXPIRING_DAYS = 60            # Productos próximos a vencer
+WINDOW_DAYS = 30              # Días hacia atrás para análisis
 
-pio.templates["custom_dashboard"] = pio.templates["plotly_white"]
-pio.templates["custom_dashboard"].layout.update(
-    font=dict(family="Inter, Montserrat, sans-serif", size=13, color="#1e293b"),
-    title=dict(
-        font=dict(size=17, color="#1e293b", family="Inter, sans-serif"),
-        x=0.5,  # centrado
-        xanchor="center"
-    ),
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-    hoverlabel=dict(bgcolor="white", font_size=12),
-    margin=dict(l=40, r=40, t=60, b=40),
-)
-pio.templates.default = "custom_dashboard"
 
+# --- Funciones auxiliares ---
 def _user_is_shed_manager(user):
     try:
         return user.has_role("Encargado de Caseta")
     except Exception:
         return False
 
+
 def _get_accessible_warehouses(user, ware_param=None):
+    """Determina las bodegas accesibles para el usuario."""
     if not user.is_authenticated:
         return Warehouse.objects.none(), None, None
 
     main = Warehouse.objects.filter(type="main").first()
+
     if not user.is_staff and _user_is_shed_manager(user) and user.caseta_asignada:
         return Warehouse.objects.filter(pk=user.caseta_asignada.pk), main, user.caseta_asignada
+
     elif user.is_staff:
         sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
         if ware_param:
@@ -53,8 +40,11 @@ def _get_accessible_warehouses(user, ware_param=None):
             if selected:
                 return Warehouse.objects.filter(pk=selected.pk), main, selected
         return sheds, main, None
+
     return Warehouse.objects.none(), main, None
 
+
+# --- Vista principal del dashboard ---
 @login_required
 def dashboard(request):
     ware_param = request.GET.get("ware")
@@ -73,6 +63,7 @@ def dashboard(request):
 
     inv_qs = Inventory.objects.filter(warehouse__in=sheds_qs)
 
+    # --- KPI data ---
     total_skus = inv_qs.values("product_id").distinct().count()
     agg_pack = inv_qs.aggregate(total_packages=Sum("quantity_packages"), total_content=Sum("total_content"))
     total_packages = agg_pack.get("total_packages") or 0
@@ -85,22 +76,13 @@ def dashboard(request):
         expire_at__lte=expiring_limit
     ).count()
 
+    # --- Datos para los gráficos ---
     top_n = 15
     stock_by_product = (
         inv_qs.values("product__name_prod")
         .annotate(packages=Sum("quantity_packages"), content=Sum("total_content"))
         .order_by("-packages")[:top_n]
     )
-    
-    # GRÁFICO DE STOCK, CON DISEÑO
-    fig_stock = px.bar(
-        x=[s["product__name_prod"] for s in stock_by_product],
-        y=[s["packages"] or 0 for s in stock_by_product],
-        labels={"x": "Producto", "y": "Paquetes"},
-        title="Top productos por stock (paquetes)",
-        color_discrete_sequence=["#3b82f6"]  # azul coherente con “info”
-    )
-    plot_stock = plot(fig_stock, output_type="div", include_plotlyjs=True)
 
     apps_qs = (
         Application.objects.filter(
@@ -111,17 +93,6 @@ def dashboard(request):
         .annotate(total=Sum("details__quantity_packages"))
         .order_by("applied_at__date")
     )
-
-    #GRÁFICO DE APLICACIONES DE PRODUCTOS, CON DISEÑO
-    fig_apps = px.line(
-        x=[a["applied_at__date"] for a in apps_qs],
-        y=[a["total"] or 0 for a in apps_qs],
-        labels={"x": "Fecha", "y": "Paquetes Aplicados"},
-        title=f"Aplicaciones (últimos {WINDOW_DAYS} días)",
-        markers=True,
-        color_discrete_sequence=["#22c55e"]  # verde “éxito”
-    )
-    plot_apps = plot(fig_apps, output_type="div", include_plotlyjs=True)
 
     moves_qs = (
         Movement.objects.filter(
@@ -134,38 +105,32 @@ def dashboard(request):
         .order_by("moved_at__date")
     )
 
-    # GRÁFICO DE MOVIMIENTO DE PRODUCTOS, CON DISEÑO
-    fig_moves = px.line(
-        x=[m["moved_at__date"] for m in moves_qs],
-        y=[m["total"] or 0 for m in moves_qs],
-        labels={"x": "Fecha", "y": "Cantidad Trasladada"},
-        title=f"Traslados a casetas (últimos {WINDOW_DAYS} días)",
-        markers=True,
-        color_discrete_sequence=["#6366f1"]  # índigo “contenido”
-    )
-    plot_moves = plot(fig_moves, output_type="div", include_plotlyjs=True)
-
     cat_dist = (
         inv_qs.values("product__category__name_cat")
         .annotate(total=Sum("quantity_packages"))
         .order_by("-total")
     )
 
-    # GRÁFICO DE DISTRIBUCIÓN POR !!CATEGORÍA!! DE PRODUCTOS.
-    fig_cat = px.pie(
-        names=[c["product__category__name_cat"] or "Sin categoría" for c in cat_dist],
-        values=[c["total"] or 0 for c in cat_dist],
-        title="Distribución de stock por categoría",
-        color_discrete_sequence=["#3b82f6", "#22c55e", "#6366f1", "#f59e0b", "#ef4444"]
-    )
-    plot_cat = plot(fig_cat, output_type="div", include_plotlyjs=True)
+    # --- Serialización a JSON para Chart.js ---
+    chart_data = {
+        "stock_labels": [s["product__name_prod"] for s in stock_by_product],
+        "stock_values": [s["packages"] or 0 for s in stock_by_product],
+        "apps_labels": [a["applied_at__date"].strftime("%Y-%m-%d") for a in apps_qs],
+        "apps_values": [a["total"] or 0 for a in apps_qs],
+        "moves_labels": [m["moved_at__date"].strftime("%Y-%m-%d") for m in moves_qs],
+        "moves_values": [m["total"] or 0 for m in moves_qs],
+        "cat_labels": [c["product__category__name_cat"] or "Sin categoría" for c in cat_dist],
+        "cat_values": [c["total"] or 0 for c in cat_dist],
+    }
 
+    chart_json = json.dumps(chart_data)
+
+    # --- Notificaciones ---
     notif_filter = Q()
     if not request.user.is_staff and _user_is_shed_manager(request.user):
         notif_filter &= (Q(user=request.user) | Q(warehouse__warehouse__in=sheds_qs))
-    else:
-        if selected_shed:
-            notif_filter &= Q(warehouse__warehouse=selected_shed)
+    elif selected_shed:
+        notif_filter &= Q(warehouse__warehouse=selected_shed)
 
     notifications = (
         Notification.objects
@@ -176,6 +141,7 @@ def dashboard(request):
 
     all_sheds = Warehouse.objects.filter(type="shed").order_by("name_ware") if request.user.is_staff else None
 
+    # --- Contexto para template ---
     context = {
         "no_access": False,
         "is_staff": request.user.is_staff,
@@ -189,14 +155,10 @@ def dashboard(request):
         "expiring_products": expiring_products,
         "LOW_STOCK_THRESHOLD": LOW_STOCK_THRESHOLD,
         "EXPIRING_DAYS": EXPIRING_DAYS,
-
-        "plot_stock": plot_stock,
-        "plot_apps": plot_apps,
-        "plot_moves": plot_moves,
-        "plot_cat": plot_cat,
-
-        "notifications": notifications,
         "WINDOW_DAYS": WINDOW_DAYS,
+
+        "chart_json": chart_json,
+        "notifications": notifications,
     }
-    # 👇 **ruta del template dentro de la app `dashboard`**
+
     return render(request, "dashboard/dashboard.html", context)

@@ -1,111 +1,113 @@
-(function () {
-  const D = window.DASH_DATA || {};
-  console.log("📊 DASH_DATA recibido:", D);
-
-  function safeArray(x) {
-    return Array.isArray(x) ? x : [];
-  }
-
-  const charts = {
-    movimientos: document.getElementById("chart-movimientos"),
-    stock: document.getElementById("chart-stock-shed"),
-    top: document.getElementById("chart-top-used"),
-    cat: document.getElementById("chart-used-cat"),
-  };
-
-  // 1️⃣ Movimientos por día
-  const movData = safeArray(D.chart_mov_daily);
-  if (charts.movimientos && movData.length) {
-    const grouped = {};
-    movData.forEach(r => {
-      if (!grouped[r.movement_type]) grouped[r.movement_type] = [];
-      grouped[r.movement_type].push(r);
-    });
-    const traces = Object.entries(grouped).map(([type, arr]) => ({
-      x: arr.map(a => a.day),
-      y: arr.map(a => a.total),
-      name: type,
-      type: 'bar'
-    }));
-    Plotly.newPlot(charts.movimientos, traces, {
-      barmode: 'stack',
-      xaxis: { title: 'Fecha' },
-      yaxis: { title: 'Cantidad movida' },
-      margin: { t: 30, r: 10, l: 40, b: 40 },
-    }, { responsive: true });
-  } else if (charts.movimientos) {
-    charts.movimientos.innerHTML = "<div class='text-muted text-center p-3'>Sin datos de movimientos</div>";
-  }
-
-  // 2️⃣ Stock por caseta
-  const stockData = safeArray(D.chart_stock_by_shed);
-  if (charts.stock && stockData.length) {
-    const labels = stockData.map(x => x["warehouse__name_ware"]);
-    const values = stockData.map(x => x.total);
-    Plotly.newPlot(charts.stock, [{ labels, values, type: 'pie', hole: .35 }], {
-      legend: { orientation: 'h' },
-      margin: { t: 30, r: 10, l: 10, b: 10 },
-    }, { responsive: true });
-  } else if (charts.stock) {
-    charts.stock.innerHTML = "<div class='text-muted text-center p-3'>Sin datos de stock</div>";
-  }
-
-  // 3️⃣ Top productos
-  const topData = safeArray(D.chart_top_used);
-  if (charts.top && topData.length) {
-    const x = topData.map(x => x["product__name_prod"]).reverse();
-    const y = topData.map(x => x.total).reverse();
-    Plotly.newPlot(charts.top, [{
-      x: y, y: x, type: 'bar', orientation: 'h'
-    }], {
-      margin: { t: 30, r: 20, l: 150, b: 40 },
-      xaxis: { title: 'Cantidad usada' },
-      yaxis: { automargin: true },
-    }, { responsive: true });
-  } else if (charts.top) {
-    charts.top.innerHTML = "<div class='text-muted text-center p-3'>Sin datos de productos</div>";
-  }
-
-  // 4️⃣ Consumo por categoría
-  const catData = safeArray(D.chart_used_by_cat);
-  if (charts.cat && catData.length) {
-    const x = catData.map(x => x["product__category__name_cat"]);
-    const y = catData.map(x => x.total);
-    Plotly.newPlot(charts.cat, [{
-      x, y, type: 'scatter', mode: 'lines+markers'
-    }], {
-      xaxis: { title: 'Categoría' },
-      yaxis: { title: 'Cantidad usada' },
-      margin: { t: 30, r: 20, l: 40, b: 40 },
-    }, { responsive: true });
-  } else if (charts.cat) {
-    charts.cat.innerHTML = "<div class='text-muted text-center p-3'>Sin datos de consumo</div>";
-  }
-})();
-
-/* ANIMACIÓN DE TABLA NOTIFICACIONES */
 document.addEventListener("DOMContentLoaded", () => {
-  // Simulación: cuando se hace clic en una fila no leída → animación "leída"
-  const unreadRows = document.querySelectorAll(".notification-row.unread");
+  const chartData = JSON.parse(document.getElementById("chartData").textContent);
 
+  // === GRÁFICOS ===
+  // Top Stock
+  new Chart(document.getElementById("chartStock"), {
+    type: "bar",
+    data: {
+      labels: chartData.stock_labels,
+      datasets: [{
+        label: "Paquetes",
+        data: chartData.stock_values,
+        backgroundColor: "#3b82f6",
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Producto" } },
+        y: { title: { display: true, text: "Paquetes" } },
+      },
+    },
+  });
+
+  // Aplicaciones
+  new Chart(document.getElementById("chartApps"), {
+    type: "line",
+    data: {
+      labels: chartData.apps_labels,
+      datasets: [{
+        label: "Paquetes Aplicados",
+        data: chartData.apps_values,
+        borderColor: "#22c55e",
+        tension: 0.3,
+        fill: true,
+        backgroundColor: "rgba(34,197,94,0.1)",
+        pointRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Fecha" } },
+        y: { title: { display: true, text: "Cantidad" } },
+      },
+    },
+  });
+
+  // Traslados
+  new Chart(document.getElementById("chartMoves"), {
+    type: "line",
+    data: {
+      labels: chartData.moves_labels,
+      datasets: [{
+        label: "Cantidad Trasladada",
+        data: chartData.moves_values,
+        borderColor: "#6366f1",
+        tension: 0.3,
+        fill: true,
+        backgroundColor: "rgba(99,102,241,0.1)",
+        pointRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { title: { display: true, text: "Fecha" } },
+        y: { title: { display: true, text: "Cantidad" } },
+      },
+    },
+  });
+
+  // Stock por Categoría
+  new Chart(document.getElementById("chartCat"), {
+    type: "doughnut",
+    data: {
+      labels: chartData.cat_labels,
+      datasets: [{
+        label: "Stock",
+        data: chartData.cat_values,
+        backgroundColor: [
+          "#3b82f6", "#22c55e", "#6366f1", "#f59e0b", "#ef4444"
+        ],
+      }],
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: "bottom" },
+      },
+    },
+  });
+
+  // === ANIMACIÓN DE TABLA NOTIFICACIONES ===
+  const unreadRows = document.querySelectorAll(".notification-row.unread");
   unreadRows.forEach((row) => {
     row.addEventListener("click", () => {
-      // agrega una clase temporal para animar el cambio
       row.classList.add("read-transition");
-
-      // elimina la animación luego de unos segundos
       setTimeout(() => {
         row.classList.remove("unread", "read-transition");
       }, 1500);
     });
   });
-});
 
-/* GRÁFICOS DEL DASHBOARD */
-document.querySelectorAll(".chart-card").forEach((card, i) => {
-  card.style.opacity = 0;
-  setTimeout(() => {
-    card.style.transition = "opacity 0.6s ease";
-    card.style.opacity = 1;
-  }, 150 * i);
+  // === ANIMACIÓN DE ENTRADA DE GRÁFICOS ===
+  document.querySelectorAll(".chart-card").forEach((card, i) => {
+    card.style.opacity = 0;
+    setTimeout(() => {
+      card.style.transition = "opacity 0.6s ease";
+      card.style.opacity = 1;
+    }, 150 * i);
+  });
 });
