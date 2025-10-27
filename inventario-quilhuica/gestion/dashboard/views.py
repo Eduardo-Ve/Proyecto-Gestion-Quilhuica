@@ -141,6 +141,34 @@ def dashboard(request):
 
     all_sheds = Warehouse.objects.filter(type="shed").order_by("name_ware") if request.user.is_staff else None
 
+    # --- 🧩 Actividad Reciente ---
+    recent_movements = Movement.objects.select_related("product", "ware_destin", "moved_by").order_by("-moved_at")[:10]
+    recent_applications = Application.objects.select_related("ware", "applied_by").order_by("-applied_at")[:10]
+
+    recent_activity = []
+    for m in recent_movements:
+        recent_activity.append({
+            "type": "movement",
+            "timestamp": m.moved_at,
+            "user": m.moved_by.nombre_usuario if m.moved_by else "—",
+            "message": (
+                f"Traslado de {m.quantity} {m.product.name_prod} a {m.ware_destin.name_ware}"
+                if m.movement_type == "traslado"
+                else f"Ingreso de {m.product.name_prod} al inventario principal"
+            ),
+        })
+
+    for a in recent_applications:
+        recent_activity.append({
+            "type": "application",
+            "timestamp": a.applied_at,
+            "user": a.applied_by.nombre_usuario if a.applied_by else "—",
+            "message": f"Aplicación realizada en {a.ware.name_ware}",
+        })
+
+    # Ordenar actividades combinadas por fecha (descendente)
+    recent_activity = sorted(recent_activity, key=lambda x: x["timestamp"], reverse=True)[:10]
+
     # --- Contexto para template ---
     context = {
         "no_access": False,
@@ -159,6 +187,7 @@ def dashboard(request):
 
         "chart_json": chart_json,
         "notifications": notifications,
+        "recent_activity": recent_activity,
     }
 
     return render(request, "dashboard/dashboard.html", context)

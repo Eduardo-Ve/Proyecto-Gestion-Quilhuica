@@ -85,6 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     options: {
       responsive: true,
+      aspect_ratio: 2,
       plugins: {
         legend: { position: "bottom" },
       },
@@ -110,4 +111,40 @@ document.addEventListener("DOMContentLoaded", () => {
       card.style.opacity = 1;
     }, 150 * i);
   });
+
+  // === 🧾 Tooltip de mensaje al hacer clic en el producto ===
+  document.querySelectorAll(".product-cell").forEach((cell) => {
+    // 1) Tomamos el valor crudo del data-attribute
+    const raw = cell.dataset.message || "";
+
+    // 2) Lo decodificamos (convierte \uXXXX, \n, \" , etc.)
+    let message = raw;
+    try {
+      message = JSON.parse(`"${raw}"`);
+    } catch (e) {
+      // si algo raro pasa, usamos el crudo
+      message = raw;
+    }
+
+    // 3) Si quieres respetar saltos de línea, conviértelos a <br>
+    const htmlMessage = message.replace(/\n/g, "<br>");
+
+    // 4) Construimos el tooltip
+    const tooltip = document.createElement("div");
+    tooltip.className = "product-tooltip";
+    tooltip.innerHTML = htmlMessage;
+    cell.appendChild(tooltip);
+
+    cell.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const visible = tooltip.style.display === "block";
+      document.querySelectorAll(".product-tooltip").forEach((t) => (t.style.display = "none"));
+      tooltip.style.display = visible ? "none" : "block";
+    });
+  });
+
+  document.addEventListener("click", () => {
+    document.querySelectorAll(".product-tooltip").forEach((t) => (t.style.display = "none"));
+  });
+
 });

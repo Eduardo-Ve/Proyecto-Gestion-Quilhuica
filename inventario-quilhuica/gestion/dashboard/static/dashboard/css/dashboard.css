@@ -2,7 +2,7 @@
 .dashboard-container {
   max-width: 100%;
   margin: 0;
-  padding: 0 2rem; /* deja un pequeño espacio de respiración a los lados */
+  padding: 0 1rem; /* 🔹 Reducimos el padding lateral para aprovechar más espacio */
 }
 
 .page-header {
@@ -12,135 +12,39 @@
 
 .dashboard-title {
   font-weight: 800;
-  font-size: 3.2rem;
+  font-size: 2.2rem;
   color: #1e293b;
+  margin-bottom: 0.2rem;
 }
 
-/* === KPI SECTION (Uniforme y Responsiva) === */
+/* === KPI SECTION === */
 .kpi-section {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.8rem;
 }
 
-/* Tarjeta KPI */
 .kpi-card {
   display: flex;
   align-items: center;
   gap: 1rem;
   background: #fff;
   border-radius: 14px;
-  padding: 1.2rem 1.4rem;
+  padding: 0.8rem 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
   transition: all 0.25s ease;
-  min-height: 100px;
+  min-height: 80px;
+  opacity: 0;
+  transform: translateY(15px);
+  animation: fadeInUp 0.8s ease forwards;
 }
 
 .kpi-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-}
-
-/* Ícono */
-.kpi-icon {
-  flex-shrink: 0;
-  font-size: 2rem;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-}
-
-/* Colores coherentes con tus KPI */
-.kpi-card.success .kpi-icon { background-color: #22c55e; }
-.kpi-card.info .kpi-icon { background-color: #3b82f6; }
-.kpi-card.accent .kpi-icon { background-color: #6366f1; }
-.kpi-card.warn .kpi-icon { background-color: #f59e0b; }
-.kpi-card.danger .kpi-icon { background-color: #ef4444; }
-
-/* Información */
-.kpi-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  flex: 1;
-}
-
-.kpi-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6b7280;
-}
-
-.kpi-value {
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1.2;
-}
-
-/* Adaptable para pantallas pequeñas */
-@media (max-width: 768px) {
-  .kpi-section {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .kpi-section {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* === ICONOS === */
-.kpi-icon {
-  font-size: 2rem;
-  margin-right: 1rem;
-  color: #475569;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: #f8fafc;
-}
-
-.kpi-card.success .kpi-icon { color: #22c55e; background: #ecfdf5; }
-.kpi-card.info .kpi-icon { color: #3b82f6; background: #eff6ff; }
-.kpi-card.accent .kpi-icon { color: #6366f1; background: #eef2ff; }
-.kpi-card.warn .kpi-icon { color: #f59e0b; background: #fffbeb; }
-.kpi-card.danger .kpi-icon { color: #ef4444; background: #fef2f2; }
-
-.kpi-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.kpi-label {
-  font-size: 0.9rem;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.kpi-value {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #1e293b;
-  margin-top: 0.2rem;
-}
-
-.kpi-card {
-  opacity: 0;
-  transform: translateY(15px);
-  animation: fadeInUp 0.8s ease forwards;
 }
 
 .kpi-card:nth-child(2) { animation-delay: 0.1s; }
@@ -149,22 +53,40 @@
 .kpi-card:nth-child(5) { animation-delay: 0.4s; }
 
 @keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* === RESPONSIVE === */
-@media (max-width: 768px) {
-  .kpi-card {
-    flex-direction: row;
-    text-align: left;
-  }
+/* Ícono KPI */
+.kpi-icon {
+  width: 42px;
+  height: 42px;
+  font-size: 1.4rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* === SECCIÓN DE FILTRADO === */
+.kpi-card.success .kpi-icon { color: #22c55e; background: #ecfdf5; }
+.kpi-card.info .kpi-icon { color: #3b82f6; background: #eff6ff; }
+.kpi-card.accent .kpi-icon { color: #6366f1; background: #eef2ff; }
+.kpi-card.warn .kpi-icon { color: #f59e0b; background: #fffbeb; }
+.kpi-card.danger .kpi-icon { color: #ef4444; background: #fef2f2; }
 
+.kpi-label {
+  font-size: 0.8rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.2rem;
+}
+
+/* === FILTRO DE CASETAS === */
 .shed-filter-compact {
   font-size: 0.9rem;
 }
@@ -189,22 +111,59 @@
   outline: none;
 }
 
-/* Para pantallas pequeñas */
-@media (max-width: 768px) {
-  .shed-filter-compact {
-    flex-wrap: wrap;
-  }
-  .filter-select-compact {
-    width: 100%;
-  }
+/* === NUEVO LAYOUT PRINCIPAL === */
+.dashboard-main {
+  display: grid;
+  grid-template-columns: 500px 1fr 480px; /* 🔹 3 columnas: notificaciones + gráficos + espacio derecho */
+  gap: 1rem;
+  align-items: stretch;
+  margin-top: 1rem;
+}
+
+/* COLUMNA IZQUIERDA (Notificaciones) */
+.dashboard-left {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: 100%;
+  overflow-y: auto;
+  margin-left: -1rem; /* 🔹 Desplazamos un poco hacia el borde izquierdo */
+}
+
+/* Scroll estético */
+.dashboard-left::-webkit-scrollbar {
+  width: 6px;
+}
+.dashboard-left::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dashboard-left::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* COLUMNA DERECHA (Gráficos) */
+.dashboard-right {
+  flex: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dashboard-spacer {
+  background: transparent; /* 🔹 Espacio vacío, sin borde ni sombra */
+  min-height: 100%;
 }
 
 /* === CHARTS === */
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(450px, 1fr));
-  gap: 1.5rem;
-  margin-top: 1.5rem;
+  gap: 0.8rem;
+  margin-top: 0.8rem;
 }
 
 .chart-card {
@@ -214,6 +173,7 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   padding: 1rem 1.5rem;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
 }
 
 .chart-card:hover {
@@ -229,50 +189,29 @@
   margin-bottom: 0.75rem;
 }
 
-/* === FIX para Plotly dentro de grid === */
-/* === FIX PARA QUE LOS GRÁFICOS RESPETEN EL GRID === */
-.charts-grid>.chart-card {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-card .js-plotly-plot,
-.chart-card .plotly,
-.chart-card iframe {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 400px !important;
-  /* altura uniforme */
+/* 🔹 Ajuste de tamaño para el gráfico de categorías (inferior derecho) */
+#chartCat {
+  max-width: 85% !important;
+  max-height: 85% !important;
   margin: 0 auto;
 }
 
-/* Evita que Plotly use el ancho de viewport */
-.js-plotly-plot .main-svg {
-  width: 100% !important;
-}
-
-/* Si Plotly aplica display:block de 100vw, lo forzamos a inline-block */
-.plotly-graph-div {
-  display: inline-block !important;
-  width: 100% !important;
-}
-
-/* Responsivo */
-@media (max-width: 992px) {
-  .charts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* === NOTIFICATIONS TABLE === */
+/* === TABLA DE NOTIFICACIONES === */
 .notifications-table {
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #e2e8f0;
   background-color: #fff;
-  font-size: 0.93rem;
+  font-size: 0.85rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.notifications-table th,
+.notifications-table td {
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  white-space: nowrap;
 }
 
 .notifications-table thead th {
@@ -285,6 +224,7 @@
 .notification-row.unread {
   background-color: #fffef8;
   border-left: 4px solid #facc15;
+  animation: unreadPulse 1.8s ease-in-out infinite;
 }
 
 .notification-row:hover {
@@ -292,53 +232,16 @@
   transition: background-color 0.2s ease;
 }
 
-.message-cell {
-  max-width: 400px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.badge {
-  font-size: 0.78rem;
-  border-radius: 6px;
-  padding: 0.35rem 0.5rem;
-}
-
-/* Subtle color classes */
-.bg-warning-subtle { background-color: #fff7e6 !important; }
-.bg-danger-subtle { background-color: #fee2e2 !important; }
-.bg-success-subtle { background-color: #ecfdf5 !important; }
-.bg-info-subtle { background-color: #e0f2fe !important; }
-.bg-secondary-subtle { background-color: #f1f5f9 !important; }
-
-/* === ANIMACIONES DE NOTIFICACIONES === */
-
-/* 💡 Animación de brillo lateral (para nuevas notificaciones no leídas) */
 @keyframes unreadPulse {
-  0% {
-    box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0, 0, 0, 0);
-  }
-  50% {
-    box-shadow: inset 3px 0 0 #facc15, 0 0 6px rgba(250, 204, 21, 0.4);
-  }
-  100% {
-    box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0, 0, 0, 0);
-  }
+  0% { box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0,0,0,0); }
+  50% { box-shadow: inset 3px 0 0 #facc15, 0 0 6px rgba(250,204,21,0.4); }
+  100% { box-shadow: inset 3px 0 0 #facc15, 0 0 0 rgba(0,0,0,0); }
 }
 
-.notification-row.unread {
-  background-color: #fffef8;
-  border-left: 4px solid #facc15;
-  animation: unreadPulse 1.8s ease-in-out infinite;
-}
-
-/* 🌿 Transición suave al marcar como leída */
 .notification-row {
   transition: background-color 0.4s ease, box-shadow 0.4s ease, border-left-color 0.4s ease;
 }
 
-/* Al volverse leída, se desvanece el brillo */
 .notification-row.unread.read-transition {
   animation: none;
   background-color: #f9fafb;
@@ -346,65 +249,125 @@
   box-shadow: inset 3px 0 0 #22c55e;
 }
 
-/* === EMPTY STATE === */
+/* === ESTADOS Y COLORES === */
+.badge {
+  font-size: 0.78rem;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+}
+
+.bg-warning-subtle { background-color: #fff7e6 !important; }
+.bg-danger-subtle { background-color: #fee2e2 !important; }
+.bg-success-subtle { background-color: #ecfdf5 !important; }
+.bg-info-subtle { background-color: #e0f2fe !important; }
+.bg-secondary-subtle { background-color: #f1f5f9 !important; }
+
+/* === ESTADO VACÍO === */
 .card.empty-state {
   border: 1px dashed #d1d5db;
   background: #f9fafb;
   color: #6b7280;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
+/* === TOOLTIP DE MENSAJE AL HACER CLICK EN PRODUCTO === */
+.product-tooltip {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1e293b;
+  color: #fff;
+  font-size: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  z-index: 10;
+  white-space: normal;
+  width: 260px;
+  display: none;
+}
+
+.product-tooltip::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+
+.product-cell:hover {
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* === PANEL DE ACTIVIDAD RECIENTE === */
+.dashboard-activity {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.activity-feed {
+  max-height: 520px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.activity-feed::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-feed::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+
+.activity-feed li:hover {
+  background: #f8f9fa;
+}
+
+
 /* === RESPONSIVE === */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .dashboard-main {
+    grid-template-columns: 1fr; /* 🔹 En pantallas pequeñas, todo se apila */
+  }
+  .dashboard-spacer {
+    display: none; /* 🔹 No mostramos el espacio vacío */
+  }
+}
+
+@media (max-width: 992px) {
+  .dashboard-main {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .dashboard-left {
+    order: 2;
+    max-height: none;
+  }
+  .dashboard-right {
+    order: 1;
+  }
   .charts-grid {
     grid-template-columns: 1fr;
   }
-
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
 }
 
-/* === TABLA DE NOTIFICACIONES RESPONSIVA === */
-
-/* Vista de escritorio (normal) */
-.notifications-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95rem;
-}
-
-.notifications-table th,
-.notifications-table td {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  white-space: nowrap;
-}
-
-.notifications-table thead {
-  background: #f8fafc;
-  font-weight: 600;
-  color: #475569;
-}
-
-.notifications-table tr.unread {
-  background-color: #fffef6;
-  border-left: 4px solid #facc15;
-}
-
-/* Vista móvil */
 @media (max-width: 768px) {
-  .table-responsive {
-    overflow-x: visible !important; /* Evita el scroll horizontal */
-  }
+  .shed-filter-compact { flex-wrap: wrap; }
+  .filter-select-compact { width: 100%; }
+  .notifications-table thead { display: none; }
 
-  /* Ocultar el encabezado en móvil */
-  .notifications-table thead {
-    display: none;
-  }
-
-  /* Cada fila será una "card" */
   .notifications-table tbody tr {
     display: block;
     background: #ffffff;
@@ -415,7 +378,6 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
   }
 
-  /* Cada celda se convierte en una línea con etiqueta */
   .notifications-table td {
     display: flex;
     justify-content: space-between;
@@ -432,85 +394,9 @@
     text-transform: capitalize;
   }
 
-  /* Mensaje ocupa más espacio */
   .notifications-table .message-cell {
     white-space: normal;
     text-overflow: initial;
     overflow: visible;
   }
-
-  /* Estado visualmente destacado */
-  .notifications-table td:last-child {
-    justify-content: flex-start;
-  }
-}
-
-/* === OPTIMIZACIÓN DE ESPACIO === */
-
-/* Título más compacto */
-.dashboard-title {
-  font-size: 2.2rem; /* antes 3.2rem */
-  margin-bottom: 0.2rem;
-}
-
-/* Menor separación entre secciones */
-.page-header {
-  padding-bottom: 0.3rem;
-  margin-bottom: 0.8rem;
-}
-
-/* Compactar KPIs */
-.kpi-section {
-  margin-top: 0.5rem;
-  margin-bottom: 0.8rem;
-  gap: 0.8rem;
-}
-
-.kpi-card {
-  padding: 0.8rem 1rem;
-  min-height: 80px;
-}
-
-.kpi-icon {
-  width: 42px;
-  height: 42px;
-  font-size: 1.4rem;
-}
-
-/* Compactar texto en KPI */
-.kpi-label {
-  font-size: 0.8rem;
-}
-.kpi-value {
-  font-size: 1.4rem;
-}
-
-/* Compactar gráficos */
-.charts-grid {
-  gap: 0.8rem;
-  margin-top: 0.8rem;
-}
-
-/* Altura reducida de gráficos Plotly */
-.chart-card .js-plotly-plot,
-.chart-card .plotly,
-.chart-card iframe {
-  height: 280px !important; /* antes 400px */
-}
-
-/* Compactar tabla */
-.notifications-wrap {
-  margin-top: 1.2rem;
-}
-.notifications-table th,
-.notifications-table td {
-  padding: 0.4rem 0.6rem;
-}
-.notifications-table {
-  font-size: 0.85rem;
-}
-
-/* Compactar espacio vacío */
-.card.empty-state {
-  padding: 1rem;
 }
