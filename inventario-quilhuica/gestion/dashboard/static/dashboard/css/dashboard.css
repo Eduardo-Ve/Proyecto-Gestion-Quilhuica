@@ -1,9 +1,14 @@
 /* === DASHBOARD GENERAL === */
-.dashboard-container {
-  max-width: 100%;
-  margin: 0;
-  padding: 0 1rem; /* 🔹 Reducimos el padding lateral para aprovechar más espacio */
+main {
+    max-width: 100% !important;
+    margin: 1.5rem 0 !important;
+    padding: 0 1rem !important;
 }
+
+.dashboard-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 
 .page-header {
   border-bottom: 2px solid #f0f2f5;
@@ -113,11 +118,11 @@
 
 /* === NUEVO LAYOUT PRINCIPAL === */
 .dashboard-main {
-  display: grid;
-  grid-template-columns: 500px 1fr 480px; /* 🔹 3 columnas: notificaciones + gráficos + espacio derecho */
-  gap: 1rem;
-  align-items: stretch;
-  margin-top: 1rem;
+    display: grid;
+    grid-template-columns: 500px 1fr 400px;
+    gap: 1rem;
+    align-items: stretch;
+    margin-top: 1rem;
 }
 
 /* COLUMNA IZQUIERDA (Notificaciones) */
@@ -307,19 +312,25 @@
 
 /* === PANEL DE ACTIVIDAD RECIENTE === */
 .dashboard-activity {
-  background: #fff;
-  border-radius: 1rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-  padding: 1rem 1.2rem;
   display: flex;
   flex-direction: column;
   height: 100%;
+  align-self: stretch; /* 🔹 Asegura que se estire dentro del grid */
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  padding: 1rem 1.2rem 3rem;
 }
 
 .activity-feed {
-  max-height: 520px;
-  overflow-y: auto;
-  scrollbar-width: thin;
+    max-height: 520px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+.dashboard-activity .section-head {
+  flex-shrink: 0;
+  margin-bottom: 0.75rem;
 }
 
 .activity-feed::-webkit-scrollbar {
@@ -327,7 +338,7 @@
 }
 
 .activity-feed::-webkit-scrollbar-thumb {
-  background: #ccc;
+  background: #d1d5db;
   border-radius: 3px;
 }
 
@@ -339,7 +350,7 @@
 /* === RESPONSIVE === */
 @media (max-width: 1200px) {
   .dashboard-main {
-    grid-template-columns: 1fr; /* 🔹 En pantallas pequeñas, todo se apila */
+      grid-template-columns: 1fr;
   }
   .dashboard-spacer {
     display: none; /* 🔹 No mostramos el espacio vacío */

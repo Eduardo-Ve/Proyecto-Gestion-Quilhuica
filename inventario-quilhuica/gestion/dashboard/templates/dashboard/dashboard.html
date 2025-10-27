@@ -9,63 +9,6 @@
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
-  main {
-    max-width: 100% !important;
-    margin: 1.5rem 0 !important;
-    padding: 0 1rem !important;
-  }
-
-  .dashboard-container {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-
-  /* === LAYOUT PRINCIPAL === */
-  .dashboard-main {
-    display: grid;
-    grid-template-columns: 500px 1fr 400px;
-    gap: 1rem;
-    align-items: stretch;
-    margin-top: 1rem;
-  }
-
-  /* === PANEL DE ACTIVIDAD RECIENTE === */
-  .dashboard-activity {
-    background: #fff;
-    border-radius: 1rem;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
-    padding: 1rem 1.2rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .activity-feed {
-    max-height: 520px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-  }
-
-  .activity-feed::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .activity-feed::-webkit-scrollbar-thumb {
-    background: #ccc;
-    border-radius: 3px;
-  }
-
-  .activity-feed li:hover {
-    background: #f8f9fa;
-  }
-
-  @media (max-width: 1200px) {
-    .dashboard-main {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
 {% endblock %}
 
 {% block content %}
