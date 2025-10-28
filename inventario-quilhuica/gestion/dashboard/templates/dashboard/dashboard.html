@@ -128,9 +128,11 @@
                 {% endif %}
               </td>
 
-              <td data-label="Producto" class="fw-semibold text-dark product-cell d-block d-md-table-cell"
-                data-message="{{ n.message|escapejs }}">
+              <td class="fw-semibold text-dark position-relative">
                 {{ n.product.name_prod }}
+                <i class="bi bi-info-circle-fill text-primary ms-2 info-icon product-info" role="button"
+                  data-message="{{ n.message|escapejs }}">
+                </i>
               </td>
 
               <td data-label="Caseta" class="d-block d-md-table-cell">
@@ -227,12 +229,11 @@
   </div>
 
   {% endif %}
-</div>
 
-{% block extra_js %}
-<script id="chartData" type="application/json">
+  {% block extra_js %}
+  <script id="chartData" type="application/json">
   {{ chart_json|safe }}
 </script>
-<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
-{% endblock %}
-{% endblock %}
+  <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+  {% endblock %}
+  {% endblock %}

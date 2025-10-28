@@ -185,6 +185,25 @@ main {
   background: #94a3b8;
 }
 
+/* Limitar alto de la lista de notificaciones */
+.dashboard-left .table-responsive {
+  max-height: 360px;   /* ≈ altura para 3 tarjetas */
+  overflow-y: auto;
+  padding-right: 6px; /* espacio para scrollbar */
+}
+
+/* Scroll estético */
+.dashboard-left .table-responsive::-webkit-scrollbar {
+  width: 6px;
+}
+.dashboard-left .table-responsive::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+.dashboard-left .table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 /* COLUMNA DERECHA (Gráficos) */
 .dashboard-right {
   flex: 2;
@@ -371,11 +390,17 @@ main {
   font-size: 0.85rem;
   padding: 0.6rem 0.9rem;
   border-radius: 8px;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  z-index: 10;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+  z-index: 20;
   white-space: normal;
   width: 260px;
   display: none;
+}
+
+.info-icon {
+  cursor: pointer;
+  font-size: 1.2rem;
+  vertical-align: middle;
 }
 
 .product-tooltip::after {
@@ -443,6 +468,26 @@ main {
   transform: translateY(0);
 }
 
+/* Desktop Grande (≥ 1400px): 3 columnas normales */
+@media (min-width: 1400px) {
+  .dashboard-main {
+    grid-template-columns: 300px 1fr 330px;
+  }
+}
+
+/* Laptop / Notebook (1024px a 1399px): 2 columnas */
+@media (max-width: 1399px) {
+  .dashboard-main {
+    grid-template-columns: 1fr 1fr;
+  }
+  .dashboard-left {
+    order: 2;
+  }
+  .dashboard-activity {
+    order: 3;
+  }
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 1200px) {
   .dashboard-main {
@@ -451,7 +496,7 @@ main {
 
   .dashboard-spacer {
     display: none;
-    /* 🔹 No mostramos el espacio vacío */
+    /* No mostramos el espacio vacío */
   }
 }
 
@@ -465,7 +510,6 @@ main {
   .dashboard-right,
   .dashboard-activity {
     order: unset;
-    /* evita mezclas raras */
     width: 100%;
   }
 
@@ -572,6 +616,19 @@ main {
     background: #fff;
     padding: 0.7rem;
   }
+
+  .product-cell {
+    position: relative !important; /* Asegura el contexto */
+  }
+
+  .product-tooltip {
+    width: 90% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    top: 100% !important; /* 🔹 Se muestra debajo del texto */
+    z-index: 9999;
+  }
+
 }
 
 @media (max-width: 480px) {

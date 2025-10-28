@@ -85,22 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
     },
     options: {
       responsive: true,
-      aspect_ratio: 2,
-      plugins: {
-        legend: { position: "bottom" },
-      },
+      plugins: { legend: { position: "bottom" } },
     },
-  });
-
-  // === ANIMACIÓN DE TABLA NOTIFICACIONES ===
-  const unreadRows = document.querySelectorAll(".notification-row.unread");
-  unreadRows.forEach((row) => {
-    row.addEventListener("click", () => {
-      row.classList.add("read-transition");
-      setTimeout(() => {
-        row.classList.remove("unread", "read-transition");
-      }, 1500);
-    });
   });
 
   // === ANIMACIÓN DE ENTRADA DE GRÁFICOS ===
@@ -112,34 +98,26 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 150 * i);
   });
 
-  // === 🧾 Tooltip de mensaje al hacer clic en el producto ===
-  document.querySelectorAll(".product-cell").forEach((cell) => {
-    // 1) Tomamos el valor crudo del data-attribute
-    const raw = cell.dataset.message || "";
+  // === ✅ NUEVO TOOLTIP PARA PRODUCTO (ICONO DE INFO) ===
+  document.querySelectorAll(".product-info").forEach((icon) => {
+    const raw = icon.dataset.message || "";
 
-    // 2) Lo decodificamos (convierte \uXXXX, \n, \" , etc.)
     let message = raw;
-    try {
-      message = JSON.parse(`"${raw}"`);
-    } catch (e) {
-      // si algo raro pasa, usamos el crudo
-      message = raw;
-    }
-
-    // 3) Si quieres respetar saltos de línea, conviértelos a <br>
+    try { message = JSON.parse(`"${raw}"`); } catch (e) {}
     const htmlMessage = message.replace(/\n/g, "<br>");
 
-    // 4) Construimos el tooltip
     const tooltip = document.createElement("div");
     tooltip.className = "product-tooltip";
     tooltip.innerHTML = htmlMessage;
-    cell.appendChild(tooltip);
 
-    cell.addEventListener("click", (e) => {
+    icon.parentElement.style.position = "relative";
+    icon.parentElement.appendChild(tooltip);
+
+    icon.addEventListener("click", (e) => {
       e.stopPropagation();
-      const visible = tooltip.style.display === "block";
+      const isVisible = tooltip.style.display === "block";
       document.querySelectorAll(".product-tooltip").forEach((t) => (t.style.display = "none"));
-      tooltip.style.display = visible ? "none" : "block";
+      tooltip.style.display = isVisible ? "none" : "block";
     });
   });
 
@@ -148,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // === AJAX PARA ACTUALIZAR "ACTIVIDAD RECIENTE" CADA 5 MINUTOS ===
-  const FEED_URL = "/dashboard/activity-feed/";  // Ajustar si tu URL es distinta
+  const FEED_URL = "/dashboard/activity-feed/";
   const feedEl = document.getElementById("activity-feed");
   const statusEl = document.getElementById("activity-status");
 
@@ -159,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const resp = await fetch(FEED_URL, { cache: "no-store" });
       const data = await resp.json();
 
-      // Si no vienen datos → mensaje vacío
       if (!data.items || data.items.length === 0) {
         feedEl.innerHTML = `
           <li class="list-group-item text-muted small py-3 text-center">
@@ -169,15 +146,11 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // Renderizar lista con animación
       feedEl.classList.remove("show");
       feedEl.innerHTML = data.items.map(it => `
         <li class="list-group-item d-flex flex-column border-0 border-bottom small py-2">
           <div class="d-flex justify-content-between align-items-center">
-            <span>
-              <i class="bi bi-${it.icon} me-1"></i>
-              ${it.title}
-            </span>
+            <span><i class="bi bi-${it.icon} me-1"></i>${it.title}</span>
             <small class="text-muted">${it.when}</small>
           </div>
           <span class="text-muted ms-4">
@@ -186,19 +159,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </li>
       `).join("");
 
-      // Activar fade-in suave
       setTimeout(() => feedEl.classList.add("show"), 50);
-
       if (statusEl) statusEl.textContent = "Actualizado";
     } catch (error) {
       if (statusEl) statusEl.textContent = "Sin conexión";
     }
   }
 
-  // Ejecutar ahora
   updateActivityFeed();
-
-  // Ejecutar automáticamente cada 5 minutos (300000 ms)
-  setInterval(updateActivityFeed, 300000);
+  setInterval(updateActivityFeed, 300000); // 5 min
 
 });
