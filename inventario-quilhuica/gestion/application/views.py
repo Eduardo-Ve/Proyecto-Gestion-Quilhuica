@@ -5,7 +5,7 @@ from .forms import ApplicationForm, ApplicationDetailFormSet
 from warehouse.models import Inventory, Warehouse
 from django.http import JsonResponse
 from product.models import *
-from application.models import * 
+from application.models import *
 import json
 
 
@@ -17,6 +17,8 @@ def create_application(request):
     if not user.is_staff and not user_warehouse:
         messages.error(request, "No tienes una caseta asignada. Contacta al administrador.")
         return redirect('/')
+
+    error_message = None  #  Nueva variable para errores visibles
 
     if request.method == 'POST':
         form = ApplicationForm(request.POST, user=user)
@@ -38,7 +40,7 @@ def create_application(request):
                 prefix='details'
             )
 
-            # Inyectar queryset de productos
+            # Inyectar queryset de productos disponibles en esa caseta
             for f in formset.forms:
                 f.fields['product'].queryset = Product.objects.filter(
                     product_id__in=Inventory.objects.filter(
@@ -49,28 +51,29 @@ def create_application(request):
             if formset.is_valid():
                 valid_forms = [
                     f for f in formset.forms
-                    if f.cleaned_data 
+                    if f.cleaned_data
                     and not f.cleaned_data.get('DELETE', False)
-                    and f.cleaned_data.get('product')  # ✅ Verificar que tenga producto
-                    and f.cleaned_data.get('quantity_packages')  # ✅ Verificar que tenga cantidad
+                    and f.cleaned_data.get('product')  #  Tiene producto
+                    and f.cleaned_data.get('quantity_packages')  #  Tiene cantidad
                 ]
 
+                #  Mostrar error visual si no hay productos válidos
                 if not valid_forms:
-                    messages(request, "Debes agregar al menos un producto antes de continuar.")
+                    error_message = " Debes agregar al menos un producto antes de continuar."
                     return render(request, 'application/application_form.html', {
                         'form': form,
                         'formset': formset,
+                        'error_message': error_message,
                     })
 
-                # 🔥 Guardar datos en sesión para confirmación
+                #  Guardar datos temporalmente en sesión para la confirmación
                 products_data = []
                 for f in valid_forms:
                     product = f.cleaned_data['product']
                     quantity = f.cleaned_data['quantity_packages']
-                    
-                    # Obtener información del inventario
+
                     inv = Inventory.objects.get(product=product, warehouse=selected_warehouse)
-                    
+
                     products_data.append({
                         'product_id': product.product_id,
                         'product_name': product.name_prod,
@@ -104,23 +107,21 @@ def create_application(request):
     return render(request, 'application/application_form.html', {
         'form': form,
         'formset': formset,
+        'error_message': error_message,  #  Agregado al contexto
     })
 
 
 def confirm_application(request):
     """Vista de confirmación: mostrar resumen antes de guardar"""
-    
-    # Verificar que hay datos pendientes
+
     pending_data = request.session.get('pending_application')
     if not pending_data:
         messages.warning(request, "No hay ninguna aplicación pendiente de confirmar.")
         return redirect('application:create_application')
 
     if request.method == 'POST':
-        # Usuario confirmó, proceder a guardar
         return save_application(request)
 
-    # Mostrar página de confirmación
     return render(request, 'application/application_confirm.html', {
         'warehouse_name': pending_data['warehouse_name'],
         'products': pending_data['products'],
@@ -130,7 +131,7 @@ def confirm_application(request):
 @transaction.atomic
 def save_application(request):
     """Guardar definitivamente la aplicación tras confirmación"""
-    
+
     pending_data = request.session.get('pending_application')
     if not pending_data:
         messages.error(request, "Sesión expirada. Por favor, crea la aplicación nuevamente.")
@@ -140,7 +141,7 @@ def save_application(request):
         user = request.user
         warehouse = Warehouse.objects.get(id=pending_data['warehouse_id'])
 
-        # Crear la aplicación
+        # Crear aplicación principal
         application = Application.objects.create(
             ware=warehouse,
             applied_by=user
@@ -151,31 +152,28 @@ def save_application(request):
             product = Product.objects.get(product_id=product_data['product_id'])
             quantity = product_data['quantity']
 
-            # Crear detalle
             ApplicationDetail.objects.create(
                 application=application,
                 product=product,
                 quantity_packages=quantity
             )
 
-            # Actualizar inventario
             inv = Inventory.objects.get(product=product, warehouse=warehouse)
-            
-            # Validación final de stock (por seguridad)
+
             if inv.quantity_packages < quantity:
                 raise ValueError(f"Stock insuficiente para {product.name_prod}")
-            
+
             inv.quantity_packages -= quantity
             inv.save()
 
-        # Limpiar sesión
+        # Limpiar sesión tras guardar
         del request.session['pending_application']
 
-        messages.success(request, f"✅ Aplicación #{application.id} creada exitosamente y stock actualizado.")
+        messages.success(request, f" Aplicación #{application.id} creada exitosamente y stock actualizado.")
         return redirect('application:create_application')
 
     except Exception as e:
-        messages.error(request, f"❌ Error al guardar la aplicación: {str(e)}")
+        messages.error(request, f" Error al guardar la aplicación: {str(e)}")
         return redirect('application:confirm_application')
 
 
@@ -184,7 +182,6 @@ def cancel_application(request):
     if 'pending_application' in request.session:
         del request.session['pending_application']
         messages.info(request, "Aplicación cancelada.")
-    
     return redirect('application:create_application')
 
 

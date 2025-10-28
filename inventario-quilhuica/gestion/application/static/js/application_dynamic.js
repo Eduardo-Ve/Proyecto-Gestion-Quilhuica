@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const totalFormsInput = document.querySelector("input[name$='TOTAL_FORMS']");
   const emptyFormTemplate = document.getElementById("empty-form-template");
 
-  // 🔄 Cargar productos según caseta seleccionada
+  //  Cargar productos según caseta seleccionada
   async function loadProducts(warehouseId) {
     const selects = document.querySelectorAll("select[name$='product']");
     if (!warehouseId) {
@@ -34,11 +34,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       updateAvailableProducts();
     } catch (err) {
-      console.error("❌ Error al cargar productos:", err);
+      console.error(" Error al cargar productos:", err);
     }
   }
 
-  // 🚫 Elimina completamente productos ya seleccionados
+  //  Evita duplicados: elimina productos ya seleccionados en otros selects
   function updateAvailableProducts() {
     const selects = document.querySelectorAll("select[name$='product']");
     const selectedValues = Array.from(selects)
@@ -57,17 +57,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🗑️ Eliminar fila de producto
+  //  Eliminar fila de producto (con animación)
   function addRemoveListeners() {
     document.querySelectorAll(".delete-btn").forEach((btn) => {
       btn.onclick = () => {
         const formDiv = btn.closest(".product-form");
-        
-        // ✅ Usar animación de fade out antes de eliminar
+
+        //  Animación de fade-out antes de eliminar
         formDiv.style.transition = "opacity 0.3s ease, transform 0.3s ease";
         formDiv.style.opacity = "0";
         formDiv.style.transform = "scale(0.95)";
-        
+
         setTimeout(() => {
           formDiv.remove();
           updateFormCount();
@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ➕ Agregar nuevo producto
+  // Agregar nuevo producto (con animación)
   addFormButton.addEventListener("click", () => {
     const formCount = parseInt(totalFormsInput.value);
     const templateHTML = emptyFormTemplate.innerHTML.replace(/__prefix__/g, formCount);
@@ -86,19 +86,17 @@ document.addEventListener("DOMContentLoaded", () => {
     wrapper.classList.add("product-form", "mb-3", "border", "p-3", "rounded");
     wrapper.innerHTML = templateHTML;
 
-    // ✅ Animación de entrada
+    // Animación entrada
     wrapper.style.opacity = "0";
     wrapper.style.transform = "translateY(-10px)";
-    
     formContainer.appendChild(wrapper);
-    
-    // Trigger animation
+
     setTimeout(() => {
       wrapper.style.transition = "opacity 0.3s ease, transform 0.3s ease";
       wrapper.style.opacity = "1";
       wrapper.style.transform = "translateY(0)";
     }, 10);
-    
+
     updateFormCount();
 
     const warehouseId = warehouseSelect.value;
@@ -107,12 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
     addRemoveListeners();
   });
 
-  // 🔢 Actualizar contador de formularios
+  //  Actualizar contador de formularios dinámicos
   function updateFormCount() {
     const forms = document.querySelectorAll(".product-form");
     totalFormsInput.value = forms.length;
-    
-    // Actualizar los índices de cada formulario
+
     forms.forEach((form, index) => {
       const inputs = form.querySelectorAll("input, select");
       inputs.forEach(input => {
@@ -124,66 +121,82 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // 🧹 Resetear formulario si cambia la caseta
+  // Resetear formulario si cambia la caseta
   warehouseSelect.addEventListener("change", () => {
     formContainer.innerHTML = "";
     totalFormsInput.value = 0;
     loadProducts(warehouseSelect.value);
   });
 
-  // 🔁 Eventos generales
+  //  Detectar cambios de producto
   document.addEventListener("change", (e) => {
     if (e.target.name && e.target.name.endsWith("product")) updateAvailableProducts();
   });
 
-  // ✅ Validación antes de enviar el formulario
+  // Validación antes de enviar el formulario (sin alert)
   const form = document.querySelector("form");
   if (form) {
     form.addEventListener("submit", (e) => {
       const productForms = document.querySelectorAll(".product-form");
       let hasValidProduct = false;
+      let errorBox = document.querySelector("#error-message-box");
+
+      // Si ya existe un mensaje de error previo, eliminarlo
+      if (errorBox) errorBox.remove();
 
       productForms.forEach(productForm => {
         const productSelect = productForm.querySelector("select[name$='product']");
         const quantityInput = productForm.querySelector("input[name$='quantity_packages']");
-        
         if (productSelect && productSelect.value && quantityInput && quantityInput.value) {
           hasValidProduct = true;
         }
       });
 
+      //  Si no hay productos válidos
       if (!hasValidProduct) {
         e.preventDefault();
-        alert("⚠️ Debes agregar al menos un producto con cantidad antes de guardar.");
+
+        const alertBox = document.createElement("div");
+        alertBox.id = "error-message-box";
+        alertBox.className = "alert alert-warning alert-dismissible fade show mt-3";
+        alertBox.role = "alert";
+        alertBox.innerHTML = `
+           Debes agregar al menos un producto con cantidad antes de guardar.
+        `;
+        form.prepend(alertBox);
         return false;
       }
 
-      // Validar que todos los productos seleccionados tengan cantidad
+      //  Validar que todos los productos tengan cantidad y viceversa
       let isValid = true;
       productForms.forEach(productForm => {
         const productSelect = productForm.querySelector("select[name$='product']");
         const quantityInput = productForm.querySelector("input[name$='quantity_packages']");
-        
+
         if (productSelect && productSelect.value && (!quantityInput || !quantityInput.value || quantityInput.value <= 0)) {
           isValid = false;
           quantityInput.style.border = "2px solid #dc3545";
-          setTimeout(() => {
-            quantityInput.style.border = "";
-          }, 2000);
+          setTimeout(() => (quantityInput.style.border = ""), 2000);
         }
-        
+
         if (quantityInput && quantityInput.value && (!productSelect || !productSelect.value)) {
           isValid = false;
           productSelect.style.border = "2px solid #dc3545";
-          setTimeout(() => {
-            productSelect.style.border = "";
-          }, 2000);
+          setTimeout(() => (productSelect.style.border = ""), 2000);
         }
       });
 
       if (!isValid) {
         e.preventDefault();
-        alert("⚠️ Todos los productos deben tener una cantidad válida y viceversa.");
+
+        const alertBox = document.createElement("div");
+        alertBox.id = "error-message-box";
+        alertBox.className = "alert alert-danger alert-dismissible fade show mt-3";
+        alertBox.role = "alert";
+        alertBox.innerHTML = `
+           Todos los productos deben tener una cantidad válida y viceversa.
+        `;
+        form.prepend(alertBox);
         return false;
       }
     });
