@@ -1,25 +1,58 @@
-﻿# forms.py
-
-from django import forms
+﻿from django import forms
 from .models import Product, Presentation, Category
-from warehouse.models import *
+from warehouse.models import Warehouse, Inventory, Movement
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout,  Div, Submit
+from crispy_forms.layout import Layout, Div, Submit
+
 
 class ProductForm(forms.ModelForm):
-    # Campos para nueva categoría
-    create_new_category = forms.BooleanField(required=False, label="Crear nueva categoría")
-    new_category_name = forms.CharField(required=False, label="Nombre de nueva categoría")
-    new_category_description = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows':2}), label="Descripción de categoría")
+    # === CAMPOS NUEVA CATEGORÍA ===
+    create_new_category = forms.BooleanField(
+        required=False,
+        label="Crear nueva categoría",
+        widget=forms.CheckboxInput(attrs={'id': 'id_create_new_category'})
+    )
+    new_category_name = forms.CharField(
+        required=False,
+        label="Nombre de nueva categoría",
+        widget=forms.TextInput(attrs={'placeholder': 'Ej: Insecticida '})
+    )
+    new_category_description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Descripción breve'}),
+        label="Descripción de categoría"
+    )
 
-    # Campos para nueva presentación
-    create_new_presentation = forms.BooleanField(required=False, label="Crear nueva presentación")
-    package_type = forms.ChoiceField(required=False, choices=Presentation.PACKAGE_CHOICES, label="Tipo de empaque")
-    content_value = forms.FloatField(required=False, label="Contenido")
-    content_unit = forms.ChoiceField(required=False, choices=Presentation.UNIT_CHOICES, label="Unidad")
+    # === CAMPOS NUEVA PRESENTACIÓN ===
+    create_new_presentation = forms.BooleanField(
+        required=False,
+        label="Crear nueva presentación",
+        widget=forms.CheckboxInput(attrs={'id': 'id_create_new_presentation'})
+    )
+    package_type = forms.ChoiceField(
+        required=False,
+        choices=Presentation.PACKAGE_CHOICES,
+        label="Tipo de empaque"
+    )
+    content_value = forms.FloatField(
+        required=False,
+        label="Contenido",
+        widget=forms.NumberInput(attrs={'min': '0', 'step': '0.01'})
+    )
+    content_unit = forms.ChoiceField(
+        required=False,
+        choices=Presentation.UNIT_CHOICES,
+        label="Unidad"
+    )
 
-    # Campo stock inicial
-    stock_inicial = forms.FloatField(required=False, min_value=0, label="Stock Inicial")
+    # === STOCK INICIAL ===
+    stock_inicial = forms.FloatField(
+        required=False,
+        min_value=0,
+        label="Stock Inicial",
+        widget=forms.NumberInput(attrs={'placeholder': 'Ej: 10'})
+    )
+
     class Meta:
         model = Product
         fields = ['name_prod', 'category', 'presentation', 'expire_at', 'stock_inicial']
@@ -41,6 +74,7 @@ class ProductForm(forms.ModelForm):
         self.fields['category'].empty_label = "Seleccione una categoría existente"
         self.fields['presentation'].empty_label = "Seleccione una presentación existente"
 
+    # === VALIDACIONES ===
     def clean(self):
         cleaned_data = super().clean()
         create_new_category = cleaned_data.get('create_new_category')
@@ -54,30 +88,29 @@ class ProductForm(forms.ModelForm):
 
         # Validación categoría
         if self.instance.pk:
-            # Edición: solo validar si quiere crear nueva
+            # En edición: validar solo si quiere crear nueva
             if create_new_category and not new_category_name:
-                self.add_error('new_category_name', 'El nombre es obligatorio si crea una nueva categoría.')
+                self.add_error('new_category_name', 'Debe ingresar un nombre para la nueva categoría.')
         else:
-            # Creación: obligatorio seleccionar o crear
+            # En creación: obligatorio elegir o crear
             if not create_new_category and not category:
                 self.add_error('category', 'Debe seleccionar una categoría o crear una nueva.')
 
         # Validación presentación
         if self.instance.pk:
-            # Edición: solo validar si quiere crear nueva
             if create_new_presentation and (not package_type or not content_value):
                 self.add_error('create_new_presentation', 'Debe completar todos los campos si crea una nueva presentación.')
         else:
-            # Creación: obligatorio seleccionar o crear
             if not create_new_presentation and not presentation:
                 self.add_error('presentation', 'Debe seleccionar una presentación o crear una nueva.')
 
         return cleaned_data
 
+    # === GUARDADO PERSONALIZADO ===
     def save(self, commit=True, user=None):
         product = super().save(commit=False)
 
-        # Crear nueva categoría solo si se marcó
+        # Crear nueva categoría si corresponde
         if self.cleaned_data.get('create_new_category'):
             category = Category.objects.create(
                 name_cat=self.cleaned_data['new_category_name'],
@@ -85,7 +118,7 @@ class ProductForm(forms.ModelForm):
             )
             product.category = category
 
-        # Crear nueva presentación solo si se marcó
+        # Crear nueva presentación si corresponde
         if self.cleaned_data.get('create_new_presentation'):
             presentation = Presentation.objects.create(
                 package_type=self.cleaned_data['package_type'],
@@ -95,10 +128,10 @@ class ProductForm(forms.ModelForm):
             product.presentation = presentation
 
         if commit:
-            product.save()  # Obligatorio para generar pk
-            self.save_m2m() # Por si hay relaciones ManyToMany
+            product.save()
+            self.save_m2m()
 
-            # Aquí va la lógica de inventario
+            # === GESTIÓN DE STOCK INICIAL ===
             stock_inicial = self.cleaned_data.get('stock_inicial')
             if stock_inicial is not None:
                 main_warehouse = Warehouse.objects.filter(type='main').first()
@@ -111,9 +144,10 @@ class ProductForm(forms.ModelForm):
                     )
                     if not created:
                         inventory.quantity_packages = stock_inicial
-                        inventory.save()  # recalcula total_content automáticamente
-        
-                if user and user.is_authenticated:
+                        inventory.save()
+
+                # Registrar movimiento inicial
+                if user and user.is_authenticated and stock_inicial:
                     Movement.objects.create(
                         product=product,
                         presentation=product.presentation,
@@ -122,7 +156,7 @@ class ProductForm(forms.ModelForm):
                         movement_type='entrada',
                         quantity=stock_inicial,
                         moved_by=user,
-                        description=f"Entrada inicial de {stock_inicial} unidades al crear el producto."
+                        description=f"Entrada inicial de {stock_inicial} unidades al crear o editar el producto."
                     )
-                
+
         return product
