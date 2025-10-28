@@ -147,4 +147,58 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".product-tooltip").forEach((t) => (t.style.display = "none"));
   });
 
+  // === AJAX PARA ACTUALIZAR "ACTIVIDAD RECIENTE" CADA 5 MINUTOS ===
+  const FEED_URL = "/dashboard/activity-feed/";  // Ajustar si tu URL es distinta
+  const feedEl = document.getElementById("activity-feed");
+  const statusEl = document.getElementById("activity-status");
+
+  async function updateActivityFeed() {
+    try {
+      if (statusEl) statusEl.textContent = "Actualizando…";
+
+      const resp = await fetch(FEED_URL, { cache: "no-store" });
+      const data = await resp.json();
+
+      // Si no vienen datos → mensaje vacío
+      if (!data.items || data.items.length === 0) {
+        feedEl.innerHTML = `
+          <li class="list-group-item text-muted small py-3 text-center">
+            No hay actividad reciente registrada.
+          </li>`;
+        if (statusEl) statusEl.textContent = "Sin actividad";
+        return;
+      }
+
+      // Renderizar lista con animación
+      feedEl.classList.remove("show");
+      feedEl.innerHTML = data.items.map(it => `
+        <li class="list-group-item d-flex flex-column border-0 border-bottom small py-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>
+              <i class="bi bi-${it.icon} me-1"></i>
+              ${it.title}
+            </span>
+            <small class="text-muted">${it.when}</small>
+          </div>
+          <span class="text-muted ms-4">
+            <i class="bi bi-person-circle me-1"></i>${it.by}
+          </span>
+        </li>
+      `).join("");
+
+      // Activar fade-in suave
+      setTimeout(() => feedEl.classList.add("show"), 50);
+
+      if (statusEl) statusEl.textContent = "Actualizado";
+    } catch (error) {
+      if (statusEl) statusEl.textContent = "Sin conexión";
+    }
+  }
+
+  // Ejecutar ahora
+  updateActivityFeed();
+
+  // Ejecutar automáticamente cada 5 minutos (300000 ms)
+  setInterval(updateActivityFeed, 300000);
+
 });

@@ -35,7 +35,7 @@
 
   {% if no_access %}
   <div class="card empty-state text-center py-4">
-    <h4>🚫 Sin casetas asignadas</h4>
+    <h4>Sin casetas asignadas</h4>
     <p>No tienes casetas disponibles para visualizar. Si crees que es un error, contacta a un administrador.</p>
   </div>
   {% else %}
@@ -81,7 +81,7 @@
 
   <!-- === MAIN CONTENT LAYOUT === -->
   <div class="dashboard-main">
-    <!-- 📋 COLUMNA IZQUIERDA: NOTIFICACIONES -->
+    <!-- COLUMNA IZQUIERDA NOTIFICACIONES -->
     <div class="dashboard-left">
       <div class="section-head d-flex align-items-center gap-2 mb-2">
         <i class="bi bi-bell-fill text-primary fs-5"></i>
@@ -103,9 +103,12 @@
           <tbody>
             {% for n in notifications %}
             <tr class="notification-row {% if not n.read %}unread{% endif %}">
-              <td class="text-muted small">{{ n.created_at|date:"Y-m-d H:i" }}</td>
 
-              <td>
+              <td data-label="Fecha" class="text-muted small d-block d-md-table-cell">
+                {{ n.created_at|date:"Y-m-d H:i" }}
+              </td>
+
+              <td data-label="Tipo" class="d-block d-md-table-cell">
                 {% if n.notif_type == "low_stock" %}
                 <span class="badge bg-warning-subtle text-warning fw-semibold">
                   <i class="bi bi-exclamation-triangle-fill me-1"></i> Stock Bajo
@@ -125,11 +128,12 @@
                 {% endif %}
               </td>
 
-              <td class="fw-semibold text-dark position-relative product-cell" data-message="{{ n.message|escapejs }}">
+              <td data-label="Producto" class="fw-semibold text-dark product-cell d-block d-md-table-cell"
+                data-message="{{ n.message|escapejs }}">
                 {{ n.product.name_prod }}
               </td>
 
-              <td>
+              <td data-label="Caseta" class="d-block d-md-table-cell">
                 {% if n.warehouse %}
                 <i class="bi bi-house-door text-secondary me-1"></i>{{ n.warehouse.warehouse.name_ware }}
                 {% else %}
@@ -137,7 +141,7 @@
                 {% endif %}
               </td>
 
-              <td>
+              <td data-label="Estado" class="d-block d-md-table-cell">
                 {% if n.read %}
                 <span class="badge bg-success-subtle text-success fw-semibold">
                   <i class="bi bi-check-circle me-1"></i> Leída
@@ -148,6 +152,7 @@
                 </span>
                 {% endif %}
               </td>
+
             </tr>
             {% endfor %}
           </tbody>
@@ -160,11 +165,11 @@
       {% endif %}
     </div>
 
-    <!-- 📊 COLUMNA CENTRAL: GRÁFICOS -->
+    <!-- COLUMNA CENTRAL DE GRÁFICOS -->
     <div class="dashboard-right">
       <div class="charts-grid mt-2">
         <div class="chart-card">
-          <h3>Top Stock por Producto</h3>
+          <h3>Stock por Producto</h3>
           <canvas id="chartStock"></canvas>
         </div>
         <div class="chart-card">
@@ -176,21 +181,22 @@
           <canvas id="chartMoves"></canvas>
         </div>
         <div class="chart-card">
-          <h3>Distribución de Stock por Categoría</h3>
+          <h3>Stock por Categoría</h3>
           <canvas id="chartCat"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- 🧩 COLUMNA DERECHA: ACTIVIDAD RECIENTE -->
+    <!-- COLUMNA DE ACTIVIDAD RECIENTE -->
     <div class="dashboard-activity">
       <div class="section-head d-flex align-items-center gap-2 mb-2">
         <i class="bi bi-clock-history text-primary fs-5"></i>
         <h2 class="fw-bold mb-0 fs-5">Actividad Reciente</h2>
+        <small id="activity-status" class="text-muted ms-auto small"></small>
       </div>
 
-      {% if recent_activity %}
-      <ul class="list-group list-group-flush activity-feed">
+      <ul id="activity-feed" class="list-group list-group-flush activity-feed">
+        {% if recent_activity %}
         {% for act in recent_activity %}
         <li class="list-group-item d-flex flex-column border-0 border-bottom small py-2">
           <div class="d-flex justify-content-between align-items-center">
@@ -211,12 +217,12 @@
           </span>
         </li>
         {% endfor %}
+        {% else %}
+        <li class="list-group-item text-muted small py-3 text-center">
+          No hay actividad reciente registrada.
+        </li>
+        {% endif %}
       </ul>
-      {% else %}
-      <div class="card empty-state text-center py-4">
-        <p>No hay actividad reciente registrada.</p>
-      </div>
-      {% endif %}
     </div>
   </div>
 

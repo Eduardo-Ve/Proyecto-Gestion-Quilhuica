@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum, Q
 from django.shortcuts import render
 from django.utils import timezone
+from django.http import JsonResponse
+from django.utils.timesince import timesince
 import json
 
 from warehouse.models import Warehouse, Inventory, Movement
@@ -191,3 +193,62 @@ def dashboard(request):
     }
 
     return render(request, "dashboard/dashboard.html", context)
+
+# SECCIÓN AJAX PARA "ACTIVIDAD RECIENTE".
+def activity_feed_api(request):
+    """
+    Devuelve {items: [...]} con la actividad reciente (máx. 20).
+    Usa el mismo criterio que en el dashboard.
+    """
+    now = timezone.now()
+    start_window = now - timedelta(days=WINDOW_DAYS)
+
+    # 1) Movimientos a casetas
+    moves = (
+        Movement.objects.filter(
+            movement_type="traslado",
+            moved_at__gte=start_window
+        )
+        .select_related("product", "ware_destin", "moved_by")
+        .order_by("-moved_at")[:20]
+    )
+
+    # 2) Aplicaciones
+    apps = (
+        Application.objects.filter(applied_at__gte=start_window)
+        .select_related("ware", "applied_by")
+        .order_by("-applied_at")[:20]
+    )
+
+    items = []
+
+    for m in moves:
+        items.append({
+            "kind": "move",
+            "title": f"Traslado de {m.quantity:g} {m.product.name_prod} a {m.ware_destin.name_ware}",
+            "by": m.moved_by.nombre_usuario if m.moved_by else "—",
+            "ts": m.moved_at.isoformat(),
+            "when": timesince(m.moved_at, now) + " atrás",
+            "icon": "arrow-left-right",  # bootstrap icon
+        })
+
+    for a in apps:
+        qty = a.details.aggregate(total=Sum("quantity_packages"))["total"] or 0
+        items.append({
+            "kind": "app",
+            "title": f"Aplicación realizada en {a.ware.name_ware}",
+            "subtitle": f"Paquetes aplicados: {qty:g}",
+            "by": a.applied_by.nombre_usuario if a.applied_by else "—",
+            "ts": a.applied_at.isoformat(),
+            "when": timesince(a.applied_at, now) + " atrás",
+            "icon": "droplet",  # bootstrap icon
+        })
+
+    # mezcla y limita
+    items.sort(key=lambda x: x["ts"], reverse=True)
+    items = items[:20]
+
+    resp = JsonResponse({"items": items})
+    # Evita caches intermedias
+    resp["Cache-Control"] = "no-store"
+    return resp
