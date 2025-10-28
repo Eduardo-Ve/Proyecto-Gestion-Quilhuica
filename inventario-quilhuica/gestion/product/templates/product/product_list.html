@@ -9,23 +9,21 @@
 {% endblock %}
 
 {% block content %}
-
 <div class="product-list-wrapper">
-  <h2>Listado de Productos</h2>
+  <h2 class="text-success fw-bold mb-3">Listado de Productos</h2>
 
   {% if user.is_authenticated and user.is_admin %}
-    <h4>Bodega Principal</h4>
+    <h4 class="text-muted mb-3">Bodega Principal</h4>
     <a href="{% url 'product:product_create' %}" class="btn btn-success mb-3">
       + Nuevo Producto
     </a>
   {% elif user.is_authenticated and user.caseta_asignada %}
-    <h4>Caseta: {{ user.caseta_asignada.name }}</h4>
+    <h4 class="text-muted mb-3">Caseta: {{ user.caseta_asignada.name_ware }}</h4>
   {% endif %}
 
-  <!-- Contenedor con scroll responsivo -->
-  <div class="table-responsive">
-    <table class="table table-striped align-middle">
-      <thead>
+  <div class="table-responsive shadow-sm">
+    <table class="table table-striped align-middle border">
+      <thead class="table-success text-dark">
         <tr>
           <th>Nombre</th>
           <th>Categoría</th>
@@ -33,7 +31,9 @@
           <th>Paquetes</th>
           <th>Cantidad total</th>
           <th>Expira</th>
+          {% if user.is_authenticated and user.is_admin %}
           <th>Acciones</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -44,17 +44,31 @@
           <td>{{ product.presentation }}</td>
           <td>{{ product.total_packages|floatformat:0|intcomma }}</td>
           <td>{{ product.total_content|floatformat:0|intcomma }} {{ product.unit_type }}</td>
-          <td>{{ product.expire_at|date:"d/m/Y" }}</td>
+          <td>
+            {% if product.expire_at %}
+              {{ product.expire_at|date:"d/m/Y" }}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+
+          {% if user.is_authenticated and user.is_admin %}
           <td>
             <div class="d-flex gap-2">
-              <a href="{% url 'product:product_update' product.pk %}" class="btn btn-sm btn-success">Editar</a>
-              <a href="{% url 'product:product_delete' product.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+              <a href="{% url 'product:product_update' product.pk %}" class="btn btn-sm btn-success">
+                Editar
+              </a>
+              <a href="{% url 'product:product_delete' product.pk %}" class="btn btn-sm btn-danger">
+                Eliminar
+              </a>
             </div>
           </td>
+          {% endif %}
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center text-muted py-4">
+          <td colspan="{% if user.is_authenticated and user.is_admin %}7{% else %}6{% endif %}"
+              class="text-center text-muted py-4">
             No hay productos registrados
           </td>
         </tr>
@@ -62,35 +76,34 @@
       </tbody>
     </table>
   </div>
+
+  <!-- Paginación -->
+  {% if is_paginated %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">«</span></li>
+      {% endif %}
+
+      {% for i in paginator.page_range %}
+      <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+      </li>
+      {% endfor %}
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">»</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
-
-<!-- Paginación -->
-{% if is_paginated %}
-<nav class="mt-4">
-  <ul class="pagination justify-content-center">
-    {% if page_obj.has_previous %}
-    <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
-    </li>
-    {% else %}
-    <li class="page-item disabled"><span class="page-link">«</span></li>
-    {% endif %}
-
-    {% for i in paginator.page_range %}
-    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-      <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-    </li>
-    {% endfor %}
-
-    {% if page_obj.has_next %}
-    <li class="page-item">
-      <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
-    </li>
-    {% else %}
-    <li class="page-item disabled"><span class="page-link">»</span></li>
-    {% endif %}
-  </ul>
-</nav>
-{% endif %}
-
 {% endblock %}
