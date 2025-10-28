@@ -1,4 +1,4 @@
-{% extends "base/base.html" %}
+{% extends 'base/form_base.html' %}
 {% load static %}
 
 {% block extra_css %}
@@ -21,12 +21,12 @@
     <div class="row g-3">
       <div class="col-md-2">
         <label>Desde</label>
-        <input type="date" name="start" class="form-control" value="{{ start }}">
+        <input type="text" id="start-date" name="start" class="form-control" value="{{ start }}">
       </div>
 
       <div class="col-md-2">
         <label>Hasta</label>
-        <input type="date" name="end" class="form-control" value="{{ end }}">
+        <input type="text" id="end-date" name="end" class="form-control" value="{{ end }}">
       </div>
 
       <div class="col-md-2">
@@ -100,7 +100,6 @@
   <!-- ================= PAGINADOR ================= -->
   <nav aria-label="Paginación">
     <ul class="pagination justify-content-center mt-3" data-total="{{ page_obj.paginator.num_pages|default:1 }}">
-
       {% if page_obj.has_previous %}
         <li class="page-item">
           <a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode|cut:'page' }}">«</a>
@@ -118,19 +117,9 @@
             </a>
           </li>
         {% elif i == 3 and page_obj.number > 5 %}
-          <li class="page-item">
-            <a href="#" class="page-link jump-page">…</a>
-            <div class="page-input d-none position-relative">
-              <input type="number" min="1" class="form-control form-control-sm page-jump-input" placeholder="#" />
-            </div>
-          </li>
+          <li class="page-item"><span class="page-link">…</span></li>
         {% elif i == page_obj.paginator.num_pages|add:"-2" and page_obj.number < page_obj.paginator.num_pages|add:"-4" %}
-          <li class="page-item">
-            <a href="#" class="page-link jump-page">…</a>
-            <div class="page-input d-none position-relative">
-              <input type="number" min="1" class="form-control form-control-sm page-jump-input" placeholder="#" />
-            </div>
-          </li>
+          <li class="page-item"><span class="page-link">…</span></li>
         {% endif %}
       {% endfor %}
 
@@ -156,4 +145,38 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'js/calendar_picker.js' %}"></script>
 <script src="{% static 'js/search_page.js' %}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Flatpickr personalizado para los filtros "Desde" y "Hasta"
+  flatpickr("#start-date, #end-date", {
+    dateFormat: "Y-m-d",
+    altInput: true,
+    altFormat: "d \\d\\e F \\d\\e Y",
+    allowInput: false,
+    disableMobile: true,
+    locale: {
+      firstDayOfWeek: 1,
+      weekdays: {
+        shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        longhand: [
+          "Domingo", "Lunes", "Martes", "Miércoles",
+          "Jueves", "Viernes", "Sábado",
+        ],
+      },
+      months: {
+        shorthand: [
+          "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
+        ],
+        longhand: [
+          "Enero", "Febrero", "Marzo", "Abril", "Mayo",
+          "Junio", "Julio", "Agosto", "Septiembre",
+          "Octubre", "Noviembre", "Diciembre",
+        ],
+      },
+    },
+  });
+});
+</script>
 {% endblock %}
