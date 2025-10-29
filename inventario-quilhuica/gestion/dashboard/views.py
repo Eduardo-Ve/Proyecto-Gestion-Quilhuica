@@ -9,7 +9,7 @@ import json
 
 from warehouse.models import Warehouse, Inventory, Movement
 from product.models import Product
-from application.models import Application
+from application.models import Application, ApplicationDetail
 from notification.models import Notification
 
 LOW_STOCK_THRESHOLD = 100     # Stock bajo
@@ -107,23 +107,31 @@ def dashboard(request):
         .order_by("moved_at__date")
     )
 
-    cat_dist = (
-        inv_qs.values("product__category__name_cat")
-        .annotate(total=Sum("quantity_packages"))
-        .order_by("-total")
-    )
+    # --- Productos más utilizados (últimos WINDOW_DAYS días) ---
+    top_used = (
+        ApplicationDetail.objects.filter(
+            application__ware__in=sheds_qs,
+            application__applied_at__date__gte=start_window)
+        .values("product__name_prod")
+        .annotate(total_used=Sum("quantity_packages"))
+        )
+ 
 
     # --- Serialización a JSON para Chart.js ---
     chart_data = {
         "stock_labels": [s["product__name_prod"] for s in stock_by_product],
         "stock_values": [s["packages"] or 0 for s in stock_by_product],
+
         "apps_labels": [a["applied_at__date"].strftime("%Y-%m-%d") for a in apps_qs],
         "apps_values": [a["total"] or 0 for a in apps_qs],
+
         "moves_labels": [m["moved_at__date"].strftime("%Y-%m-%d") for m in moves_qs],
         "moves_values": [m["total"] or 0 for m in moves_qs],
-        "cat_labels": [c["product__category__name_cat"] or "Sin categoría" for c in cat_dist],
-        "cat_values": [c["total"] or 0 for c in cat_dist],
+
+        "used_labels": [u["product__name_prod"] for u in top_used],
+        "used_values": [u["total_used"] for u in top_used],
     }
+
 
     chart_json = json.dumps(chart_data)
 

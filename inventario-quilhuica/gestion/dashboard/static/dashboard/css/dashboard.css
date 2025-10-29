@@ -152,8 +152,8 @@ main {
 /* === NUEVO LAYOUT PRINCIPAL === */
 .dashboard-main {
   display: grid;
-  grid-template-columns: 500px 1fr 400px;
-  gap: 1rem;
+  grid-template-columns: 600px 1fr 450px;
+  gap: 1.5rem;
   align-items: stretch;
   margin-top: 1rem;
 }
@@ -163,12 +163,13 @@ main {
   background: #ffffff;
   border-radius: 12px;
   border: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  height: 100%;
-  overflow-y: auto;
-  margin-left: -1rem;
-  /* 🔹 Desplazamos un poco hacia el borde izquierdo */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  height: calc(86.5vh - 180px); 
+  overflow-y: hidden;
+  margin-left: 0; 
 }
 
 /* Scroll estético */
@@ -187,10 +188,12 @@ main {
 
 /* Limitar alto de la lista de notificaciones */
 .dashboard-left .table-responsive {
-  max-height: 360px;   /* ≈ altura para 3 tarjetas */
+  max-height: 100%;
   overflow-y: auto;
-  padding-right: 6px; /* espacio para scrollbar */
+  padding-right: 4px;
+  padding-bottom: 160px;
 }
+
 
 /* Scroll estético */
 .dashboard-left .table-responsive::-webkit-scrollbar {
@@ -222,8 +225,8 @@ main {
 /* === CHARTS === */
 .charts-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(450px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(2, minmax(380px, 1fr)); /* ↓ Más compacto */
+  gap: 1rem;
   margin-top: 0.8rem;
 }
 
@@ -425,9 +428,9 @@ main {
   flex-direction: column;
   height: 100%;
   align-self: stretch;
-  /* 🔹 Asegura que se estire dentro del grid */
   background: #fff;
   border-radius: 1rem;
+  border: 1px solid #e5e7eb;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
   padding: 1rem 1.2rem 3rem;
 }
@@ -436,6 +439,7 @@ main {
   max-height: 520px;
   overflow-y: auto;
   scrollbar-width: thin;
+  scrollbar-color: #d1d5db transparent;
 }
 
 .dashboard-activity .section-head {
@@ -448,7 +452,7 @@ main {
 }
 
 .activity-feed::-webkit-scrollbar-thumb {
-  background: #d1d5db;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
@@ -471,7 +475,7 @@ main {
 /* Desktop Grande (≥ 1400px): 3 columnas normales */
 @media (min-width: 1400px) {
   .dashboard-main {
-    grid-template-columns: 300px 1fr 330px;
+    grid-template-columns: 375px 1fr 330px;
   }
 }
 
@@ -496,7 +500,9 @@ main {
 
   .dashboard-spacer {
     display: none;
-    /* No mostramos el espacio vacío */
+  }
+  .dashboard-activity {
+    height: 81%;
   }
 }
 

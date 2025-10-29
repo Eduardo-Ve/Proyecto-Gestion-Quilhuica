@@ -70,24 +70,26 @@ document.addEventListener("DOMContentLoaded", () => {
     },
   });
 
-  // Stock por Categoría
-  new Chart(document.getElementById("chartCat"), {
-    type: "doughnut",
+  // Productos Más Utilizados
+  new Chart(document.getElementById("chartUsed"), {
+    type: "bar",
     data: {
-      labels: chartData.cat_labels,
+      labels: chartData.used_labels,
       datasets: [{
-        label: "Stock",
-        data: chartData.cat_values,
-        backgroundColor: [
-          "#3b82f6", "#22c55e", "#6366f1", "#f59e0b", "#ef4444"
-        ],
+        label: "Paquetes Aplicados",
+        data: chartData.used_values,
+        backgroundColor: "#14b8a6",
       }],
     },
     options: {
       responsive: true,
-      plugins: { legend: { position: "bottom" } },
+      scales: {
+        x: { title: { display: true, text: "Producto" } },
+        y: { title: { display: true, text: "Cantidad Aplicada" } },
+      },
     },
   });
+
 
   // === ANIMACIÓN DE ENTRADA DE GRÁFICOS ===
   document.querySelectorAll(".chart-card").forEach((card, i) => {
@@ -103,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const raw = icon.dataset.message || "";
 
     let message = raw;
-    try { message = JSON.parse(`"${raw}"`); } catch (e) {}
+    try { message = JSON.parse(`"${raw}"`); } catch (e) { }
     const htmlMessage = message.replace(/\n/g, "<br>");
 
     const tooltip = document.createElement("div");
