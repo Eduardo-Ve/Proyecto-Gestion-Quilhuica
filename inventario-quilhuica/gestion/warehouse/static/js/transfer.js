@@ -4,13 +4,48 @@
   const totalFormsInput = document.getElementById('id_form-TOTAL_FORMS');
   const template = document.getElementById('empty-form-template');
   const wareOriginSelect = document.getElementById('id_ware_origin');
+  const wareDestinSelect = document.getElementById('id_ware_destin');
+  const wareAlert = document.getElementById('same-ware-alert');
+  const saveButton = document.querySelector('button[type="submit"], .btn-success');
 
   let productsCache = {};
   let lastWarehouseId = null;
 
-  // ... (Tus funciones loadProductsForWarehouse, populateSelect, updatePresentation, refreshAllSelects están bien) ...
-  
-  // 🔹 Cargar productos desde el almacén seleccionado
+  // ============================================================
+  // 🔹 VALIDACIÓN: NO PERMITIR MISMA CASETA
+  // ============================================================
+  function validateWarehouses() {
+    if (!wareOriginSelect || !wareDestinSelect) return;
+
+    const origin = wareOriginSelect.value;
+    const destin = wareDestinSelect.value;
+
+    if (origin && destin && origin === destin) {
+      // Mostrar alerta visual
+      if (wareAlert) wareAlert.classList.remove('d-none');
+      wareDestinSelect.value = '';
+      wareDestinSelect.classList.add('is-invalid');
+
+      // Desactivar botón guardar
+      if (saveButton) saveButton.disabled = true;
+    } else {
+      // Ocultar alerta y limpiar estilo
+      if (wareAlert) wareAlert.classList.add('d-none');
+      wareDestinSelect.classList.remove('is-invalid');
+
+      // Reactivar botón guardar si todo ok
+      if (saveButton) saveButton.disabled = false;
+    }
+  }
+
+  if (wareOriginSelect && wareDestinSelect) {
+    wareOriginSelect.addEventListener('change', validateWarehouses);
+    wareDestinSelect.addEventListener('change', validateWarehouses);
+  }
+
+  // ============================================================
+  // 🔹 FUNCIÓN PARA CARGAR PRODUCTOS SEGÚN CASETA DE ORIGEN
+  // ============================================================
   async function loadProductsForWarehouse(wareId) {
     const selects = document.querySelectorAll('.product-select');
     selects.forEach(s => {
@@ -35,7 +70,9 @@
     }
   }
 
-  // 🔹 Rellenar el select con productos (solo los no seleccionados)
+  // ============================================================
+  // 🔹 RELLENAR SELECT CON PRODUCTOS DISPONIBLES
+  // ============================================================
   function populateSelect(selectEl) {
     const selectedValues = new Set(
       Array.from(document.querySelectorAll('.product-select'))
@@ -60,12 +97,13 @@
     }
   }
 
-  // 🔹 Mostrar presentación y cantidad disponible
+  // ============================================================
+  // 🔹 MOSTRAR PRESENTACIÓN Y CANTIDAD DISPONIBLE
+  // ============================================================
   function updatePresentation(selectElement) {
     const productId = selectElement.value;
     const formRow = selectElement.closest('.product-form');
-    // NOTA: Asegúrate de que tu `empty_form` también renderice '.presentation-text' si existe
-    const presentationText = formRow.querySelector('.presentation-text'); 
+    const presentationText = formRow.querySelector('.presentation-text');
 
     if (presentationText && productId && productsCache[productId]) {
       const p = productsCache[productId];
@@ -75,12 +113,16 @@
     }
   }
 
-  // 🔹 Actualizar todos los selects al cambiar uno (para ocultar productos ya usados)
+  // ============================================================
+  // 🔹 ACTUALIZAR TODOS LOS SELECTS AL CAMBIAR UNO
+  // ============================================================
   function refreshAllSelects() {
     document.querySelectorAll('.product-select').forEach(populateSelect);
   }
 
-  // 🔹 Listener al cambiar el almacén de origen
+  // ============================================================
+  // 🔹 EVENTO: CAMBIO DE CASETA DE ORIGEN
+  // ============================================================
   if (wareOriginSelect) {
     wareOriginSelect.addEventListener('change', async function () {
       const wareId = this.value;
@@ -99,15 +141,16 @@
     });
   }
 
-  // 🔹 Agregar nueva fila de producto
+  // ============================================================
+  // 🔹 AGREGAR NUEVA FILA DE PRODUCTO
+  // ============================================================
   if (addButton) {
     addButton.addEventListener('click', function () {
-      // Verificar que la plantilla exista
       if (!template) {
         console.error('¡No se encontró el <template id="empty-form-template">!');
         return;
       }
-      
+
       const formNum = parseInt(totalFormsInput.value, 10);
       const html = template.innerHTML.replace(/__prefix__/g, formNum);
       const wrapper = document.createElement('div');
@@ -119,14 +162,14 @@
 
       const select = newFormElem.querySelector('.product-select');
       populateSelect(select);
-      // 'change' ya se maneja por delegación, no es necesario añadir más listeners
     });
   }
 
-  // 🔹 Listener global para CAMBIOS y CLICKS (Delegación de eventos)
+  // ============================================================
+  // 🔹 EVENTOS DELEGADOS (SELECTS Y BOTONES)
+  // ============================================================
   if (formsetContainer) {
     formsetContainer.addEventListener('change', e => {
-      // Delegación para el select de producto
       if (e.target.classList.contains('product-select')) {
         updatePresentation(e.target);
         refreshAllSelects();
@@ -134,7 +177,6 @@
     });
 
     formsetContainer.addEventListener('click', e => {
-      // Delegación para el botón de eliminar
       if (e.target.classList.contains('delete-btn')) {
         const formRow = e.target.closest('.product-form');
         if (!formRow) return;
@@ -142,21 +184,20 @@
         const deleteCheckbox = formRow.querySelector('input[type="checkbox"][name$="-DELETE"]');
 
         if (deleteCheckbox) {
-          // Es un formulario existente: marcarlo para borrar y ocultarlo
           deleteCheckbox.checked = true;
           formRow.style.display = 'none';
         } else {
-          // Es un formulario nuevo (del template): simplemente quitarlo del DOM
           formRow.remove();
         }
-        
-        // Actualizar selects para que el producto vuelva a estar disponible
+
         refreshAllSelects();
       }
     });
   }
 
-  // 🔹 Carga inicial si ya hay un almacén seleccionado
+  // ============================================================
+  // 🔹 CARGA INICIAL SI YA HAY CASETA SELECCIONADA
+  // ============================================================
   if (wareOriginSelect && wareOriginSelect.value) {
     lastWarehouseId = wareOriginSelect.value;
     setTimeout(() => loadProductsForWarehouse(lastWarehouseId), 0);

@@ -5,6 +5,10 @@
 {% block form_content %}
 <div class="form-section">
   <h5 class="section-title">Datos del Traslado</h5>
+  <div id="same-ware-alert" class="alert alert-danger d-none" role="alert">
+  No puedes seleccionar la misma caseta como origen y destino.
+</div>
+
   <div class="form-content">
     <div class="row">
       <div class="col-md-6">{{ master_form.ware_origin }}</div>
