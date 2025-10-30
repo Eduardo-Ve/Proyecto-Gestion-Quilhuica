@@ -11,16 +11,19 @@
 {% block content %}
 <div class="product-list-wrapper">
   <h2 class="text-success fw-bold mb-3">Listado de Productos</h2>
-
-  {% if user.is_authenticated and user.is_admin %}
-    <h4 class="text-muted mb-3">Bodega Principal</h4>
-    <a href="{% url 'product:product_create' %}" class="btn btn-success mb-3">
-      + Nuevo Producto
-    </a>
-  {% elif user.is_authenticated and user.caseta_asignada %}
-    <h4 class="text-muted mb-3">Caseta: {{ user.caseta_asignada.name_ware }}</h4>
-  {% endif %}
-
+    {% if user.is_authenticated and user.is_admin %}
+      <h4>Bodega Principal</h4>
+      <div class="d-flex gap-2 mb-3">
+        <a href="{% url 'product:product_create' %}" class="btn btn-success">
+          + Nuevo Producto
+        </a>
+        <a href="{% url 'product:add_stock' %}" class="btn btn-primary">
+          Añadir Stock
+        </a>
+      </div>
+    {% elif user.is_authenticated and user.caseta_asignada %}
+      <h4>Caseta: {{ user.caseta_asignada.name }}</h4>
+    {% endif %}
   <div class="table-responsive shadow-sm">
     <table class="table table-striped align-middle border">
       <thead class="table-success text-dark">
@@ -41,9 +44,9 @@
         <tr>
           <td>{{ product.name_prod }}</td>
           <td>{{ product.category }}</td>
-          <td>{{ product.presentation }}</td>
-          <td>{{ product.total_packages|floatformat:0|intcomma }}</td>
-          <td>{{ product.total_content|floatformat:0|intcomma }} {{ product.unit_type }}</td>
+          <td>{{ product.presentation }} </td>
+          <td>{{ product.total_packages|floatformat:0 }}</td>
+          <td>{{ product.total_content|floatformat:0 }} {{ product.presentation.content_unit }}</td>
           <td>
             {% if product.expire_at %}
               {{ product.expire_at|date:"d/m/Y" }}

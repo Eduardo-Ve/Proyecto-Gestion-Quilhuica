@@ -160,3 +160,49 @@ class ProductForm(forms.ModelForm):
                     )
 
         return product
+
+
+
+class StockAddForm(forms.Form):
+    product = forms.ModelChoiceField(
+        queryset=Product.objects.all(),
+        label="Producto",
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    cantidad = forms.FloatField(
+        min_value=0.1,
+        label="Cantidad a añadir (en paquetes)",
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 100'})
+    )
+
+    def save(self, user):
+        """Actualizar inventario y registrar movimiento"""
+        product = self.cleaned_data['product']
+        cantidad = self.cleaned_data['cantidad']
+
+        main_warehouse = Warehouse.objects.filter(type='main').first()
+        if not main_warehouse:
+            raise ValueError("No existe la bodega principal.")
+
+        # Actualizar o crear inventario
+        inventory, _ = Inventory.objects.get_or_create(
+            product=product,
+            presentation=product.presentation,
+            warehouse=main_warehouse,
+            defaults={'quantity_packages': 0}
+        )
+
+        inventory.quantity_packages += cantidad
+        inventory.save()
+
+        # Registrar movimiento
+        Movement.objects.create(
+            product=product,
+            presentation=product.presentation,
+            ware_origin=None,
+            ware_destin=main_warehouse,
+            movement_type='entrada',
+            quantity=cantidad,
+            moved_by=user,
+            description=f"Entrada de {cantidad} paquetes al stock existente."
+        )

@@ -1,25 +1,23 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
-  const fp = flatpickr("#id_expire_at", {
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ Calendario inicializado correctamente");
+
+  flatpickr("#start-date, #end-date", {
     appendTo: document.body,
     dateFormat: "Y-m-d",
     altInput: true,
     altFormat: "d \\d\\e F \\d\\e Y",
     allowInput: false,
     disableMobile: true,
-    minDate: "today",
+    clickOpens: true,
+    minDate: null,
 
     locale: {
       firstDayOfWeek: 1,
       weekdays: {
-        shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
+        shorthand: ["Lu", "Ma", "Mi", "Ju", "Vi", "Sa", "Do"],
         longhand: [
-          "Domingo",
-          "Lunes",
-          "Martes",
-          "Miércoles",
-          "Jueves",
-          "Viernes",
-          "Sábado",
+          "Lunes", "Martes", "Miércoles", "Jueves",
+          "Viernes", "Sábado", "Domingo",
         ],
       },
       months: {
@@ -28,9 +26,8 @@
           "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
         ],
         longhand: [
-          "Enero", "Febrero", "Marzo", "Abril", "Mayo",
-          "Junio", "Julio", "Agosto", "Septiembre",
-          "Octubre", "Noviembre", "Diciembre",
+          "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+          "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
         ],
       },
     },
@@ -39,10 +36,12 @@
       const container = instance.calendarContainer;
       if (!container) return;
 
-      // 🎨 Paleta institucional
       container.style.setProperty("--fp-primary", "#00C451");
       container.style.setProperty("--fp-primary-hover", "#055526");
       container.style.setProperty("--fp-text", "#1E1E1E");
+      container.style.borderRadius = "12px";
+      container.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
+      container.style.overflow = "hidden";
 
       // === OBTENER FLECHAS NATIVAS DE FLATPICKR ===
       const prevArrow = container.querySelector(".flatpickr-prev-month");
@@ -81,7 +80,6 @@
         nextArrow.style.color = "#fff";
       }
 
-      // === VISTAS ===
       let view = "days";
       let currentDecadeStart = instance.currentYear - (instance.currentYear % 12);
 
@@ -92,6 +90,7 @@
         const weekDays = container.querySelector(".flatpickr-weekdays");
         if (daysContainer) daysContainer.style.display = "";
         if (weekDays) weekDays.style.display = "";
+        
         title.textContent = `${instance.l10n.months.longhand[instance.currentMonth]} ${instance.currentYear}`;
         
         // Restaurar comportamiento normal de las flechas
@@ -160,7 +159,6 @@
         }
       }
 
-      // === CONTENEDOR DE GRILLAS ===
       function setCustomGrid(grid, titleText) {
         removeCustomGrid();
         const daysContainer = container.querySelector(".flatpickr-days");
@@ -171,28 +169,20 @@
         const wrapper = document.createElement("div");
         wrapper.classList.add("fp-grid-container");
         wrapper.appendChild(grid);
+        
         container.querySelector(".flatpickr-innerContainer").appendChild(wrapper);
-
-        // ✅ Actualiza el título del header verde
         title.textContent = titleText;
       }
 
-      // === LIMPIAR ===
       function removeCustomGrid() {
         const existing = container.querySelector(".fp-grid-container");
         if (existing) existing.remove();
       }
 
-      // === EVENTOS ===
       title.addEventListener("click", () => {
         if (view === "days") renderMonths();
         else if (view === "months") renderYears();
         else renderDays();
-      });
-
-      instance._input.addEventListener("focus", () => {
-        removeCustomGrid();
-        renderDays();
       });
 
       renderDays();

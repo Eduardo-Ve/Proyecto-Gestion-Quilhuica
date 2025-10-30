@@ -78,9 +78,9 @@ def create_application(request):
                         'product_id': product.product_id,
                         'product_name': product.name_prod,
                         'presentation': f"{product.presentation.package_type} {product.presentation.content_value} {product.presentation.content_unit}",
-                        'quantity': float(quantity),
-                        'stock_available': float(inv.quantity_packages),
-                        'stock_after': float(inv.quantity_packages - quantity)
+                        'quantity': int(quantity),
+                        'stock_available': int(inv.quantity_packages),
+                        'stock_after': int(inv.quantity_packages - quantity)
                     })
 
                 request.session['pending_application'] = {

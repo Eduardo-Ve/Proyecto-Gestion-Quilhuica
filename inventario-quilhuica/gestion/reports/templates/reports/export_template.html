@@ -10,6 +10,7 @@
 
 <!-- CSS personalizado -->
 <link rel="stylesheet" href="{% static 'report_style.css' %}">
+<link rel="stylesheet" href="{% static 'calendar_style.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -143,40 +144,6 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="{% static 'js/calendar_picker.js' %}"></script>
+<script src="{% static 'js/calendar.js' %}"></script>
 <script src="{% static 'js/search_page.js' %}"></script>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-  // Flatpickr personalizado para los filtros "Desde" y "Hasta"
-  flatpickr("#start-date, #end-date", {
-    dateFormat: "Y-m-d",
-    altInput: true,
-    altFormat: "d \\d\\e F \\d\\e Y",
-    allowInput: false,
-    disableMobile: true,
-    locale: {
-      firstDayOfWeek: 1,
-      weekdays: {
-        shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
-        longhand: [
-          "Domingo", "Lunes", "Martes", "Miércoles",
-          "Jueves", "Viernes", "Sábado",
-        ],
-      },
-      months: {
-        shorthand: [
-          "Ene", "Feb", "Mar", "Abr", "May", "Jun",
-          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
-        ],
-        longhand: [
-          "Enero", "Febrero", "Marzo", "Abril", "Mayo",
-          "Junio", "Julio", "Agosto", "Septiembre",
-          "Octubre", "Noviembre", "Diciembre",
-        ],
-      },
-    },
-  });
-});
-</script>
 {% endblock %}

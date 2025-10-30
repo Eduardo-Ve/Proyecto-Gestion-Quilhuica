@@ -3,16 +3,17 @@ import os
 from datetime import datetime
 import pandas as pd
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
 from django.conf import settings
 from django.template.loader import get_template
-from xhtml2pdf import pisa
-
+from django.http import HttpResponse
+from .pdf_reportlab import generar_pdf_reportlab
 from warehouse.models import Movement, Inventory, Warehouse
 from application.models import ApplicationDetail
 from login.models import Usuario
+from django.contrib import messages
 
 
 # -------------------- PÁGINA PRINCIPAL --------------------
@@ -31,18 +32,37 @@ class ReportHomeView(View):
 
 
 # -------------------- EXPORTADOR --------------------
+from datetime import datetime, timedelta
+
 class ExportReportView(View):
     """Genera los reportes filtrados, con paginación y exportaciones."""
 
     def get(self, request):
-        # ======== PARAMETROS ========
+        # ======== PARÁMETROS ========
         report_type = request.GET.get("report", "movimientos")
-        start = request.GET.get("start")
-        end = request.GET.get("end")
+        start_param = request.GET.get("start")
+        end_param = request.GET.get("end")
         export = request.GET.get("export")
         selected_user = request.GET.get("user")
         selected_warehouse = request.GET.get("warehouse")
         page_number = request.GET.get("page")
+
+        # ======== FECHAS SEGURAS ========
+        # si vienen vacías o "None", usar rango último mes
+        try:
+            if start_param and start_param.lower() != "none":
+                start = datetime.strptime(start_param, "%Y-%m-%d")
+            else:
+                start = datetime.now() - timedelta(days=30)
+
+            if end_param and end_param.lower() != "none":
+                end = datetime.strptime(end_param, "%Y-%m-%d")
+            else:
+                end = datetime.now()
+        except ValueError:
+            # fallback si el formato está incorrecto
+            start = datetime.now() - timedelta(days=30)
+            end = datetime.now()
 
         # ======== DATOS BASE ========
         users = Usuario.objects.all().order_by("nombre_usuario")
@@ -54,10 +74,8 @@ class ExportReportView(View):
                 "product", "presentation", "ware_origin", "ware_destin", "moved_by"
             ).order_by("-moved_at")
 
-            # Filtros dinámicos
-            if start and end:
-                queryset = queryset.filter(moved_at__range=[start, end])
-            if selected_user:
+            queryset = queryset.filter(moved_at__range=[start, end])
+            if selected_user and selected_user != "":
                 queryset = queryset.filter(moved_by__id_user=selected_user)
             if selected_warehouse:
                 queryset = queryset.filter(ware_destin__id=selected_warehouse)
@@ -70,7 +88,7 @@ class ExportReportView(View):
                     "Presentación": str(m.presentation),
                     "Origen": m.ware_origin.name_ware if m.ware_origin else "Proveedor",
                     "Destino": m.ware_destin.name_ware,
-                    "Cantidad": m.quantity,
+                    "Cantidad": f"{m.quantity:.0f}",
                     "Usuario": m.moved_by.nombre_usuario if m.moved_by else "-",
                     "Fecha": m.moved_at.strftime("%d/%m/%Y %H:%M"),
                     "Descripción": m.description,
@@ -81,10 +99,9 @@ class ExportReportView(View):
         elif report_type == "aplicaciones":
             queryset = ApplicationDetail.objects.select_related(
                 "application__ware", "application__applied_by", "product"
-            ).order_by("-application__applied_by")
+            ).order_by("-application__applied_at")
 
-            if start and end:
-                queryset = queryset.filter(application__applied_at__range=[start, end])
+            queryset = queryset.filter(application__applied_at__range=[start, end])
             if selected_user:
                 queryset = queryset.filter(application__applied_by__id_user=selected_user)
             if selected_warehouse:
@@ -92,12 +109,12 @@ class ExportReportView(View):
 
             data = [
                 {
-                    "ID Aplicación": a.application.id,
-                    "Fecha": a.application.applied_at.strftime("%d/%m/%Y"),
-                    "Caseta": a.application.ware.name_ware,
-                    "Producto": a.product.name_prod,
-                    "Cantidad": a.quantity_packages,
-                    "Usuario": a.application.applied_by.nombre_usuario,
+                    "id_aplicacion": a.application.id,
+                    "fecha": a.application.applied_at.strftime("%d/%m/%Y"),
+                    "caseta": a.application.ware.name_ware,
+                    "producto": a.product.name_prod,
+                    "cantidad": f"{a.quantity_packages:.0f}",
+                    "usuario": a.application.applied_by.nombre_usuario,
                 }
                 for a in queryset
             ]
@@ -112,12 +129,12 @@ class ExportReportView(View):
 
             data = [
                 {
-                    "Bodega": i.warehouse.name_ware,
-                    "Producto": i.product.name_prod,
-                    "Presentación": str(i.presentation),
-                    "Cantidad (Paquetes)": i.quantity_packages,
-                    "Total Contenido": i.total_content,
-                    "Última Actualización": i.updated_at.strftime("%d/%m/%Y"),
+                    "bodega": i.warehouse.name_ware,
+                    "producto": i.product.name_prod,
+                    "presentacion": str(i.presentation),
+                    "cantidad_paquetes": f"{i.quantity_packages:.0f}",
+                    "total_contenido": f"{i.total_content:.0f}",
+                    "ultima_actualizacion": i.updated_at.strftime("%d/%m/%Y"),
                 }
                 for i in queryset
             ]
@@ -130,7 +147,7 @@ class ExportReportView(View):
         elif export == "xlsx":
             return self.export_excel(data, report_type)
         elif export == "pdf":
-            return self.export_pdf(data, report_type, start, end)
+            return self.export_pdf(request, data, report_type, start, end)
 
         # ======== PAGINADOR ========
         paginator = Paginator(data, 20)
@@ -140,8 +157,8 @@ class ExportReportView(View):
             "page_obj": page_obj,
             "data": page_obj.object_list,
             "report_type": report_type,
-            "start": start,
-            "end": end,
+            "start": start.strftime("%Y-%m-%d"),
+            "end": end.strftime("%Y-%m-%d"),
             "users": users,
             "warehouses": warehouses,
             "selected_user": selected_user,
@@ -150,7 +167,9 @@ class ExportReportView(View):
 
         return render(request, "reports/export_template.html", context)
 
-    # -------------------- EXPORTADORES --------------------
+    # ======================================================
+    # EXPORTADORES
+    # ======================================================
 
     def build_filename(self, report_type, extension):
         fecha_actual = datetime.now().strftime("%Y_%m_%d")
@@ -175,25 +194,14 @@ class ExportReportView(View):
         response["Content-Disposition"] = f'attachment; filename="{self.build_filename(report_type, "xlsx")}"'
         return response
 
-    def export_pdf(self, data, report_type, start, end):
-        """Genera un PDF desde la plantilla HTML"""
+    # ======================================================
+    # NUEVO EXPORTADOR PDF (reportlab)
+    # ======================================================
+    def export_pdf(self, request, data, report_type, start, end):
         filename = self.build_filename(report_type, "pdf")
-        template_path = "reports/pdf_template.html"
+        pdf = generar_pdf_reportlab(report_type, data, start, end)
 
-        context = {
-            "report_type": report_type.capitalize(),
-            "data": data,
-            "start": start,
-            "end": end,
-            "fecha_generacion": datetime.now(),
-            "empresa": "Gestión Quilhuica",
-            "subempresa": "Quilhuica SPA",
-            "logo_url": os.path.join(settings.BASE_DIR, "reports", "static", "img", "logo.png"),
-        }
-
-        template = get_template(template_path)
-        html = template.render(context)
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
-        pisa.CreatePDF(io.StringIO(html), dest=response)
+        response.write(pdf)
         return response

@@ -1,0 +1,116 @@
+/* === CONTENEDOR PRINCIPAL === */
+.flatpickr-calendar {
+  font-family: "Inter", sans-serif !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  border: none !important;
+  overflow: hidden !important;
+  z-index: 9999 !important;
+  background-color: #fff !important;
+}
+
+/* === CABECERA === */
+.flatpickr-months {
+  background-color: #00C451 !important;
+  color: #fff !important;
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  padding: 0 !important;
+  margin: 0 !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* === GRILLA DE MESES/AÑOS === */
+.fp-grid-container {
+  padding: 0.8rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #fff;
+  width: 100% !important; /* ✅ ocupa todo el ancho */
+  box-sizing: border-box; /* evita desbordes */
+}
+
+/* --- Ajustes para contenedor interno de flatpickr --- */
+.flatpickr-innerContainer {
+  width: 100% !important; /* ✅ ocupa todo el ancho */
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.flatpickr-days,
+.flatpickr-weekdays {
+  width: 100% !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* === GRILLAS === */
+.fp-months-grid,
+.fp-years-grid {
+  display: grid;
+  width: 100% !important; /* ✅ fuerza la grilla a usar todo el espacio */
+  justify-items: center;
+  gap: 6px;
+  margin-top: 0.8rem;
+}
+
+/* columnas balanceadas */
+.fp-months-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.fp-years-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* === BOTONES === */
+.fp-month-btn,
+.fp-year-btn {
+  background-color: #fff;
+  border-radius: 6px;
+  padding: 0.55rem 0;
+  text-align: center;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid #e0e0e0;
+  width: 100%; /* ✅ cada celda llena su columna */
+  max-width: 70px; /* ✅ ajusta visualmente sin desbordar */
+  line-height: 1.2rem;
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.fp-month-btn:hover,
+.fp-year-btn:hover {
+  background-color: #00C451;
+  color: #fff;
+  border-color: #00C451;
+  transform: translateY(-1px);
+}
+
+/* === TITULO Y FLECHAS === */
+.fp-title-custom {
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  flex: 1;
+}
+
+.fp-nav-arrow {
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 10px;
+  color: #fff;
+  transition: all 0.2s ease;
+}
+
+.fp-nav-arrow:hover {
+  color: #055526;
+  transform: scale(1.1);
+}
