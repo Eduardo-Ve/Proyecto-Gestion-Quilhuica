@@ -10,7 +10,10 @@
     <form method="post" class="card p-4 shadow">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-success">Guardar</button>
+        <!-- Se añade diseño temporal hardcodeado al html -->
+        <button type="submit" class="btn btn-success" style="background-color: #00C451; border-radius: 50px; cursor: pointer; transition: all 0.3s
+ease 0s;
+">Guardar</button>
         <a href="{% url 'warehouse:caseta_list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>

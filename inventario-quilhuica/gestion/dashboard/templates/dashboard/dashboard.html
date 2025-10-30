@@ -1,0 +1,239 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" />
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
+    <h1 class="dashboard-title">Panel de Inventario</h1>
+
+    {% if is_staff and sheds %}
+    <form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-funnel text-primary"></i>
+      <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
+      <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
+        onchange="this.form.submit()">
+        <option value="">Todas</option>
+        {% for s in sheds %}
+        <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
+          {{ s.name_ware }}
+        </option>
+        {% endfor %}
+      </select>
+    </form>
+    {% endif %}
+  </div>
+
+  {% if no_access %}
+  <div class="card empty-state text-center py-4">
+    <h4>Sin casetas asignadas</h4>
+    <p>No tienes casetas disponibles para visualizar. Si crees que es un error, contacta a un administrador.</p>
+  </div>
+  {% else %}
+
+  <!-- === KPIs === -->
+  <div class="kpi-section">
+    <div class="kpi-card success">
+      <div class="kpi-icon"><i class="bi bi-box-seam"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">SKUs en Caseta(s)</div>
+        <div class="kpi-value">{{ total_skus }}</div>
+      </div>
+    </div>
+    <div class="kpi-card info">
+      <div class="kpi-icon"><i class="bi bi-stack"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Paquetes Totales</div>
+        <div class="kpi-value">{{ total_packages|floatformat:0 }}</div>
+      </div>
+    </div>
+    <div class="kpi-card accent">
+      <div class="kpi-icon"><i class="bi bi-speedometer2"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Contenido Total</div>
+        <div class="kpi-value">{{ total_content|floatformat:0 }}</div>
+      </div>
+    </div>
+    <div class="kpi-card warn">
+      <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Bajo stock (≤ {{ LOW_STOCK_THRESHOLD }})</div>
+        <div class="kpi-value">{{ low_stock_count }}</div>
+      </div>
+    </div>
+    <div class="kpi-card danger">
+      <div class="kpi-icon"><i class="bi bi-hourglass-split"></i></div>
+      <div class="kpi-info">
+        <div class="kpi-label">Próximos a vencer (≤ {{ EXPIRING_DAYS }} días)</div>
+        <div class="kpi-value">{{ expiring_products }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- === MAIN CONTENT LAYOUT === -->
+  <div class="dashboard-main">
+    <!-- COLUMNA IZQUIERDA NOTIFICACIONES -->
+    <div class="dashboard-left">
+      <div class="section-head d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-bell-fill text-primary fs-5"></i>
+        <h2 class="fw-bold mb-0 fs-5">Últimas Notificaciones</h2>
+      </div>
+
+      {% if notifications %}
+      <div class="table-responsive">
+        <table class="table table-hover align-middle notifications-table shadow-sm">
+          <thead class="table-light">
+            <tr>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Producto</th>
+              <th>Caseta</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for n in notifications %}
+            <tr class="notification-row {% if not n.read %}unread{% endif %}">
+
+              <td data-label="Fecha" class="text-muted small d-block d-md-table-cell">
+                {{ n.created_at|date:"Y-m-d H:i" }}
+              </td>
+
+              <td data-label="Tipo" class="d-block d-md-table-cell">
+                {% if n.notif_type == "low_stock" %}
+                <span class="badge bg-warning-subtle text-warning fw-semibold">
+                  <i class="bi bi-exclamation-triangle-fill me-1"></i> Stock Bajo
+                </span>
+                {% elif n.notif_type == "expiring" %}
+                <span class="badge bg-danger-subtle text-danger fw-semibold">
+                  <i class="bi bi-hourglass-split me-1"></i> Por Vencer
+                </span>
+                {% elif n.notif_type == "transfer" %}
+                <span class="badge bg-info-subtle text-info fw-semibold">
+                  <i class="bi bi-box-arrow-in-right me-1"></i> Traslado
+                </span>
+                {% else %}
+                <span class="badge bg-secondary-subtle text-secondary fw-semibold">
+                  <i class="bi bi-info-circle me-1"></i> General
+                </span>
+                {% endif %}
+              </td>
+
+              <td class="fw-semibold text-dark position-relative">
+                {{ n.product.name_prod }}
+                <i class="bi bi-info-circle-fill text-primary ms-2 info-icon product-info" role="button"
+                  data-message="{{ n.message|escapejs }}">
+                </i>
+              </td>
+
+              <td data-label="Caseta" class="d-block d-md-table-cell">
+                {% if n.warehouse %}
+                <i class="bi bi-house-door text-secondary me-1"></i>{{ n.warehouse.warehouse.name_ware }}
+                {% else %}
+                <span class="text-muted">—</span>
+                {% endif %}
+              </td>
+
+              <td data-label="Estado" class="d-block d-md-table-cell">
+                {% if n.read %}
+                <span class="badge bg-success-subtle text-success fw-semibold">
+                  <i class="bi bi-check-circle me-1"></i> Leída
+                </span>
+                {% else %}
+                <span class="badge bg-warning-subtle text-warning fw-semibold">
+                  <i class="bi bi-envelope-fill me-1"></i> No Leída
+                </span>
+                {% endif %}
+              </td>
+
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="card empty-state text-center py-4">
+        <p>No hay notificaciones recientes.</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- COLUMNA CENTRAL DE GRÁFICOS -->
+    <div class="dashboard-right">
+      <div class="charts-grid mt-2">
+        <div class="chart-card">
+          <h3>Stock por Producto</h3>
+          <canvas id="chartStock"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Aplicaciones (últimos {{ WINDOW_DAYS }} días)</h3>
+          <canvas id="chartApps"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Traslados a Casetas (últimos {{ WINDOW_DAYS }} días)</h3>
+          <canvas id="chartMoves"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Productos Más Utilizados (últimos {{ WINDOW_DAYS }} días)</h3>
+          <canvas id="chartUsed"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLUMNA DE ACTIVIDAD RECIENTE -->
+    <div class="dashboard-activity">
+      <div class="section-head d-flex align-items-center gap-2 mb-2">
+        <i class="bi bi-clock-history text-primary fs-5"></i>
+        <h2 class="fw-bold mb-0 fs-5">Actividad Reciente</h2>
+        <small id="activity-status" class="text-muted ms-auto small"></small>
+      </div>
+
+      <ul id="activity-feed" class="list-group list-group-flush activity-feed">
+        {% if recent_activity %}
+        {% for act in recent_activity %}
+        <li class="list-group-item d-flex flex-column border-0 border-bottom small py-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <span>
+              {% if act.type == 'movement' %}
+              <i class="bi bi-arrow-left-right text-info me-1"></i>
+              {% elif act.type == 'application' %}
+              <i class="bi bi-droplet text-success me-1"></i>
+              {% else %}
+              <i class="bi bi-info-circle text-secondary me-1"></i>
+              {% endif %}
+              {{ act.message }}
+            </span>
+            <small class="text-muted">{{ act.timestamp|date:"Y-m-d H:i" }}</small>
+          </div>
+          <span class="text-muted ms-4">
+            <i class="bi bi-person-circle me-1"></i>{{ act.user }}
+          </span>
+        </li>
+        {% endfor %}
+        {% else %}
+        <li class="list-group-item text-muted small py-3 text-center">
+          No hay actividad reciente registrada.
+        </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+
+  {% endif %}
+
+  {% block extra_js %}
+  <script id="chartData" type="application/json">
+  {{ chart_json|safe }}
+</script>
+  <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+  {% endblock %}
+  {% endblock %}
