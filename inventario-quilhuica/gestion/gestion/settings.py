@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8r(%_b(!#%$4x9*!$fr0v&x9-*cymc*pkqu2kmof5o_cyh&r&#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []  
+ALLOWED_HOSTS = [ "192.168.100.115", "127.0.0.1", 'localhost']  
 
 # Application definition
 
@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'warehouse',
     'application',
     'base',
-    'notification'
+    'notification',
+    'reports',
 ]
 
 MIDDLEWARE = [
@@ -58,8 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'gestion.middleware.LoginRequiredMiddleware',
-
+    'gestion.middleware.AuthRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'gestion.urls'
@@ -67,7 +67,7 @@ ROOT_URLCONF = 'gestion.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

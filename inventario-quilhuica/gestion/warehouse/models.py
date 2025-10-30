@@ -27,7 +27,7 @@ class Movement(models.Model):
     ware_origin = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name='movements_origin')
     ware_destin = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='movements_destin')
     movement_type = models.CharField(max_length=20, choices=MOVEMENT_CHOICES)
-    quantity = models.FloatField()
+    quantity = models.IntegerField()
     moved_at = models.DateTimeField(auto_now_add=True)
     moved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)

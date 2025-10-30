@@ -1,87 +1,130 @@
-
-
-/* Estilo para el título principal */
+/* ======== ESTILO GENERAL ======== */
 h2 {
-    text-align: center;
-    color: #343a40;
-    margin-bottom: 1.5rem;
-    font-weight: 300; /* Un peso de fuente más ligero */
+  text-align: center;
+  color: #343a40;
+  margin-bottom: 1.5rem;
+  font-weight: 400;
+}
+.btn-success {
+  background-color: #00C853 !important;
+  border-color: #00C853 !important;
 }
 
-/* Contenedor principal de la tabla para centrar y añadir sombra */
-.table-container {
-    max-width: 80%;
-    margin: auto;
-    background: #ffffff;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.btn-success:hover {
+  background-color: #059142 !important;
+  border-color: #059142 !important;
 }
 
-/* Estilos de la tabla */
+.product-list-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ======== TABLA ======== */
 .table {
-    border-collapse: collapse; /* Bordes más limpios */
-    width: 100%;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.95rem;
 }
 
-/* Cabecera de la tabla */
 .table thead tr {
-    background-color: #007bff; /* Azul primario de Bootstrap */
-    color: #ffffff;
-    text-align: left;
+  background-color: #00c853;
+  color: white;
+  text-align: left;
 }
 
 .table th,
 .table td {
-    padding: 12px 15px; /* Relleno vertical y horizontal */
-    vertical-align: middle; /* Alineación vertical */
-.btn-primary {
-  background-color: #00C451  ;
-  border-color: #00C451 ;
+  padding: 12px 15px;
+  vertical-align: middle;
 }
 
-.btn-primary:hover {
-  background-color: #055526 ;
-  border-color: #055526 ;
-}
-
-/* Estilo de las filas del cuerpo de la tabla */
-.table tbody tr {
-    border-bottom: 1px solid #dee2e6;
-}
-
-/* Efecto hover para las filas */
 .table tbody tr:hover {
-    background-color: #f1f8ff; /* Un azul muy claro al pasar el mouse */
-    cursor: pointer;
+  background-color: #f9fcf8;
+  transition: background-color 0.2s;
 }
 
-/* Mensaje para cuando no hay productos */
-.table tbody tr td[colspan="5"] {
-    text-align: center;
-    font-style: italic;
-    color: #6c757d;
-    padding: 20px 0;
-}
-
-/* Estilos para los botones de acción */
 .table td .btn {
-    padding: 0.3rem 0.75rem; /* Botones un poco más pequeños */
-    margin-right: 5px; /* Espacio entre botones */
-    transition: all 0.2s ease-in-out; /* Transición suave */
+  padding: 0.3rem 0.7rem;
+  font-size: 0.85rem;
+  transition: all 0.2s ease-in-out;
 }
 
 .table td .btn:hover {
-    transform: translateY(-2px); /* Efecto de "levantarse" al pasar el mouse */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Botón "Nuevo Producto" */
-.btn-success {
-    transition: all 0.2s ease-in-out;
+/* ======== SCROLL RESPONSIVO ======== */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
 }
 
-.btn-success:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}}
+/* ======== RESPONSIVE BREAKPOINTS ======== */
+@media (max-width: 768px) {
+  .product-list-wrapper {
+    padding: 1rem;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  h2 {
+    font-size: 1.4rem;
+  }
+
+  .table th,
+  .table td {
+    font-size: 0.85rem;
+    padding: 10px 8px;
+  }
+
+  .btn {
+    font-size: 0.8rem;
+  }
+}
+
+/* Vista tipo “cards” alternativa para móviles muy pequeños */
+@media (max-width: 576px) {
+  .table {
+    display: none;
+  }
+
+  .product-card {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  .product-card strong {
+    color: #00c853;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .product-card small {
+    display: block;
+    color: #555;
+  }
+
+  .product-card .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+  }
+
+  .product-card .btn {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+}

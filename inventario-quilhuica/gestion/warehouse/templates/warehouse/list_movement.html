@@ -1,0 +1,47 @@
+{% extends "base/form_base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-3">Historial de Movimientos</h2>
+
+  <table class="table table-striped table-hover table-bordered align-middle">
+    <thead class="table-dark">
+      <tr>
+        <th>ID</th>
+        <th>Tipo</th>
+        <th>Producto</th>
+        <th>Presentación</th>
+        <th>Origen</th>
+        <th>Destino</th>
+        <th>Cantidad</th>
+        <th>Usuario</th>
+        <th>Fecha</th>
+        <th>Descripción</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for mov in movimientos %}
+        <tr>
+          <td>{{ mov.id }}</td>
+          <td>{{ mov.get_movement_type_display }}</td>
+          <td>{{ mov.product.name_prod }}</td>
+          <td>{{ mov.presentation }}</td>
+          <td>{% if mov.ware_origin %}{{ mov.ware_origin.name_ware }}{% else %}-{% endif %}</td>
+          <td>{{ mov.ware_destin.name_ware }}</td>
+          <td>{{ mov.quantity }}</td>
+          <td>{% if mov.moved_by %}{{ mov.moved_by.nombre_usuario }}{% else %}-{% endif %}</td>
+          <td>{{ mov.moved_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ mov.description }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="10" class="text-center text-muted">No hay movimientos registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'product/list.css' %}">
+{% endblock %}

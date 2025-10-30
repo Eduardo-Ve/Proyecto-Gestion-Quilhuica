@@ -1,77 +1,106 @@
-﻿from django.urls import reverse_lazy
+﻿# product/views.py
+from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.http import HttpResponseRedirect
 from .models import Product
 from .forms import ProductForm
-from warehouse.models import * 
-from django.db.models import Sum
 from django.utils.decorators import method_decorator
 from login.decorators import role_required
+from django.contrib import messages
+from django.shortcuts import render, redirect
+from .forms import StockAddForm
+from django.db.models import Sum, Value, Q, FloatField, IntegerField
+from django.db.models.functions import Coalesce
+
 
 class ProductListView(ListView):
     model = Product
     template_name = 'product/product_list.html'
     context_object_name = 'products'
+    paginate_by = 10
 
     def get_queryset(self):
-        products = Product.objects.all().order_by('name_prod')
-
-        main_warehouse = Warehouse.objects.filter(type='main').first()
+        """
+        Filtra los productos según el tipo de bodega (principal o caseta asignada)
+        y calcula los totales de stock.
+        """
+        user = self.request.user
         
-        # Si no hay bodega principal, devolvemos los productos con stock 0.
-        if not main_warehouse:
-            for p in products:
-                p.total_packages = 0
-                p.total_content = 0
-            return products
+        # 1. Queryset base con relaciones precargadas
+        queryset = Product.objects.prefetch_related('category', 'presentation')
 
-        inventory_data = (
-            Inventory.objects.filter(warehouse=main_warehouse)
-            .values('product_id') # Agrupamos por el ID del producto
-            .annotate(
-                total_packages=Sum('quantity_packages'),
-                total_content=Sum('total_content'),
-                
+        # 2. Validar autenticación
+        if not user.is_authenticated:
+            return queryset.none()
+
+        # 3. Filtro por tipo de bodega
+        if user.is_admin:
+            # Admin ve la bodega principal
+            warehouse_filter = Q(inventory__warehouse__type='main')
+        elif user.caseta_asignada:
+            # Encargado de caseta ve solo su caseta
+            warehouse_filter = Q(inventory__warehouse=user.caseta_asignada)
+        else:
+            return queryset.none()
+
+        # 4. Filtrar productos por bodega/caseta
+        queryset = queryset.filter(warehouse_filter)
+
+        # 5. Anotar totales (sumatorias de stock)
+        queryset = queryset.annotate(
+            total_packages=Coalesce(
+                Sum('inventory__quantity_packages', filter=warehouse_filter),
+                Value(0),
+                output_field=IntegerField()
+            ),
+            total_content=Coalesce(
+                Sum('inventory__total_content', filter=warehouse_filter),
+                Value(0.0),
+                output_field=FloatField()
             )
-        )
+        ).distinct().order_by('name_prod')
 
-        # 4. 📇 Crea un 'diccionario' de totales para una búsqueda súper rápida.
-        # La clave es el ID del producto y el valor es su stock.
-        totals = {
-            item['product_id']: {
-                'packages': item['total_packages'] or 0,
-                'content': item['total_content'] or 0
-            }
-            for item in inventory_data
-        }
+        return queryset
 
-        # 5. 🔗 Asigna el stock a cada producto en la lista.
-        # Si un producto no está en el diccionario 'totals', se le asignará 0.
-        for p in products:
-            # Usamos p.product_id porque así se llama tu llave primaria.
-            product_totals = totals.get(p.product_id, {'packages': 0, 'content': 0})
-            p.total_packages = product_totals['packages']
-            p.total_content = product_totals['content']
-            p.unit_type = p.presentation.content_unit
-
-        return products
-    
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
-    template_name = 'product/product_create_form.html'  # Formulario de creación
+    template_name = 'product/product_create_form.html'
     success_url = reverse_lazy('product:product_list')
+
+    def form_valid(self, form):
+        self.object = form.save(user=self.request.user)
+        return HttpResponseRedirect(self.get_success_url())
+
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductForm
-    template_name = 'product/product_update_form.html'  # Formulario de edición
+    template_name = 'product/product_update_form.html'
     success_url = reverse_lazy('product:product_list')
+
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductDeleteView(DeleteView):
     model = Product
-    template_name = 'product/product_confirm_delete.html'  # Confirmación de eliminación
+    template_name = 'product/product_confirm_delete.html'
     success_url = reverse_lazy('product:product_list')
 
+@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
+class StockAddView(CreateView):
+    template_name = 'product/add_stock_form.html'
+    form_class = StockAddForm
+
+    def get(self, request, *args, **kwargs):
+        form = self.form_class()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request, *args, **kwargs):
+        form = self.form_class(request.POST)
+        if form.is_valid():
+            form.save(user=request.user)
+            messages.success(request, "Stock añadido correctamente.")
+            return redirect('product:product_list')
+        return render(request, self.template_name, {'form': form})

@@ -1,21 +1,135 @@
-{% extends 'base/base.html' %}
+{% extends 'base/form_base.html' %}
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block title %}Editar Producto · {{ object.name_prod }}{% endblock %}
+
 {% block content %}
-<h2>Editar Producto: {{ object.name_prod }}</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-primary mt-3">Actualizar</button>
-    <a href="{% url 'product:product_list' %}" class="btn btn-secondary mt-3">Cancelar</a>
-</form>
+<div class="container py-4">
+  <div class="form-section shadow-sm">
+    <h2 class="section-title">Editar Producto</h2>
+    <div class="form-content">
+      <p class="text-muted mb-4">
+        Actualiza la información del producto <strong>{{ object.name_prod }}</strong> en el sistema.
+      </p>
+
+      <form method="post" id="product-form" class="card p-3 border-0">
+        {% csrf_token %}
+
+        <!-- === DATOS PRINCIPALES === -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            {{ form.name_prod|as_crispy_field }}
+          </div>
+
+          <div class="col-md-6" id="category-select-wrapper">
+            {{ form.category|as_crispy_field }}
+          </div>
+        </div>
+
+        <!-- === CHECKBOX NUEVA CATEGORÍA === -->
+        <div class="form-check mt-2 mb-3">
+          {{ form.create_new_category }}
+          <label class="form-check-label ms-1" for="id_create_new_category">
+            {{ form.create_new_category.label }}
+          </label>
+        </div>
+
+        <!-- === CAMPOS NUEVA CATEGORÍA === -->
+        <div class="row g-3 mb-4" id="new-cat" style="display:none;">
+          <div class="col-md-6">
+            {{ form.new_category_name|as_crispy_field }}
+          </div>
+          <div class="col-md-6">
+            {{ form.new_category_description|as_crispy_field }}
+          </div>
+        </div>
+
+        <!-- === PRESENTACIÓN === -->
+        <div class="row g-3 mb-3" id="presentation-select-wrapper">
+          <div class="col-md-6">
+            {{ form.presentation|as_crispy_field }}
+          </div>
+        </div>
+
+        <!-- === CHECKBOX NUEVA PRESENTACIÓN === -->
+        <div class="form-check mt-2 mb-3">
+          {{ form.create_new_presentation }}
+          <label class="form-check-label ms-1" for="id_create_new_presentation">
+            {{ form.create_new_presentation.label }}
+          </label>
+        </div>
+
+        <!-- === CAMPOS NUEVA PRESENTACIÓN === -->
+        <div class="row g-3 mb-4" id="new-pres" style="display:none;">
+          <div class="col-md-4">{{ form.package_type|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.content_value|as_crispy_field }}</div>
+          <div class="col-md-4">{{ form.content_unit|as_crispy_field }}</div>
+        </div>
+
+        <!-- === VENCIMIENTO Y STOCK === -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            {{ form.expire_at|as_crispy_field }}
+          </div>
+          <div class="col-md-6">
+            {{ form.stock_inicial|as_crispy_field }}
+          </div>
+        </div>
+
+        <!-- === BOTONES === -->
+        <div class="mt-4 d-flex justify-content-end gap-2">
+          <a href="{% url 'product:product_list' %}" class="btn btn-secondary px-4">Cancelar</a>
+          <button type="submit" class="btn btn-success px-4">Actualizar Producto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 {% endblock %}
+
 {% block extra_css %}
-<link rel="stylesheet" href="{% static '/form_style.css' %}">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{% static 'form_style.css' %}">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static 'js/toggle_form_fields.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="{% static 'js/calendar_picker.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // === CATEGORÍA ===
+  const chkCat = document.getElementById("id_create_new_category");
+  const newCat = document.getElementById("new-cat");
+  const existingCat = document.getElementById("category-select-wrapper");
+
+  function toggleCategory() {
+    const checked = chkCat && chkCat.checked;
+    if (newCat) newCat.style.display = checked ? "" : "none";
+    if (existingCat) existingCat.style.display = checked ? "none" : "";
+  }
+
+  if (chkCat) {
+    chkCat.addEventListener("change", toggleCategory);
+    toggleCategory();
+  }
+
+  // === PRESENTACIÓN ===
+  const chkPres = document.getElementById("id_create_new_presentation");
+  const newPres = document.getElementById("new-pres");
+  const existingPres = document.getElementById("presentation-select-wrapper");
+
+  function togglePresentation() {
+    const checked = chkPres && chkPres.checked;
+    if (newPres) newPres.style.display = checked ? "" : "none";
+    if (existingPres) existingPres.style.display = checked ? "none" : "";
+  }
+
+  if (chkPres) {
+    chkPres.addEventListener("change", togglePresentation);
+    togglePresentation();
+  }
+});
+</script>
 {% endblock %}

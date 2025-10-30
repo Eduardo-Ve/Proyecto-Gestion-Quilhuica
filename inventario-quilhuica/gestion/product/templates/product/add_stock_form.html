@@ -1,0 +1,24 @@
+{% extends 'base/base.html' %}
+{% block title %}Añadir Stock{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2 class="mb-4">Añadir Stock a Producto</h2>
+
+  <form method="post" class="card p-4 shadow-sm">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="{{ form.product.id_for_label }}" class="form-label">{{ form.product.label }}</label>
+      {{ form.product }}
+    </div>
+    <div class="mb-3">
+      <label for="{{ form.cantidad.id_for_label }}" class="form-label">{{ form.cantidad.label }}</label>
+      {{ form.cantidad }}
+    </div>
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-success">Guardar</button>
+      <a href="{% url 'product:product_list' %}" class="btn btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

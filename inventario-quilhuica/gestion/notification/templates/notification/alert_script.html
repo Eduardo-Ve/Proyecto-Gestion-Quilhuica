@@ -1,16 +1,41 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 1. Pregunta al servidor si hay notificaciones NO LEÍDAS
-    fetch("{% url 'notification:check_alerts' %}") // Usamos la URL de Django
+    fetch("{% url 'notification:check_alerts' %}")
         .then(response => response.json())
         .then(data => {
+            console.log("Respuesta de check_alerts:", data); // 👈 Nuevo log
             let messages = [];
             if (data.low_stock && data.low_stock.length > 0) {
-                messages.push('<strong>Productos con bajo stock:</strong><br>' + data.low_stock.join('<br>'));
+                if (data.low_stock && data.low_stock.length > 0) {
+                    let rows = data.low_stock.map((msg, idx) => `
+                        <tr>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd;">${idx + 1}</td>
+                            <td style="padding: 8px; border-bottom: 1px solid #ddd; text-align:left;">${msg}</td>
+                        </tr>
+                    `).join('');
+                    
+                    const tableHTML = `
+                        <div style="margin-top:10px;">
+                            <table style="width:100%; border-collapse:collapse; font-size:14px; color:#333;">
+                                <thead style="background:#f2f2f2;">
+                                    <tr>
+                                        <th style="text-align:center; padding:8px;">#</th>
+                                        <th style="text-align:left; padding:8px;">Detalle</th>
+                                    </tr>
+                                </thead>
+                                <tbody>${rows}</tbody>
+                            </table>
+                        </div>
+                    `;
+                    messages.push('<strong>Productos con bajo stock:</strong>' + tableHTML);
+                }
+
             }
             if (data.expiring && data.expiring.length > 0) {
                 messages.push('<strong>Productos próximos a vencer:</strong><br>' + data.expiring.join('<br>'));
             }
+
+            console.log("Mensajes detectados:", messages); // 👈 Nuevo log
 
             if (messages.length > 0) {
                 Swal.fire({
@@ -19,9 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     icon: 'warning',
                     confirmButtonText: 'Entendido'
                 }).then((result) => {
-                    // 2. Si el usuario confirma, le AVISA al servidor
                     if (result.isConfirmed) {
-                        fetch("{% url 'notification:mark_read' %}", { // Usamos la URL de Django
+                        fetch("{% url 'notification:mark_read' %}", {
                             method: 'POST',
                             headers: {
                                 'X-CSRFToken': getCookie('csrftoken'),
@@ -30,19 +54,18 @@ document.addEventListener('DOMContentLoaded', function() {
                         })
                         .then(response => response.json())
                         .then(data => {
-                            if (data.status === 'ok') {
-                                console.log('Notificaciones marcadas como leídas en la base de datos.');
-                            }
+                            console.log('Respuesta mark_read:', data); // 👈 Nuevo log
                         })
                         .catch(error => console.error('Error al marcar notificaciones:', error));
                     }
                 });
+            } else {
+                console.log("No hay mensajes para mostrar"); // 👈 Nuevo log
             }
         })
         .catch(error => console.error('Error al obtener notificaciones:', error));
 });
 
-// Función auxiliar para obtener el token CSRF (esencial para POST)
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {

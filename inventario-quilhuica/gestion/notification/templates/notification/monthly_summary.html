@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Language" content="es">
+  <meta name="color-scheme" content="light only" />
+  <style>
+    body {
+      font-family: "Arial", sans-serif;
+      background-color: #ffffff;
+      margin: 0;
+      padding: 0;
+      color: #333333;
+    }
+
+    .header {
+      background-color: #1b5e20;
+      color: #ffffff;
+      padding: 16px 24px;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .content {
+      padding: 24px;
+      line-height: 1.6;
+    }
+
+    .section p {
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #1b5e20;
+    }
+
+    .divider {
+      border-top: 1px solid #dddddd;
+      margin: 20px 0;
+    }
+
+    .notice {
+      font-size: 12px;
+      color: #777777;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 16px;
+      font-size: 12px;
+      color: #666666;
+      border-top: 1px solid #dddddd;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Encabezado -->
+  <div class="header">
+    Resumen Mensual - Gestión Quilhuica
+  </div>
+
+  <!-- Contenido -->
+  <div class="content">
+    <div class="section">
+      <p><span class="label">Período:</span> {{ periodo }}</p>
+      <p><span class="label">Aplicaciones realizadas:</span> {{ total_aplicaciones }}</p>
+      <p><span class="label">Total aplicado (paquetes):</span> {{ total_paquetes }}</p>
+      <p><span class="label">Movimientos registrados:</span> {{ total_movimientos }}</p>
+      <p><span class="label">Stock total actual:</span> {{ stock_total }}</p>
+    </div>
+
+    <div class="divider"></div>
+
+    <p class="notice">
+      Este correo ha sido generado automáticamente por el sistema <b>Gestión Quilhuica</b>.<br>
+      Por favor, no responda a este mensaje.
+    </p>
+  </div>
+
+  <!-- Pie de página -->
+  <div class="footer">
+    © Quilhuica SPA&nbsp;|&nbsp;Uso interno
+  </div>
+</body>
+</html>

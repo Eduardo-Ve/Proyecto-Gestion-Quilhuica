@@ -1,16 +1,64 @@
-{% extends "base/base.html" %}
-{% block title %}Delete product{% endblock %}
+{% extends 'base/form_base.html' %}
+{% block title %}Eliminar Producto{% endblock %}
 {% load static %}
+
 {% block content %}
-<h2>Eliminar Producto</h2>
-<p>¿Deseas eliminar el producto <strong>{{ object.name_prod }}</strong>?</p>
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Eliminar</button>
-    <a href="{% url 'product:product_list' %}" class="btn btn-secondary">Cancelar</a>
-</form>
-{% endblock %}
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="{% static '/list.css' %}">
+
+<style>
+    /* Usamos las mismas clases que en el ejemplo anterior 
+      para mantener un estilo consistente.
+    */
+    .delete-container {
+        max-width: 600px;
+        margin: 4rem auto;
+        padding: 2.5rem;
+        background-color: #ffffff;
+        border: 1px solid #e9ecef;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        text-align: center;
+    }
+
+    .delete-container h2 {
+        /* Cambié 'h1' por 'h2' para que coincida con tu HTML.
+          Le damos color rojo de 'danger'.
+        */
+        margin-bottom: 1.5rem;
+        color: var(--bs-danger, #dc3545); 
+    }
+
+    .delete-container p {
+        font-size: 1.15rem;
+        margin-bottom: 2rem;
+    }
+
+    .delete-container .action-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .delete-container .action-buttons .btn {
+        min-width: 100px;
+        font-weight: 500;
+    }
+</style>
+
+<div class="container">
+    <div class="delete-container">
+        
+        <h2>Eliminar Producto</h2>
+        <p>¿Seguro que deseas eliminar el producto <strong>{{ object.name_prod }}</strong>?</p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+                <a href="{% url 'product:product_list' %}" class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+        
+    </div>
+</div>
+
 {% endblock %}

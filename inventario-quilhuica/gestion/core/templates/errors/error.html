@@ -1,24 +1,30 @@
-
-
 {% extends "base/base.html" %}
 {% load static %}
 
 {% block content %}
 <div classclass="container-fluid vh-100 d-flex justify-content-center align-items-center bg-dark">
     <div class="text-center text-white p-5">
-        
-        <img src="{% static 'img/bloquear-alt.png' %}" alt="Acceso restringido" class="error-icon mb-3">
-        
-        <h1 class="display-4">{{ code}}</h1>
-        
-        
+        {% if code == 400 %}
+        <img src="{% static 'img/error-400.png' %}" alt="Error 400" class="error-icon mb-3">
+        {% elif code == 403 %}
+        <img src="{% static 'img/error-403.png' %}" alt="Acceso prohibido" class="error-icon mb-3">
+        {% elif code == 404 %}
+        <img src="{% static 'img/error-404.png' %}" alt="No encontrado" class="error-icon mb-3">
+        {% elif code == 500 %}
+        <img src="{% static 'img/error-500.png' %}" alt="Error del servidor" class="error-icon mb-3">
+        {% else %}
+        <img src="{% static 'img/bloquear-alt.png' %}" alt="Error" class="error-icon mb-3">
+        {% endif %}
+        <h1 class="display-4">Error {{ code }} </h1>
+
+
         <p class="lead">
             Lo sentimos {{ user }}, {{ message }}
         </p>
         <p class="text-white-50">
             Si crees que esto es un error, por favor contacta al administrador.
         </p>
-        
+
         <a href="/" class="btn btn-outline-light mt-4">Volver al inicio</a>
     </div>
 </div>
@@ -26,9 +32,9 @@
 
 {# --- Este bloque es para CSS adicional (fuera de 'content') --- #}
 {% block extra_css %}
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-  
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
-  <link rel="stylesheet" href="{% static '/errors.css' %}">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<link rel="stylesheet" href="{% static '/errors.css' %}">
 {% endblock extra_css %}
