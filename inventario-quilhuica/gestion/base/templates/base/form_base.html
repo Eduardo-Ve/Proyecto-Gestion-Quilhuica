@@ -18,19 +18,6 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
-  <h2 class="form-title text-center mb-4">{{ title }}</h2>
-
-  <!--  Mensajes de Django -->
-  {% if messages %}
-  <div class="mt-3">
-    {% for message in messages %}
-      <div class="alert alert-{{ message.tags }} alert-dismissible shadow-sm show mb-3" role="alert">
-        {{ message }}
-        <button type="button" class="btn-close alert-close-btn" aria-label="Cerrar"></button>
-      </div>
-    {% endfor %}
-  </div>
-  {% endif %}
 
   <form method="post" novalidate>
     {% csrf_token %}
@@ -70,3 +57,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 {% endblock %}
+

@@ -1,12 +1,39 @@
-{% extends "base/form_base.html" %}
 
+{% extends "base/form_base.html" %}
+{% load static %}
 {% block title %}Registrar Nuevo Usuario{% endblock %}
 
 {% block form_content %}
 <div class="form-section">
   <h5 class="section-title">Datos del Usuario</h5>
   <div class="form-content">
-    {{ form.as_p }}
+    <div class="mb-3">
+  <label for="id_nombre_usuario">{{ form.nombre_usuario.label }}</label>
+  {{ form.nombre_usuario }}
+</div>
+
+<div class="mb-3">
+  <label for="id_correo">{{ form.correo.label }}</label>
+  {{ form.correo }}
+</div>
+<div class="mb-3">
+  <label for="id_telefono">{{ form.telefono.label }}</label>
+  {{ form.telefono }}
+</div>
+<div class="mb-3">
+  <label for="id_roles">{{ form.roles.label }}</label>
+  {{ form.roles }}
+</div>
+
+<div class="mb-3" id="caseta-wrapper">
+  <label for="id_caseta_asignada">{{ form.caseta_asignada.label }}</label>
+  {{ form.caseta_asignada }}
+</div>
+
   </div>
 </div>
+
+{% block extra_js %}
+<link rel="stylesheet" href="{% static '/js/user_form_logic.js' %}">
+{% endblock %}
 {% endblock %}

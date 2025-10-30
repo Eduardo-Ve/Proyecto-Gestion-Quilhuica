@@ -33,3 +33,16 @@ if (dropdownToggle && dropdownMenu) {
     }
   });
 }
+document.addEventListener("DOMContentLoaded", function () {
+  const userAvatar = document.querySelector(".user-avatar");
+  const dropdown = document.querySelector(".user-dropdown");
+
+  userAvatar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("show");
+  });
+
+  document.addEventListener("click", () => {
+    dropdown.classList.remove("show");
+  });
+});

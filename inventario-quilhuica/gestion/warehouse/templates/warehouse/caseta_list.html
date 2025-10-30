@@ -1,59 +1,103 @@
-{% extends "base/form_base.html" %}
+{% extends 'base/form_base.html' %}
+{% load humanize %}
 {% load static %}
 
-{% block title %}Gestión de Casetas{% endblock %}
+{% block title %}Gestión de Casetas · Inventario{% endblock %}
 
-{% block extra_css %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" href="{% static 'warehouse/style.css' %}">
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'list.css' %}" />
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4 shadow-sm">
-  <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="mb-0">Gestión de Casetas</h1>
-    <div>
-      {% if user.is_authenticated and user.is_admin %}
-      <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-success me-2">+ Nueva Caseta</a>
-      {% endif %}
-      <a href="{% url 'warehouse:productos_por_caseta' %}" class="btn btn-secondary">
-        <i class="bi bi-box-seam"></i> Productos por Caseta
+<div class="product-list-wrapper">
+  <h2 class="text-success fw-bold mb-3">Gestión de Casetas</h2>
+
+  {% if user.is_authenticated and user.is_admin %}
+    <h4>Bodega Principal</h4>
+    <div class="d-flex gap-2 mb-3">
+      <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-success">
+        + Nueva Caseta
+      </a>
+      <a href="{% url 'warehouse:productos_por_caseta' %}" class="btn btn-primary">
+        Productos por Caseta
       </a>
     </div>
+  {% elif user.is_authenticated and user.caseta_asignada %}
+    <h4>Caseta: {{ user.caseta_asignada.name }}</h4>
+  {% endif %}
+
+  <div class="table-responsive shadow-sm">
+    <table class="table table-striped align-middle border">
+      <thead class="table-success text-dark">
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Creada en</th>
+          {% if user.is_authenticated and user.is_admin %}
+          <th>Acciones</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for caseta in casetas %}
+        <tr>
+          <td>{{ caseta.id }}</td>
+          <td>{{ caseta.name_ware }}</td>
+          <td>{{ caseta.description }}</td>
+          <td>{{ caseta.created_at|date:"d/m/Y H:i" }}</td>
+          {% if user.is_authenticated and user.is_admin %}
+          <td>
+            <div class="d-flex gap-2">
+              <a href="{% url 'warehouse:caseta_edit' caseta.id %}" class="btn btn-sm btn-success">
+                Editar
+              </a>
+              <a href="{% url 'warehouse:caseta_delete' caseta.id %}" class="btn btn-sm btn-danger">
+                Eliminar
+              </a>
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="{% if user.is_authenticated and user.is_admin %}5{% else %}4{% endif %}" 
+              class="text-center text-muted py-4">
+            No hay casetas registradas
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
 
-  <table class="table table-striped table-bordered align-middle shadow-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Creada en</th>
-        {% if user.is_authenticated and user.is_admin %}
-        <th class="text-center">Acciones</th>
-        {% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for caseta in casetas %}
-      <tr>
-        <td>{{ caseta.id }}</td>
-        <td>{{ caseta.name_ware }}</td>
-        <td>{{ caseta.description }}</td>
-        <td>{{ caseta.created_at|date:"d/m/Y H:i" }}</td>
-        {% if user.is_authenticated and user.is_admin %}
-        <td class="text-center">
-          <a href="{% url 'warehouse:caseta_edit' caseta.id %}" class="btn btn-sm btn-warning me-1">Editar</a>
-          <a href="{% url 'warehouse:caseta_delete' caseta.id %}" class="btn btn-sm btn-danger">Eliminar</a>
-        </td>
-        {% endif %}
-      </tr>
-      {% empty %}
-      <tr>
-        <td colspan="5" class="text-center text-muted fst-italic">No hay casetas registradas.</td>
-      </tr>
+  <!-- Paginación -->
+  {% if is_paginated %}
+  <nav class="mt-4">
+    <ul class="pagination justify-content-center">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">«</span></li>
+      {% endif %}
+
+      {% for i in paginator.page_range %}
+      <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+      </li>
       {% endfor %}
-    </tbody>
-  </table>
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">»</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
 </div>
 {% endblock %}

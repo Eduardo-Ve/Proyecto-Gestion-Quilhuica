@@ -1,6 +1,6 @@
 import io
 import calendar
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 from django.utils.html import strip_tags
@@ -11,8 +11,9 @@ from application.models import ApplicationDetail
 from reports.pdf_reportlab import generar_pdf_reportlab  
 from django.db.models import Sum
 from io import BytesIO
-EMAIL_FROM = settings.EMAIL_HOST_USER
+from twilio.rest import Client
 
+EMAIL_FROM = settings.EMAIL_HOST_USER
 
 # =========================================================
 # 🔹 FUNCIONES AUXILIARES
@@ -43,16 +44,22 @@ def get_last_business_day(today=None):
 # =========================================================
 
 def send_low_stock_alert(threshold=100):
-    """Envía correo si hay productos con bajo stock."""
+    """Envía correo y mensaje de WhatsApp si hay productos con bajo stock."""
+
+    # 1️⃣ Buscar productos con stock bajo
     low_stock_items = Inventory.objects.filter(
         warehouse__type__in=['shed', 'main'],
         quantity_packages__lte=threshold
-    )
+    ).select_related('warehouse', 'product')
 
     if not low_stock_items.exists():
         print("No hay productos con bajo stock. ✅")
         return
 
+    # 2️⃣ Obtener casetas afectadas
+    casetas_afectadas = sorted(set(item.warehouse.name_ware for item in low_stock_items))
+
+    # 3️⃣ Enviar correo a administradores
     admins = Usuario.objects.filter(
         roles__name_role="Administrador",
         correo__isnull=False
@@ -73,9 +80,28 @@ def send_low_stock_alert(threshold=100):
         )
         email.attach_alternative(html_content, "text/html")
         email.send()
-        print(f"Correo enviado a {admin.nombre_usuario} ({admin.correo})")
+        print(f"📧 Correo enviado a {admin.nombre_usuario} ({admin.correo})")
 
+    # 4️⃣ Enviar resumen por WhatsApp
+    client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+    resumen_msg = (
+        " *Alerta de Stock Bajo* \n\n"
+        "Tienes productos con stock bajo en las siguientes casetas:\n"
+        + "\n".join(f"• {name}" for name in casetas_afectadas)
+        + "\n\n📊 Revisa el detalle en el panel:\n"
+        f"http://127.0.0.1:8000/"
+    )
+    try:
+        client.messages.create(
+            from_=settings.TWILIO_WHATSAPP_FROM,
+            to=settings.TWILIO_WHATSAPP_TO,
+            body=resumen_msg
+        )
+        print(f"💬 WhatsApp enviado correctamente a {settings.TWILIO_WHATSAPP_TO}")
+    except Exception as e:
+        print(f"⚠️ Error al enviar WhatsApp: {e}")
 
+        
 # RESUMEN MENSUAL AUTOMÁTICO
 def send_monthly_summary_pdf_email():
     """Genera y envía el resumen mensual con PDFs adjuntos (usando ReportLab actualizado)."""

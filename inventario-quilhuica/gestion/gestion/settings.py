@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-8r(%_b(!#%$4x9*!$fr0v&x9-*cymc*pkqu2kmof5o_cyh&r&#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [ "192.168.100.115", "127.0.0.1", 'localhost']  
+ALLOWED_HOSTS = [ "192.168.100.116", "127.0.0.1", 'localhost']  
 
 # Application definition
 
@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'django_apscheduler', 
     'crispy_forms',
     'crispy_bootstrap5',
-    'core',
     'login',
     'product.apps.ProductConfig', # La app debe estar referenciada como Clase de Configuración, no como string simple.
     'warehouse.apps.WarehouseConfig', # La app debe estar referenciada como Clase de Configuración, no como string simple.
@@ -166,11 +165,10 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default=EMAIL_HOST_USER)
 
-account_sid = config("TWILIO_ACCOUNT_SID")
-auth_token = config("TWILIO_AUTH_TOKEN")
-from_whatsapp = config("TWILIO_WHATSAPP_FROM")
-to_whatsapp = config("TWILIO_WHATSAPP_TO")  
-
+TWILIO_ACCOUNT_SID = config("TWILIO_ACCOUNT_SID")
+TWILIO_AUTH_TOKEN = config("TWILIO_AUTH_TOKEN")
+TWILIO_WHATSAPP_FROM = config("TWILIO_WHATSAPP_FROM")
+TWILIO_WHATSAPP_TO = config("TWILIO_WHATSAPP_TO")
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"

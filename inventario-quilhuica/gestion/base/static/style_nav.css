@@ -11,7 +11,7 @@
   font-family: sans-serif;
 }
 
-/* Header “card-like” */
+/* Header "card-like" */
 .navbar-container header {
   position: sticky;       /* queda fijo arriba al hacer scroll */
   top: 0;
@@ -136,7 +136,7 @@
   height: 100%;
   width: 0;
   position: fixed;
-  z-index: 1;
+  z-index: 1000;
   left: 0;
   top: 0;
   background-color: #fff; /* fondo blanco */
@@ -177,6 +177,71 @@
   color: #1E1E1E;
 }
 
+/* ===== USER ICON BUTTON (avatar) ===== */
+.user-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 1rem;
+  height: 100%;
+  order: 4; /* Aparece después del logo (order: 3) */
+}
+
+.user-avatar {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-avatar svg {
+  width: 30px;
+  height: 30px;
+  color: #2f3640; /* Color oscuro para que se vea en fondo blanco */
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+/* Hover en el avatar */
+.user-avatar:hover svg {
+  transform: scale(1.1);
+  color: #00c853; /* Color verde al hover */
+}
+
+/* ===== DROPDOWN MENU ===== */
+.user-dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background-color: #1e1e1e;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
+  min-width: 140px;
+  padding: 0.5rem 0;
+}
+
+.user-dropdown.show {
+  display: block;
+}
+
+/* ===== BOTÓN LOGOUT ===== */
+.logout-link {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: #fff;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.logout-link:hover {
+  background-color: #dc3545;
+}
+
 /* MEDIA QUERIES */
 @media only screen and (max-width: 800px) {
   .navbar-container .nav__links,
@@ -191,6 +256,7 @@
     color: #1E1E1E;
   }
 }
+
 /* ====== Password reset ====== */
 .password-reset input[type="email"],
 .password-reset input[type="password"]{
@@ -208,7 +274,3 @@
 .password-reset .btn{
   font-weight: 600;
 }
-
-
-
-

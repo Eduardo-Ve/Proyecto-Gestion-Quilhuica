@@ -1,79 +1,85 @@
-/* 🎨 Estilo general para formularios unificados */
-.form-section {
-  background: #fff;
-  border: 1px solid #e3e3e3;
-  border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
-  margin-bottom: 1.5rem;
+/* ===== Formulario y botones ===== */
+.form-card {
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.form-section h5,
-.form-section h4 {
-  background: #2e7d32;
-  color: white;
-  margin: -1.5rem -1.5rem 1rem -1.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px 8px 0 0;
-  font-size: 1.05rem;
-  font-weight: 600;
+.form-card .form-group {
+  margin-bottom: 20px;
 }
 
-.form-group {
-  margin-bottom: 1rem;
+/* Campos de entrada */
+.form-card input,
+.form-card textarea,
+.form-card select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
 }
 
-label {
-  font-weight: 500;
-  margin-bottom: 0.4rem;
-  display: block;
-  color: #333;
-}
-
-.form-control,
-.form-select {
-  border-radius: 8px;
-  padding: 0.6rem 0.9rem;
-  border: 1px solid #ccc;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.form-control:focus,
-.form-select:focus {
-  border-color: #2e7d32;
-  box-shadow: 0 0 0 0.2rem rgba(46, 125, 50, 0.15);
+.form-card input:focus,
+.form-card textarea:focus,
+.form-card select:focus {
+  border-color: #00C853;
+  box-shadow: 0 0 0 0.25rem rgba(0, 192, 83, 0.2);
   outline: none;
 }
 
-/* Botones */
+.form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  border-radius: 50px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
 .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
-  border-radius: 8px;
-  font-weight: 500;
+  background-color: #00C451;
+  color: #fff;
+  border: none;
 }
 
 .btn-primary:hover {
-  background-color: #0069d9;
-  border-color: #0062cc;
+  background-color: #026127;
 }
 
-.btn-success {
-  border-radius: 8px;
-  font-weight: 500;
+.btn-secondary {
+  background-color: #6c757d;
+  color: #fff;
+  border: none;
 }
 
-.btn-secondary,
-.btn-danger {
-  border-radius: 8px;
+.btn-secondary:hover {
+  background-color: #5a6268;
 }
 
-/* Espaciado en secciones internas */
-.row + .row {
-  margin-top: 1rem;
+/* ===== Estilos de los títulos y texto ===== */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #333;
+  text-align: center;
 }
 
-/* Texto pequeño de ayuda */
-.text-muted {
-  font-size: 0.875rem;
+.form-card a {
+  text-decoration: none;
+  color: #fff;
+}
+
+.form-card a:hover {
+  text-decoration: none;
 }

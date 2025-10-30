@@ -38,6 +38,10 @@ class ApplicationDetailForm(forms.ModelForm):
             'product': forms.Select(attrs={'class': 'form-control product-select'}),
             'quantity_packages': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),
         }
+        labels = {
+            'product': 'Producto',
+            'quantity_packages': 'Cantidad de paquetes',
+        }
 
     def __init__(self, *args, **kwargs):
         warehouse = kwargs.pop('warehouse', None)

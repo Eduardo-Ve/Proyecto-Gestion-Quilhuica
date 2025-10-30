@@ -11,7 +11,6 @@ from login.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', include('login.urls')),
-    path('', include('core.urls')),
     path("register/", registrar_usuario, name="register"), 
     path('products/', include(('product.urls', 'product'), namespace='product')),  
     path('warehouse/', include(('warehouse.urls', 'warehouse'), namespace='warehouse')), 
@@ -49,7 +48,7 @@ urlpatterns = [
 
 
 
-handler400 = "core.views.error_400"
-handler403 = "core.views.error_403"
-handler404 = "core.views.error_404"
-handler500 = "core.views.error_500"
+handler400 = "dashboard.views.error_400"
+handler403 = "dashboard.views.error_403"
+handler404 = "dashboard.views.error_404"
+handler500 = "dashboard.views.error_500"

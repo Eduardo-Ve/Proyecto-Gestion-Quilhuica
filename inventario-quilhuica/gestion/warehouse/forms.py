@@ -16,7 +16,10 @@ class WarehouseForm(forms.ModelForm):
             'name_ware': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
-
+        labels = {
+            'name_ware': 'Nombre de la caseta',
+            'description': 'descripción',
+        }
     def save(self, commit=True):
         instance = super().save(commit=False)
         instance.type = 'shed'  # siempre será caseta (shed = caseta | main = bodega).
@@ -53,6 +56,10 @@ class TransferDetailForm(forms.ModelForm):
         widgets = {
             'product': forms.Select(attrs={'class': 'form-select product-select'}),
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0.01}),
+        }
+        labels = {
+               "product": "Producto",
+               "quantity": "Cantidad a trasladar",
         }
 
 # 3. FORMSET: Agrupa los formularios de detalle.
