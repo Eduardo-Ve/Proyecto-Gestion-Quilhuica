@@ -21,9 +21,9 @@ class ApplicationForm(forms.ModelForm):
             if user.is_staff:
                 self.fields['ware'].queryset = Warehouse.objects.filter(type='shed')
             else:
-                if user.caseta_asignada:
-                    self.fields['ware'].queryset = Warehouse.objects.filter(id=user.caseta_asignada.id)
-                    self.fields['ware'].initial = user.caseta_asignada
+                if user.casetas_asignadas:
+                    self.fields['ware'].queryset = Warehouse.objects.filter(id=user.casetas_asignadas.id)
+                    self.fields['ware'].initial = user.casetas_asignadas
                     self.fields['ware'].disabled = True
                 else:
                     self.fields['ware'].queryset = Warehouse.objects.none()
@@ -51,7 +51,7 @@ class ApplicationDetailForm(forms.ModelForm):
 
 class BaseApplicationDetailFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
-        # ⚙️ Capturamos warehouse y lo sacamos de kwargs ANTES del super
+        # Capturamos warehouse y lo sacamos de kwargs ANTES del super
         self.warehouse = kwargs.pop('warehouse', None)
         super().__init__(*args, **kwargs)
 
