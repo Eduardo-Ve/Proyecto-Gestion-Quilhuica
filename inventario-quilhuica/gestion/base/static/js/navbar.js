@@ -42,7 +42,5 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdown.classList.toggle("show");
   });
 
-  document.addEventListener("click", () => {
-    dropdown.classList.remove("show");
-  });
+
 });

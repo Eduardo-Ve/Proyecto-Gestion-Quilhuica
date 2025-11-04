@@ -1,6 +1,6 @@
 import io
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 import pandas as pd
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
@@ -57,6 +57,7 @@ class ExportReportView(View):
 
             if end_param and end_param.lower() != "none":
                 end = datetime.strptime(end_param, "%Y-%m-%d")
+                end = datetime.strptime(end_param, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
             else:
                 end = datetime.now()
         except ValueError:
@@ -98,7 +99,10 @@ class ExportReportView(View):
 
         elif report_type == "aplicaciones":
             queryset = ApplicationDetail.objects.select_related(
-                "application__ware", "application__applied_by", "product"
+                "application__ware",
+                "application__applied_by",
+                "product",
+                "application__sector__equipment",
             ).order_by("-application__applied_at")
 
             queryset = queryset.filter(application__applied_at__range=[start, end])
@@ -107,17 +111,19 @@ class ExportReportView(View):
             if selected_warehouse:
                 queryset = queryset.filter(application__ware__id=selected_warehouse)
 
-            data = [
-                {
+            data = []
+            for a in queryset:
+                sector = a.application.sector
+                data.append({
                     "id_aplicacion": a.application.id,
-                    "fecha": a.application.applied_at.strftime("%d/%m/%Y"),
+                    "fecha": a.application.applied_at.strftime("%d/%m/%Y %H:%M"),
                     "caseta": a.application.ware.name_ware,
+                    "equipo": sector.equipment.equipo_num if sector else "No asignado",
+                    "sector": sector.sector_num if sector else "No asignado",
                     "producto": a.product.name_prod,
                     "cantidad": f"{a.quantity_packages:.0f}",
                     "usuario": a.application.applied_by.nombre_usuario,
-                }
-                for a in queryset
-            ]
+                })
 
         elif report_type == "inventario":
             queryset = Inventory.objects.select_related(
@@ -161,8 +167,8 @@ class ExportReportView(View):
             "end": end.strftime("%Y-%m-%d"),
             "users": users,
             "warehouses": warehouses,
-            "selected_user": selected_user,
-            "selected_warehouse": selected_warehouse,
+            "selected_user": selected_user or "",
+            "selected_warehouse": selected_warehouse or "",
         }
 
         return render(request, "reports/export_template.html", context)

@@ -204,5 +204,5 @@ class StockAddForm(forms.Form):
             movement_type='entrada',
             quantity=cantidad,
             moved_by=user,
-            description=f"Entrada de {cantidad} paquetes al stock existente."
+            description=f"Entrada de {product}, añadiendo {cantidad} paquetes al stock existente."
         )

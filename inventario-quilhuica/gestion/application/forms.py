@@ -1,34 +1,94 @@
 from django import forms
 from django.forms import inlineformset_factory, BaseInlineFormSet
 from .models import Application, ApplicationDetail
-from warehouse.models import Warehouse, Inventory
+from warehouse.models import Warehouse, Inventory, Sector
 from product.models import Product
-
 
 class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
-        fields = ['ware']
+        fields = ['ware', 'sector']
         widgets = {
-            'ware': forms.Select(attrs={'class': 'form-control'}),
+            'ware': forms.Select(attrs={'class': 'form-select', 'id': 'id_ware'}),
+            'sector': forms.Select(attrs={'class': 'form-select', 'id': 'id_sector'}),
         }
+        labels = {
+            'ware': 'Caseta',
+            'sector': 'Sector (Equipo — Sector)',
+        }
+
+    # --- UTILIDAD: caseta efectiva según POST / user / instance
+    def _resolve_effective_ware_id(self):
+        # 1) Si viene en POST (admin o select habilitado)
+        if 'ware' in self.data:
+            try:
+                return int(self.data.get('ware')) or None
+            except (TypeError, ValueError):
+                pass
+
+        # 2) Si el usuario es encargado (campo ware deshabilitado)
+        user = getattr(self, '_user', None)
+        if user and not user.is_staff and getattr(user, 'caseta_asignada', None):
+            return user.caseta_asignada.id
+
+        # 3) Si edita una instancia existente
+        if self.instance and getattr(self.instance, 'ware_id', None):
+            return self.instance.ware_id
+
+        return None
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
+        self._user = user  # lo guardamos para usar en clean()
         super().__init__(*args, **kwargs)
 
+        # Campos requeridos
+        self.fields['ware'].required = True
+        self.fields['sector'].required = True
+
+        # Filtrar casetas visibles según rol
         if user:
             if user.is_staff:
                 self.fields['ware'].queryset = Warehouse.objects.filter(type='shed')
             else:
-                if user.caseta_asignada:
+                if getattr(user, 'caseta_asignada', None):
                     self.fields['ware'].queryset = Warehouse.objects.filter(id=user.caseta_asignada.id)
                     self.fields['ware'].initial = user.caseta_asignada
+                    # puede estar disabled en el template/vista; igual lo forzamos en clean()
                     self.fields['ware'].disabled = True
                 else:
                     self.fields['ware'].queryset = Warehouse.objects.none()
                     self.fields['ware'].disabled = True
 
+        # Cargar queryset de sectores según caseta efectiva
+        self.fields['sector'].queryset = Sector.objects.none()
+        ware_id = self._resolve_effective_ware_id()
+        if ware_id:
+            self.fields['sector'].queryset = (
+                Sector.objects
+                .filter(equipment__caseta_id=ware_id)
+                .select_related('equipment')
+                .order_by('equipment__nombre_equipo', 'sector_num')
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        sector = cleaned.get('sector')
+
+        # Asegurar 'ware' cuando el select está disabled y no viene en POST
+        effective_ware_id = self._resolve_effective_ware_id()
+        if effective_ware_id and not cleaned.get('ware'):
+            try:
+                cleaned['ware'] = Warehouse.objects.get(id=effective_ware_id)
+            except Warehouse.DoesNotExist:
+                raise forms.ValidationError("La caseta seleccionada no es válida.")
+
+        # Validar que el sector pertenezca a la caseta efectiva
+        ware = cleaned.get('ware')
+        if sector and ware and sector.equipment.caseta_id != ware.id:
+            self.add_error('sector', "El sector seleccionado no pertenece a la caseta indicada.")
+
+        return cleaned
 
 class ApplicationDetailForm(forms.ModelForm):
     class Meta:
@@ -58,16 +118,12 @@ class BaseApplicationDetailFormSet(BaseInlineFormSet):
         self.warehouse = kwargs.pop('warehouse', None)
         super().__init__(*args, **kwargs)
 
-        # ✅ Asignar queryset de productos por bodega
         if self.warehouse:
             product_ids = Inventory.objects.filter(
                 warehouse=self.warehouse
             ).values_list('product_id', flat=True)
-
             for form in self.forms:
-                form.fields['product'].queryset = Product.objects.filter(
-                    product_id__in=product_ids
-                )
+                form.fields['product'].queryset = Product.objects.filter(product_id__in=product_ids)
         else:
             for form in self.forms:
                 form.fields['product'].queryset = Product.objects.none()

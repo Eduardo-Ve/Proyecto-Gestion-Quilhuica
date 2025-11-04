@@ -13,9 +13,9 @@
     <div class="cta dropdown">
       <a href="#">Auditoría y alertas ▾</a>
       <ul class="dropdown-menu">
-        <li><a href="/warehouse/transfer-product/">Movimientos de Productos</a></li>
         <li><a href="/application/new">Aplicación de Productos</a></li>
         {% if user.is_authenticated and user.is_admin %}
+        <li><a href="/warehouse/transfer-product/">Movimientos de Productos</a></li>
         <li><a href="/register/">Nuevo Personal</a></li>
         <li><a href="/reports/">Auditoria de Reportes</a></li>
         {% endif %}

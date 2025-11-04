@@ -8,4 +8,6 @@ urlpatterns = [
     path('confirm/', views.confirm_application, name='confirm_application'),
     path('cancel/', views.cancel_application, name='cancel_application'),
     path("api/products/", views.get_products_by_warehouse, name="get_products_by_warehouse"),
+    path('ajax/sectores_by_caseta/', views.get_sectores_by_caseta, name='ajax_sectores_by_caseta'),
+
 ]

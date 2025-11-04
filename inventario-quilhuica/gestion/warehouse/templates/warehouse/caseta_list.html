@@ -34,6 +34,8 @@
           <th>Nombre</th>
           <th>Descripción</th>
           <th>Creada en</th>
+          <th>Total Equipos</th>
+          <th>Total Sectores</th>
           {% if user.is_authenticated and user.is_admin %}
           <th>Acciones</th>
           {% endif %}
@@ -46,6 +48,8 @@
           <td>{{ caseta.name_ware }}</td>
           <td>{{ caseta.description }}</td>
           <td>{{ caseta.created_at|date:"d/m/Y H:i" }}</td>
+          <td>{{ caseta.total_equipos }}</td>
+          <td>{{ caseta.total_sectores }}</td>
           {% if user.is_authenticated and user.is_admin %}
           <td>
             <div class="d-flex gap-2">

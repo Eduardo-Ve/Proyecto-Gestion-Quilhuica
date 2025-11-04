@@ -55,3 +55,43 @@ class Inventory(models.Model):
         if self.presentation:
             self.total_content = self.quantity_packages * self.presentation.content_value
         super().save(*args, **kwargs)
+
+from django.db import models
+
+class Equipment(models.Model):
+    """Equipos de riego asociados a una caseta."""
+    caseta = models.ForeignKey('Warehouse', on_delete=models.CASCADE, related_name='equipos')
+    
+    nombre_equipo = models.CharField(
+        max_length=50,
+        help_text="Nombre del equipo (Ej: 'A Cítricos', 'Equipo 2', 'Paltos A')"
+    )
+    codigo_interno = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Código opcional interno o alias corto del equipo"
+    )
+    descripcion = models.TextField(blank=True, null=True)
+    activo = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['caseta__name_ware', 'nombre_equipo']
+        unique_together = ('caseta', 'nombre_equipo')
+
+    def __str__(self):
+        return f"{self.nombre_equipo} ({self.caseta.name_ware})"
+
+
+class Sector(models.Model):
+    """Sectores físicos asociados a un equipo."""
+    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='sectores')
+    sector_num = models.PositiveIntegerField(help_text="Número de sector dentro del equipo")
+    observaciones = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['equipment__nombre_equipo', 'sector_num']
+        unique_together = ('equipment', 'sector_num')
+
+    def __str__(self):
+        return f"Sector {self.sector_num} · {self.equipment.nombre_equipo}"

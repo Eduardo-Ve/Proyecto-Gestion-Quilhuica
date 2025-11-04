@@ -4,27 +4,30 @@ from django.http import JsonResponse
 from django.contrib import messages
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 
 from login.decorators import role_required
-from .models import Warehouse, Inventory, Movement
-from .forms import WarehouseForm, TransferForm, TransferDetailFormSet
+from .models import *
+from .forms import *
 from product.models import Product  # usado en transfer_product
 
 
-# =========================
 # LISTADOS DE CASETAS
-# =========================
+
 def caseta_list(request):
     """
     Lista solo casetas (type='shed').
     """
-    casetas = Warehouse.objects.filter(type='shed').order_by('name_ware')
+    casetas = Warehouse.objects.filter(type='shed').annotate(
+            total_equipos=Count('equipos', distinct=True),
+            total_sectores=Count('equipos__sectores', distinct=True)
+        )
     return render(request, 'warehouse/caseta_list.html', {'casetas': casetas})
 
 
-# =========================
+
 # PRODUCTOS POR CASETA (con filtro)
-# =========================
+
 def productos_por_caseta(request):
     """
     Vista principal para ver productos por caseta.
@@ -63,43 +66,116 @@ def productos_por_caseta(request):
     return render(request, 'warehouse/productos_por_caseta.html', context)
 
 
-# =========================
 # CRUD CASETAS
-# =========================
+
 @role_required(allowed_roles=['Administrador'])
 def caseta_create(request):
     if request.method == "POST":
         form = WarehouseForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Caseta creada correctamente.")
+        formset = EquipmentFormSet(request.POST)
+
+        if form.is_valid() and formset.is_valid():
+            caseta = form.save(commit=False)
+            caseta.type = 'shed'
+            caseta.save()
+
+            created = 0
+            for subform in formset:
+                if formset.can_delete and subform.cleaned_data.get('DELETE'):
+                    continue
+
+                nombre_equipo = subform.cleaned_data['nombre_equipo']
+                sectores_count = subform.cleaned_data['sectores_count']
+
+                equipo = Equipment.objects.create(caseta=caseta, nombre_equipo=nombre_equipo)
+                for s in range(1, sectores_count + 1):
+                    Sector.objects.create(equipment=equipo, sector_num=s)
+                created += 1
+
+            messages.success(request, f"Caseta '{caseta.name_ware}' creada con {created} equipos.")
             return redirect('warehouse:caseta_list')
     else:
         form = WarehouseForm()
-    return render(
-        request,
-        'warehouse/caseta_form.html',
-        {'form': form, 'title': 'Crear Caseta'}
-    )
+        formset = EquipmentFormSet(queryset=Equipment.objects.none())
 
+    return render(request, 'warehouse/caseta_form.html', {
+        'form': form,
+        'formset': formset,
+        'title': 'Registrar Caseta con Equipos y Sectores'
+    })
+
+# EDITAR CASETA
 
 @role_required(allowed_roles=['Administrador'])
+@transaction.atomic
 def caseta_edit(request, pk):
     caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
+    existing_equipment = Equipment.objects.filter(caseta=caseta).order_by('nombre_equipo')
+
     if request.method == "POST":
         form = WarehouseForm(request.POST, instance=caseta)
-        if form.is_valid():
+        formset = EquipmentFormSet(request.POST, prefix='form')
+
+        if form.is_valid() and formset.is_valid():
             form.save()
-            messages.success(request, "Caseta actualizada correctamente.")
+
+            existing_ids = [f.cleaned_data.get('id').id for f in formset.forms if f.cleaned_data.get('id')]
+            for old_eq in existing_equipment:
+                if old_eq.id not in existing_ids:
+                    old_eq.delete()
+
+            created_or_updated = 0
+            for subform in formset:
+                if formset.can_delete and subform.cleaned_data.get('DELETE'):
+                    continue
+
+                nombre_equipo = subform.cleaned_data['nombre_equipo']
+                sectores_count = subform.cleaned_data['sectores_count']
+
+                equipo_obj = subform.cleaned_data.get('id')
+                if equipo_obj:
+                    equipo_obj.nombre_equipo = nombre_equipo
+                    equipo_obj.save()
+
+                    current_sectors = equipo_obj.sectores.count()
+                    if current_sectors < sectores_count:
+                        for s in range(current_sectors + 1, sectores_count + 1):
+                            Sector.objects.create(equipment=equipo_obj, sector_num=s)
+                    elif current_sectors > sectores_count:
+                        equipo_obj.sectores.filter(sector_num__gt=sectores_count).delete()
+                else:
+                    equipo_obj = Equipment.objects.create(caseta=caseta, nombre_equipo=nombre_equipo)
+                    for s in range(1, sectores_count + 1):
+                        Sector.objects.create(equipment=equipo_obj, sector_num=s)
+
+                created_or_updated += 1
+
+            messages.success(
+                request,
+                f"Caseta '{caseta.name_ware}' actualizada. Equipos procesados: {created_or_updated}."
+            )
             return redirect('warehouse:caseta_list')
+        else:
+            messages.error(request, "Corrige los errores del formulario.")
     else:
         form = WarehouseForm(instance=caseta)
+        initial_data = [
+            {'nombre_equipo': eq.nombre_equipo, 'sectores_count': eq.sectores.count(), 'id': eq.id}
+            for eq in existing_equipment
+        ]
+        formset = EquipmentFormSet(initial=initial_data, prefix='form')
+
     return render(
         request,
         'warehouse/caseta_form.html',
-        {'form': form, 'title': 'Editar Caseta'}
+        {
+            'form': form,
+            'formset': formset,
+            'title': f"Editar Caseta",
+        }
     )
 
+# Eliminar caseta
 
 @role_required(allowed_roles=['Administrador'])
 def caseta_delete(request, pk):
@@ -111,10 +187,10 @@ def caseta_delete(request, pk):
     return render(request, 'warehouse/caseta_confirm_delete.html', {'caseta': caseta})
 
 
-# =========================
+
 # TRASLADO DESDE BODEGA PRINCIPAL A CASETA
-# =========================
-@role_required(allowed_roles=['Administrador'])
+
+@role_required(allowed_roles=['Administrador']) #'Supervisor'! # 
 def transfer_product(request):
     try:
         ware_origin = Warehouse.objects.get(type='main')
@@ -205,9 +281,9 @@ def transfer_product(request):
     return render(request, 'warehouse/transfer_product.html', context)
 
 
-# =========================
+
 # API: Productos por bodega (JSON)
-# =========================
+
 def get_products_by_warehouse(request, warehouse_id):
     try:
         inventory = (

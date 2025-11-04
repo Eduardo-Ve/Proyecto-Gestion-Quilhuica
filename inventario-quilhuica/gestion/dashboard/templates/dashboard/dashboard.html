@@ -52,21 +52,21 @@
     <div class="kpi-card info">
       <div class="kpi-icon"><i class="bi bi-stack"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Paquetes Totales</div>
+        <div class="kpi-label">Paquetes Totales en casetas</div>
         <div class="kpi-value">{{ total_packages|floatformat:0 }}</div>
       </div>
     </div>
     <div class="kpi-card accent">
       <div class="kpi-icon"><i class="bi bi-speedometer2"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Contenido Total</div>
+        <div class="kpi-label">Contenido Total en casetas</div>
         <div class="kpi-value">{{ total_content|floatformat:0 }}</div>
       </div>
     </div>
     <div class="kpi-card warn">
       <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Bajo stock (≤ {{ LOW_STOCK_THRESHOLD }})</div>
+        <div class="kpi-label">Bajo stock global(≤ {{ LOW_STOCK_THRESHOLD }})</div>
         <div class="kpi-value">{{ low_stock_count }}</div>
       </div>
     </div>
@@ -235,5 +235,7 @@
   {{ chart_json|safe }}
 </script>
   <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  {% include 'notification/alert_script.html' %}
   {% endblock %}
   {% endblock %}
