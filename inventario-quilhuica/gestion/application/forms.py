@@ -114,10 +114,7 @@ class ApplicationDetailForm(forms.ModelForm):
 
 class BaseApplicationDetailFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
-<<<<<<< HEAD
-=======
         # Capturamos warehouse y lo sacamos de kwargs ANTES del super
->>>>>>> feature/dashboard
         self.warehouse = kwargs.pop('warehouse', None)
         super().__init__(*args, **kwargs)
 

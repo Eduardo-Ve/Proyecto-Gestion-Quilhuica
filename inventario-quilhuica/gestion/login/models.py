@@ -36,7 +36,7 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     must_change_password = models.BooleanField(default=True)
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
-    casetas_asignadas = models.ManyToManyField(
+    ware_assig = models.ManyToManyField(
         Warehouse,
         blank=True,
         related_name="encargados_multiples",
