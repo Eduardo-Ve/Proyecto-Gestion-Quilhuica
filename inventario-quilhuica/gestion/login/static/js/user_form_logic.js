@@ -1,26 +1,30 @@
 
-
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Buscar elementos por nombre si no se encuentran por ID
-    const rolesSelect = document.querySelector('[id^="id_roles"], select[name*="roles"]');
-    const casetaField = document.querySelector('[id^="id_caseta_asignada"], select[name*="caseta_asignada"]');
 
-    if (!rolesSelect || !casetaField) {
-        console.warn("Script no encontró los campos de roles o caseta_asignada.");
+    const rolesSelect = document.getElementById('id_roles');
+    const casetasWrapper = document.getElementById('casetas-wrapper'); 
+    // El contenedor <div> que creamos en el template
+
+    if (!rolesSelect || !casetasWrapper) {
+        console.warn("No se encontró id_roles o casetas-wrapper.");
         return;
     }
 
-    const casetaWrapper = casetaField.closest('p, div') || casetaField.parentElement;
+    function toggleCasetas() {
+        const selectedText = rolesSelect.options[rolesSelect.selectedIndex].text;
 
-    function toggleCasetaField() {
-        const selectedOptions = Array.from(rolesSelect.selectedOptions);
-        const isAdminSelected = selectedOptions.some(opt => opt.text.includes("Administrador"));
-        casetaWrapper.style.display = isAdminSelected ? 'none' : 'block';
+        if (selectedText === "Encargado de Caseta") {
+            casetasWrapper.style.display = "block"; // mostrar
+        } else {
+            casetasWrapper.style.display = "none"; // ocultar
+        }
     }
 
-    toggleCasetaField();
-    rolesSelect.addEventListener('change', toggleCasetaField);
+    // Ejecutar al cargar
+    toggleCasetas();
+
+    // Ejecutar cuando cambia el rol
+    rolesSelect.addEventListener('change', toggleCasetas);
 });
 
 

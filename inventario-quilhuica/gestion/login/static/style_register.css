@@ -99,7 +99,7 @@
   transition: background-color 0.3s ease;
 }
 
-.register-form-wrapper button[type="submit"]:hover {
-  /* Oscurecer al pasar el ratón */
-  background-color: #055526;
+button[type="submit"]:hover {
+    /* Oscurecer al pasar el ratón */
+    background-color: #055526;
 }

@@ -39,16 +39,17 @@ class RegistroUsuarioForm(forms.ModelForm):
         label="Rol"
     )
 
-    caseta_asignada = forms.ModelChoiceField(
-        queryset=Warehouse.objects.filter(type='shed'),
-        required=False,
-        label="Caseta Asignada",
-        help_text="Requerido solo si el rol es 'Encargado de caseta'."
+    casetas_asignadas = forms.ModelMultipleChoiceField(
+    queryset=Warehouse.objects.filter(type='shed'),
+    required=False,
+    label="Casetas Asignadas",
+    widget=forms.CheckboxSelectMultiple
     )
+
 
     class Meta:
         model = Usuario
-        fields = ["nombre_usuario", "correo", "telefono", "roles", "caseta_asignada"]
+        fields = ["nombre_usuario", "correo", "telefono", "roles", "casetas_asignadas"]
         widgets = {
             'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo'}),
             'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com'}),
@@ -81,31 +82,29 @@ class RegistroUsuarioForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         rol = cleaned_data.get("roles")
-        caseta = cleaned_data.get("caseta_asignada")
+        casetas = cleaned_data.get("casetas_asignadas")
 
-        if rol:
-            if rol.name_role == 'Encargado de caseta' and not caseta:
-                self.add_error('caseta_asignada', 'Debe asignar una caseta para este rol.')
-            elif rol.name_role in ['Administrador', 'Auditoria'] and caseta:
-                cleaned_data['caseta_asignada'] = None
+        if rol and rol.name_role == 'Encargado de caseta' and (not casetas or len(casetas) == 0):
+            self.add_error('casetas_asignadas', 'Debe asignar una o más casetas para este rol.')
+        
         return cleaned_data
+
 
     # --- Guardado con contraseña generada ---
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Generar contraseña temporal segura
+        # Generar contraseña temporal
         caracteres = string.ascii_letters + string.digits + string.punctuation
         temp_password = ''.join(secrets.choice(caracteres) for _ in range(10))
-
         user.set_password(temp_password)
         user.must_change_password = True
-        user.caseta_asignada = self.cleaned_data.get('caseta_asignada')
 
         if commit:
             user.save()
             user.roles.set([self.cleaned_data["roles"]])
-            user._temp_password = temp_password  # atributo temporal, no se guarda en BD
+            user.casetas_asignadas.set(self.cleaned_data.get('casetas_asignadas'))  #  <- Guardado ManyToMany.
+            user._temp_password = temp_password  
 
         return user
 

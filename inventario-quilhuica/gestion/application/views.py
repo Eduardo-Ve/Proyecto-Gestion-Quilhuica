@@ -10,7 +10,7 @@ from application.models import Application, ApplicationDetail
 
 def create_application(request):
     user = request.user
-    user_warehouse = user.caseta_asignada if not user.is_staff else None
+    user_warehouse = user.casetas_asignadas if not user.is_staff else None
 
     if not user.is_staff and not user_warehouse:
         messages.error(request, "No tienes una caseta asignada. Contacta al administrador.")

@@ -32,8 +32,8 @@ def _get_accessible_warehouses(user, ware_param=None):
 
     main = Warehouse.objects.filter(type="main").first()
 
-    if not user.is_staff and _user_is_shed_manager(user) and user.caseta_asignada:
-        return Warehouse.objects.filter(pk=user.caseta_asignada.pk), main, user.caseta_asignada
+    if not user.is_staff and _user_is_shed_manager(user) and user.casetas_asignadas:
+        return Warehouse.objects.filter(pk=user.casetas_asignadas.pk), main, user.casetas_asignadas
 
     elif user.is_staff:
         sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
