@@ -19,7 +19,7 @@
             const casetaSelect = document.getElementById("id_ware");
             if (casetaSelect) {
               casetaSelect.dataset.userIsStaff = "{{ user.is_staff|yesno:'true,false' }}";
-              casetaSelect.dataset.casetaAsignadaId = "{{ user.caseta_asignada.id|default_if_none:'' }}";
+              casetaSelect.dataset.casetaAsignadaId = "{{ user.ware_assig.first.id|default_if_none:'' }}";
             }
           });
         </script>

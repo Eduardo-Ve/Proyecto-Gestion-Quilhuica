@@ -2,53 +2,75 @@
 {% load static %}
 
 {% block title %}Registrar Nuevo Usuario{% endblock %}
-
+{% if form.errors %}
+<div class="alert alert-danger">
+  {{ form.errors }}
+</div>
+{% endif %}
 {% block form_content %}
 <div class="container py-4">
   <h2 class="mb-4 text-success fw-bold">Registrar Nuevo Usuario</h2>
 
-  <form method="post" class="card p-4 shadow-sm">
-    {% csrf_token %}
-
-    <div class="row g-3">
-      <div class="col-md-6">
-        {{ form.nombre_usuario.label_tag }}
-        {{ form.nombre_usuario }}
-      </div>
-
-      <div class="col-md-6">
-        {{ form.correo.label_tag }}
-        {{ form.correo }}
-      </div>
-
-      <div class="col-md-6">
-        {{ form.telefono.label_tag }}
-        {{ form.telefono }}
-      </div>
-
-      <div class="col-md-6">
-        {{ form.roles.label_tag }}
-        {{ form.roles }}
-      </div>
-
-      <div class="col-md-12" id="casetas-wrapper">
-        {{ form.casetas_asignadas.label_tag }}
-        {{ form.casetas_asignadas }}
-      </div>
+  <div class="row g-3">
+    <div class="col-md-6">
+      {{ form.nombre_usuario.label_tag }}
+      {{ form.nombre_usuario }}
     </div>
 
-    <div class="mt-4 d-flex justify-content-end gap-2">
-      <a href="/" class="btn btn-secondary">Cancelar</a>
-      <button type="submit" class="btn btn-success">Registrar</button>
+    <div class="col-md-6">
+      {{ form.correo.label_tag }}
+      {{ form.correo }}
     </div>
-  </form>
+
+    <div class="col-md-6">
+      {{ form.telefono.label_tag }}
+      {{ form.telefono }}
+    </div>
+
+    <div class="col-md-6">
+      {{ form.roles.label_tag }}
+      {{ form.roles }}
+    </div>
+
+    <div class="col-md-12">
+      {{ form.ware_assig.label_tag }}
+      {{ form.ware_assig }}
+    </div>
+  </div>
 </div>
+
 {% endblock %}
 
-{% block extra_js %}
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"
-          integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm"
-          crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-  <script src="{% static 'js/user_form_logic.js' %}"></script>
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'style_register.css' %}">
 {% endblock %}
+{% block extra_js %}
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Activar estilo moderno para la selección múltiple
+  new TomSelect("#id_ware_assig", {
+    plugins: ["remove_button"],
+    placeholder: "Seleccione una o más casetas...",
+    create: false,
+    maxItems: null,
+    sortField: { field: "text", direction: "asc" },
+    render: {
+      option: function (data, escape) {
+        return `<div><input type="checkbox" /> ${escape(data.text)}</div>`;
+      },
+      item: function (data, escape) {
+        return `<div class="badge bg-success-subtle text-success fw-semibold me-1">${escape(data.text)}</div>`;
+      },
+    },
+  });
+});
+</script>
+{% endblock %}
+

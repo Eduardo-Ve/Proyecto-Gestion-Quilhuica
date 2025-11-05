@@ -17,78 +17,70 @@ class ApplicationForm(forms.ModelForm):
             'sector': 'Sector (Equipo — Sector)',
         }
 
-    # --- UTILIDAD: caseta efectiva según POST / user / instance
-    def _resolve_effective_ware_id(self):
-        # 1) Si viene en POST (admin o select habilitado)
-        if 'ware' in self.data:
-            try:
-                return int(self.data.get('ware')) or None
-            except (TypeError, ValueError):
-                pass
-
-        # 2) Si el usuario es encargado (campo ware deshabilitado)
-        user = getattr(self, '_user', None)
-        if user and not user.is_staff and getattr(user, 'caseta_asignada', None):
-            return user.caseta_asignada.id
-
-        # 3) Si edita una instancia existente
-        if self.instance and getattr(self.instance, 'ware_id', None):
-            return self.instance.ware_id
-
-        return None
-
     def __init__(self, *args, **kwargs):
         user = kwargs.pop('user', None)
-        self._user = user  # lo guardamos para usar en clean()
         super().__init__(*args, **kwargs)
 
         # Campos requeridos
         self.fields['ware'].required = True
         self.fields['sector'].required = True
 
-        # Filtrar casetas visibles según rol
+        # 🔹 Filtrar casetas visibles según el tipo de usuario
         if user:
             if user.is_staff:
+                # El administrador ve todas las casetas tipo "shed"
                 self.fields['ware'].queryset = Warehouse.objects.filter(type='shed')
             else:
-                if user.casetas_asignadas:
-                    self.fields['ware'].queryset = Warehouse.objects.filter(id=user.casetas_asignadas.id)
-                    self.fields['ware'].initial = user.casetas_asignadas
+                # El encargado solo ve sus casetas asignadas
+                user_casetas = user.ware_assig.all()
+
+                if user_casetas.count() == 1:
+                    # Si solo tiene una caseta → se fija y bloquea
+                    caseta = user_casetas.first()
+                    self.fields['ware'].queryset = Warehouse.objects.filter(id=caseta.id)
+                    self.fields['ware'].initial = caseta
                     self.fields['ware'].disabled = True
+                elif user_casetas.exists():
+                    # Si tiene varias → se listan todas
+                    self.fields['ware'].queryset = user_casetas
                 else:
+                    # Sin casetas asignadas → no puede aplicar
                     self.fields['ware'].queryset = Warehouse.objects.none()
                     self.fields['ware'].disabled = True
 
-        # Cargar queryset de sectores según caseta efectiva
+        # 🔹 Sector: vacío por defecto
         self.fields['sector'].queryset = Sector.objects.none()
-        ware_id = self._resolve_effective_ware_id()
-        if ware_id:
+
+        # Si viene en POST (cuando cambia la caseta)
+        if 'ware' in self.data:
+            try:
+                ware_id = int(self.data.get('ware'))
+                self.fields['sector'].queryset = (
+                    Sector.objects
+                    .filter(equipment__caseta_id=ware_id)
+                    .select_related('equipment')
+                    .order_by('equipment__nombre_equipo', 'sector_num')
+                )
+            except (ValueError, TypeError):
+                pass
+
+        # Si estamos editando una instancia existente
+        elif self.instance and getattr(self.instance, 'ware_id', None):
+            ware = self.instance.ware
             self.fields['sector'].queryset = (
                 Sector.objects
-                .filter(equipment__caseta_id=ware_id)
+                .filter(equipment__caseta=ware)
                 .select_related('equipment')
                 .order_by('equipment__nombre_equipo', 'sector_num')
             )
 
-    def clean(self):
-        cleaned = super().clean()
-        sector = cleaned.get('sector')
-
-        # Asegurar 'ware' cuando el select está disabled y no viene en POST
-        effective_ware_id = self._resolve_effective_ware_id()
-        if effective_ware_id and not cleaned.get('ware'):
-            try:
-                cleaned['ware'] = Warehouse.objects.get(id=effective_ware_id)
-            except Warehouse.DoesNotExist:
-                raise forms.ValidationError("La caseta seleccionada no es válida.")
-
-        # Validar que el sector pertenezca a la caseta efectiva
-        ware = cleaned.get('ware')
+    def clean_sector(self):
+        sector = self.cleaned_data.get('sector')
+        ware = self.cleaned_data.get('ware')
         if sector and ware and sector.equipment.caseta_id != ware.id:
-            self.add_error('sector', "El sector seleccionado no pertenece a la caseta indicada.")
-
-        return cleaned
-
+            raise forms.ValidationError("El sector seleccionado no pertenece a la caseta indicada.")
+        return sector
+    
 class ApplicationDetailForm(forms.ModelForm):
     class Meta:
         model = ApplicationDetail

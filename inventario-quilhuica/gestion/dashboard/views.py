@@ -20,30 +20,49 @@ WINDOW_DAYS = 30              # Días hacia atrás para análisis
 # --- Funciones auxiliares ---
 def _user_is_shed_manager(user):
     try:
-        return user.has_role("Encargado de Caseta")
+        return user.has_role("Encargado Caseta")
     except Exception:
         return False
 
 
 def _get_accessible_warehouses(user, ware_param=None):
-    """Determina las bodegas accesibles para el usuario."""
+    """Devuelve las casetas o bodegas accesibles para el usuario."""
     if not user.is_authenticated:
         return Warehouse.objects.none(), None, None
 
     main = Warehouse.objects.filter(type="main").first()
 
-    if not user.is_staff and _user_is_shed_manager(user) and user.casetas_asignadas:
-        return Warehouse.objects.filter(pk=user.casetas_asignadas.pk), main, user.casetas_asignadas
+    #  Encargado de Caseta (no staff)
+    if not user.is_staff and _user_is_shed_manager(user):
+        sheds = user.ware_assig.all()
 
-    elif user.is_staff:
-        sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+        # Si tiene parámetro de filtro (solo en vistas con GET ?ware=)
         if ware_param:
             selected = sheds.filter(pk=ware_param).first()
             if selected:
                 return Warehouse.objects.filter(pk=selected.pk), main, selected
+
+        # Si tiene una o más casetas asignadas
+        if sheds.exists():
+            return sheds, main, None
+
+        # Si no tiene casetas
+        return Warehouse.objects.none(), main, None
+
+    #  Administrador o Staff
+    elif user.is_staff:
+        sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+
+        if ware_param:
+            selected = sheds.filter(pk=ware_param).first()
+            if selected:
+                return Warehouse.objects.filter(pk=selected.pk), main, selected
+
         return sheds, main, None
 
+    #  Ninguna coincidencia
     return Warehouse.objects.none(), main, None
+
 
 
 # --- Vista principal del dashboard ---
@@ -56,7 +75,7 @@ def dashboard(request):
         return render(request, "dashboard/dashboard.html", {
             "no_access": True,
             "is_staff": request.user.is_staff,
-            "sheds": Warehouse.objects.filter(type="shed")[:0],
+            "sheds": sheds_qs,
         })
 
     now = timezone.now()
@@ -149,8 +168,11 @@ def dashboard(request):
         .order_by("-created_at")[:10]
     )
 
-    all_sheds = Warehouse.objects.filter(type="shed").order_by("name_ware") if request.user.is_staff else None
-
+    if request.user.is_staff:
+        all_sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+    else:
+        # Para encargados de caseta
+        all_sheds = request.user.ware_assig.all().order_by("name_ware")
     # --- 🧩 Actividad Reciente ---
     recent_movements = Movement.objects.select_related("product", "ware_destin", "moved_by").order_by("-moved_at")[:10]
     recent_applications = Application.objects.select_related("ware", "applied_by").order_by("-applied_at")[:10]

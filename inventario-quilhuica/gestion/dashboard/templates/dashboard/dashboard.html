@@ -16,21 +16,22 @@
   <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
     <h1 class="dashboard-title">Panel de Inventario</h1>
 
-    {% if is_staff and sheds %}
-    <form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
-      <i class="bi bi-funnel text-primary"></i>
-      <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
-      <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
-        onchange="this.form.submit()">
-        <option value="">Todas</option>
-        {% for s in sheds %}
-        <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
-          {{ s.name_ware }}
-        </option>
-        {% endfor %}
-      </select>
-    </form>
-    {% endif %}
+{% if sheds %}
+<form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
+  <i class="bi bi-funnel text-primary"></i>
+  <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
+  <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
+          onchange="this.form.submit()">
+    <option value="">Todas</option>
+    {% for s in sheds %}
+      <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
+        {{ s.name_ware }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+{% endif %}
+
   </div>
 
   {% if no_access %}

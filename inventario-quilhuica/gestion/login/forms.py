@@ -38,24 +38,26 @@ class RegistroUsuarioForm(forms.ModelForm):
         required=True,
         label="Rol"
     )
-
-    casetas_asignadas = forms.ModelMultipleChoiceField(
-    queryset=Warehouse.objects.filter(type='shed'),
-    required=False,
-    label="Casetas Asignadas",
-    widget=forms.CheckboxSelectMultiple
+    ware_assig = forms.ModelMultipleChoiceField(
+        queryset=Warehouse.objects.none(),
+        required=False,
+        label="Casetas Asignadas",
+        widget=forms.SelectMultiple(
+            attrs={'class': 'form-select', 'id': 'id_ware_assig'}
+        )
     )
-
-
     class Meta:
         model = Usuario
-        fields = ["nombre_usuario", "correo", "telefono", "roles", "casetas_asignadas"]
+        fields = ["nombre_usuario", "correo", "telefono", "roles", "ware_assig"]
         widgets = {
-            'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo'}),
-            'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com'}),
-            'telefono': forms.NumberInput(attrs={'placeholder': '931816450'}),
+            'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo', 'class': 'form-control'}),
+            'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com', 'class': 'form-control'}),
+            'telefono': forms.NumberInput(attrs={'placeholder': '931816450', 'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ware_assig'].queryset = Warehouse.objects.filter(type='shed')
     # --- Validaciones ---
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get("nombre_usuario").strip()
@@ -83,10 +85,8 @@ class RegistroUsuarioForm(forms.ModelForm):
         cleaned_data = super().clean()
         rol = cleaned_data.get("roles")
         casetas = cleaned_data.get("casetas_asignadas")
-
         if rol and rol.name_role == 'Encargado de caseta' and (not casetas or len(casetas) == 0):
-            self.add_error('casetas_asignadas', 'Debe asignar una o más casetas para este rol.')
-        
+            self.add_error('ware_assig', 'Debe asignar una o más casetas para este rol.')
         return cleaned_data
 
 
@@ -103,7 +103,7 @@ class RegistroUsuarioForm(forms.ModelForm):
         if commit:
             user.save()
             user.roles.set([self.cleaned_data["roles"]])
-            user.casetas_asignadas.set(self.cleaned_data.get('casetas_asignadas'))  #  <- Guardado ManyToMany.
+            user.ware_assig.set(self.cleaned_data.get('ware_assig'))
             user._temp_password = temp_password  
 
         return user

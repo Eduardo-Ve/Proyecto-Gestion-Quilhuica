@@ -10,29 +10,24 @@ from application.models import Application, ApplicationDetail
 
 def create_application(request):
     user = request.user
-    user_warehouse = user.casetas_asignadas if not user.is_staff else None
 
-    if not user.is_staff and not user_warehouse:
+    if not user.is_staff and not user.ware_assig.exists():
         messages.error(request, "No tienes una caseta asignada. Contacta al administrador.")
         return redirect('/')
-
-    error_message = None
+    
+    error_message = None  
 
     if request.method == 'POST':
         form = ApplicationForm(request.POST, user=user)
 
-        if user.is_staff:
-            selected_warehouse = Warehouse.objects.filter(id=request.POST.get('ware')).first()
-        else:
-            selected_warehouse = user_warehouse
-
         if form.is_valid():
+            selected_warehouse = form.cleaned_data.get('ware')
+
             app_instance = form.save(commit=False)
             app_instance.applied_by = user
             app_instance.ware = selected_warehouse
 
             formset = ApplicationDetailFormSet(request.POST, instance=app_instance, prefix='details')
-
             # Filtrar productos según la caseta
             for f in formset.forms:
                 f.fields['product'].queryset = Product.objects.filter(

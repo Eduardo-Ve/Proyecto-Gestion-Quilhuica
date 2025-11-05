@@ -1,17 +1,14 @@
-﻿# product/views.py
-from django.urls import reverse_lazy
+﻿from django.urls import reverse_lazy
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.http import HttpResponseRedirect
 from .models import Product
-from .forms import ProductForm
+from .forms import ProductForm, StockAddForm
 from django.utils.decorators import method_decorator
 from login.decorators import role_required
 from django.contrib import messages
 from django.shortcuts import render, redirect
-from .forms import StockAddForm
 from django.db.models import Sum, Value, Q, FloatField, IntegerField
 from django.db.models.functions import Coalesce
-
 
 class ProductListView(ListView):
     model = Product
@@ -21,33 +18,23 @@ class ProductListView(ListView):
 
     def get_queryset(self):
         """
-        Filtra los productos según el tipo de bodega (principal o caseta asignada)
-        y calcula los totales de stock.
+        Mantiene el comportamiento original (admin o encargado),
+        pero devolvemos productos globales solo para admin.
         """
         user = self.request.user
-        
-        # 1. Queryset base con relaciones precargadas
         queryset = Product.objects.prefetch_related('category', 'presentation')
 
-        # 2. Validar autenticación
         if not user.is_authenticated:
             return queryset.none()
 
-        # 3. Filtro por tipo de bodega
         if user.is_admin:
-            # Admin ve la bodega principal
             warehouse_filter = Q(inventory__warehouse__type='main')
-        elif user.caseta_asignada:
-            # Encargado de caseta ve solo su caseta
-            warehouse_filter = Q(inventory__warehouse=user.caseta_asignada)
+        elif user.ware_assig.exists():
+            warehouse_filter = Q(inventory__warehouse__in=user.ware_assig.all())
         else:
             return queryset.none()
 
-        # 4. Filtrar productos por bodega/caseta
-        queryset = queryset.filter(warehouse_filter)
-
-        # 5. Anotar totales (sumatorias de stock)
-        queryset = queryset.annotate(
+        queryset = queryset.filter(warehouse_filter).annotate(
             total_packages=Coalesce(
                 Sum('inventory__quantity_packages', filter=warehouse_filter),
                 Value(0),
@@ -61,6 +48,41 @@ class ProductListView(ListView):
         ).distinct().order_by('name_prod')
 
         return queryset
+
+    def get_context_data(self, **kwargs):
+        """
+        Añade un contexto extra con productos agrupados por caseta
+        (solo para encargados con múltiples casetas).
+        """
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+
+        if not user.is_admin and user.ware_assig.exists():
+            casetas_data = []
+            for caseta in user.ware_assig.all():
+                products = (
+                    Product.objects.filter(inventory__warehouse=caseta)
+                    .prefetch_related('category', 'presentation')
+                    .annotate(
+                        total_packages=Coalesce(
+                            Sum('inventory__quantity_packages', filter=Q(inventory__warehouse=caseta)),
+                            Value(0),
+                            output_field=IntegerField()
+                        ),
+                        total_content=Coalesce(
+                            Sum('inventory__total_content', filter=Q(inventory__warehouse=caseta)),
+                            Value(0.0),
+                            output_field=FloatField()
+                        )
+                    )
+                    .distinct()
+                    .order_by('name_prod')
+                )
+                casetas_data.append({'caseta': caseta, 'productos': products})
+
+            context['casetas_data'] = casetas_data
+
+        return context
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductCreateView(CreateView):
@@ -87,6 +109,7 @@ class ProductDeleteView(DeleteView):
     model = Product
     template_name = 'product/product_confirm_delete.html'
     success_url = reverse_lazy('product:product_list')
+
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class StockAddView(CreateView):

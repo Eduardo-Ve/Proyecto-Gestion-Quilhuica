@@ -103,3 +103,37 @@ button[type="submit"]:hover {
     /* Oscurecer al pasar el ratón */
     background-color: #055526;
 }
+
+
+.ts-wrapper {
+  --ts-border-color: #00C853;
+  --ts-bg-color: #fff;
+  --ts-color: #333;
+  --ts-radius: 0.5rem;
+  font-size: 0.95rem;
+}
+.ts-control {
+  border-color: var(--ts-border-color);
+  box-shadow: none !important;
+}
+.ts-control.focus {
+  border-color: #00923A !important;
+  box-shadow: 0 0 0 0.25rem rgba(0, 200, 83, 0.25);
+}
+.ts-dropdown .option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ts-dropdown .option::before {
+  content: "☐";
+  font-size: 0.8rem;
+  color: #aaa;
+}
+.ts-dropdown .option.active::before {
+  content: "☑";
+  color: #00C853;
+}
+.ts-dropdown .option:hover {
+  background-color: rgba(0, 200, 83, 0.08);
+}
