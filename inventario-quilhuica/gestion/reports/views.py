@@ -118,7 +118,7 @@ class ExportReportView(View):
                     "id_aplicacion": a.application.id,
                     "fecha": a.application.applied_at.strftime("%d/%m/%Y %H:%M"),
                     "caseta": a.application.ware.name_ware,
-                    "equipo": sector.equipment.equipo_num if sector else "No asignado",
+                    "equipo": sector.equipment.nombre_equipo if sector and sector.equipment else "No asignado",
                     "sector": sector.sector_num if sector else "No asignado",
                     "producto": a.product.name_prod,
                     "cantidad": f"{a.quantity_packages:.0f}",
@@ -173,9 +173,7 @@ class ExportReportView(View):
 
         return render(request, "reports/export_template.html", context)
 
-    # ======================================================
     # EXPORTADORES
-    # ======================================================
 
     def build_filename(self, report_type, extension):
         fecha_actual = datetime.now().strftime("%Y_%m_%d")
@@ -200,9 +198,7 @@ class ExportReportView(View):
         response["Content-Disposition"] = f'attachment; filename="{self.build_filename(report_type, "xlsx")}"'
         return response
 
-    # ======================================================
     # NUEVO EXPORTADOR PDF (reportlab)
-    # ======================================================
     def export_pdf(self, request, data, report_type, start, end):
         filename = self.build_filename(report_type, "pdf")
         pdf = generar_pdf_reportlab(report_type, data, start, end)
