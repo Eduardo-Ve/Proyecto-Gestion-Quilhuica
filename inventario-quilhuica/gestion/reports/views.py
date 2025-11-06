@@ -1,28 +1,42 @@
 import io
-import os
-from datetime import datetime, timedelta
 import pandas as pd
+from datetime import datetime, timedelta
+from django.db import models
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.views import View
 from django.core.paginator import Paginator
-from django.conf import settings
-from django.template.loader import get_template
-from django.http import HttpResponse
-from .pdf_reportlab import generar_pdf_reportlab
+from django.contrib import messages
+
 from warehouse.models import Movement, Inventory, Warehouse
 from application.models import ApplicationDetail
 from login.models import Usuario
-from django.contrib import messages
+from .pdf_reportlab import generar_pdf_reportlab
 
 
-# -------------------- PÁGINA PRINCIPAL --------------------
+# ============================================================
+#  PÁGINA PRINCIPAL DE REPORTES
+# ============================================================
 class ReportHomeView(View):
-    """Página principal con el formulario de filtros y reportes."""
-
     def get(self, request):
+        user = request.user
         users = Usuario.objects.all().order_by("nombre_usuario")
-        warehouses = Warehouse.objects.all().order_by("name_ware")
+
+        #  Filtro de bodegas visible según rol
+        if user.is_authenticated:
+            if user.is_admin:
+                warehouses = Warehouse.objects.all().order_by("name_ware")
+            elif user.has_role("Supervisor"):
+                warehouses = Warehouse.objects.filter(
+                    models.Q(id__in=user.ware_assig.all()) |
+                    models.Q(name_ware__icontains="Bodega Principal")
+                ).order_by("name_ware")
+            elif user.ware_assig.exists():
+                warehouses = user.ware_assig.all().order_by("name_ware")
+            else:
+                warehouses = Warehouse.objects.none()
+        else:
+            warehouses = Warehouse.objects.none()
 
         return render(
             request,
@@ -31,14 +45,14 @@ class ReportHomeView(View):
         )
 
 
-# -------------------- EXPORTADOR --------------------
-from datetime import datetime, timedelta
-
+# ============================================================
+#  EXPORTADOR DE REPORTES
+# ============================================================
 class ExportReportView(View):
     """Genera los reportes filtrados, con paginación y exportaciones."""
 
     def get(self, request):
-        # ======== PARÁMETROS ========
+        # ---------------- PARÁMETROS ----------------
         report_type = request.GET.get("report", "movimientos")
         start_param = request.GET.get("start")
         end_param = request.GET.get("end")
@@ -46,9 +60,9 @@ class ExportReportView(View):
         selected_user = request.GET.get("user")
         selected_warehouse = request.GET.get("warehouse")
         page_number = request.GET.get("page")
+        user = request.user
 
-        # ======== FECHAS SEGURAS ========
-        # si vienen vacías o "None", usar rango último mes
+        # ---------------- FECHAS SEGURAS ----------------
         try:
             if start_param and start_param.lower() != "none":
                 start = datetime.strptime(start_param, "%Y-%m-%d")
@@ -56,27 +70,41 @@ class ExportReportView(View):
                 start = datetime.now() - timedelta(days=30)
 
             if end_param and end_param.lower() != "none":
-                end = datetime.strptime(end_param, "%Y-%m-%d")
                 end = datetime.strptime(end_param, "%Y-%m-%d") + timedelta(days=1) - timedelta(seconds=1)
             else:
                 end = datetime.now()
         except ValueError:
-            # fallback si el formato está incorrecto
             start = datetime.now() - timedelta(days=30)
             end = datetime.now()
 
-        # ======== DATOS BASE ========
-        users = Usuario.objects.all().order_by("nombre_usuario")
-        warehouses = Warehouse.objects.all().order_by("name_ware")
+        # ---------------- FILTRO POR ROL ----------------
+        if user.is_authenticated:
+            if user.is_admin:
+                allowed_warehouses = Warehouse.objects.all()
+            elif user.has_role("Supervisor"):
+                #  Supervisor ve sus casetas asignadas + Bodega Principal
+                allowed_warehouses = Warehouse.objects.filter(
+                    models.Q(id__in=user.ware_assig.all()) |
+                    models.Q(name_ware__icontains="Bodega Principal")
+                )
+            elif user.ware_assig.exists():
+                allowed_warehouses = user.ware_assig.all()
+            else:
+                allowed_warehouses = Warehouse.objects.none()
+        else:
+            allowed_warehouses = Warehouse.objects.none()
 
-        # ======== QUERYSETS ========
+        #  REPORTES: MOVIMIENTOS
         if report_type == "movimientos":
-            queryset = Movement.objects.select_related(
-                "product", "presentation", "ware_origin", "ware_destin", "moved_by"
-            ).order_by("-moved_at")
+            queryset = (
+                Movement.objects.select_related(
+                    "product", "presentation", "ware_origin", "ware_destin", "moved_by"
+                )
+                .filter(moved_at__range=[start, end], ware_destin__in=allowed_warehouses)
+                .order_by("-moved_at")
+            )
 
-            queryset = queryset.filter(moved_at__range=[start, end])
-            if selected_user and selected_user != "":
+            if selected_user:
                 queryset = queryset.filter(moved_by__id_user=selected_user)
             if selected_warehouse:
                 queryset = queryset.filter(ware_destin__id=selected_warehouse)
@@ -97,15 +125,22 @@ class ExportReportView(View):
                 for m in queryset
             ]
 
+        #  REPORTES: APLICACIONES
         elif report_type == "aplicaciones":
-            queryset = ApplicationDetail.objects.select_related(
-                "application__ware",
-                "application__applied_by",
-                "product",
-                "application__sector__equipment",
-            ).order_by("-application__applied_at")
+            queryset = (
+                ApplicationDetail.objects.select_related(
+                    "application__ware",
+                    "application__applied_by",
+                    "product",
+                    "application__sector__equipment",
+                )
+                .filter(
+                    application__applied_at__range=[start, end],
+                    application__ware__in=allowed_warehouses,
+                )
+                .order_by("-application__applied_at")
+            )
 
-            queryset = queryset.filter(application__applied_at__range=[start, end])
             if selected_user:
                 queryset = queryset.filter(application__applied_by__id_user=selected_user)
             if selected_warehouse:
@@ -114,24 +149,29 @@ class ExportReportView(View):
             data = []
             for a in queryset:
                 sector = a.application.sector
-                data.append({
-                    "id_aplicacion": a.application.id,
-                    "fecha": a.application.applied_at.strftime("%d/%m/%Y %H:%M"),
-                    "caseta": a.application.ware.name_ware,
-                    "equipo": sector.equipment.nombre_equipo if sector and sector.equipment else "No asignado",
-                    "sector": sector.sector_num if sector else "No asignado",
-                    "producto": a.product.name_prod,
-                    "cantidad": f"{a.quantity_packages:.0f}",
-                    "usuario": a.application.applied_by.nombre_usuario,
-                })
+                data.append(
+                    {
+                        "id_aplicacion": a.application.id,
+                        "fecha": a.application.applied_at.strftime("%d/%m/%Y %H:%M"),
+                        "caseta": a.application.ware.name_ware,
+                        "equipo": sector.equipment.nombre_equipo if sector and sector.equipment else "No asignado",
+                        "sector": sector.sector_num if sector else "No asignado",
+                        "producto": a.product.name_prod,
+                        "cantidad": f"{a.quantity_packages:.0f}",
+                        "usuario": a.application.applied_by.nombre_usuario,
+                    }
+                )
 
+        #  REPORTES: INVENTARIO
         elif report_type == "inventario":
-            queryset = Inventory.objects.select_related(
-                "product", "presentation", "warehouse"
-            ).order_by("warehouse__name_ware", "product__name_prod")
+            queryset = (
+                Inventory.objects.select_related("product", "presentation", "warehouse")
+                .filter(warehouse__in=allowed_warehouses)
+                .order_by("warehouse__name_ware", "product__name_prod")
+            )
 
-            if selected_warehouse:
-                queryset = queryset.filter(warehouse__id=selected_warehouse)
+            if selected_warehouse and selected_warehouse not in ["", "None"]:
+                queryset = queryset.filter(warehouse__id=int(selected_warehouse))
 
             data = [
                 {
@@ -144,10 +184,11 @@ class ExportReportView(View):
                 }
                 for i in queryset
             ]
+
         else:
             data = []
 
-        # ======== EXPORTADORES ========
+        #  EXPORTADORES
         if export == "csv":
             return self.export_csv(data, report_type)
         elif export == "xlsx":
@@ -155,9 +196,22 @@ class ExportReportView(View):
         elif export == "pdf":
             return self.export_pdf(request, data, report_type, start, end)
 
-        # ======== PAGINADOR ========
+        #  PAGINADOR Y CONTEXTO FINAL
         paginator = Paginator(data, 20)
         page_obj = paginator.get_page(page_number)
+
+        #  Volvemos a recalcular bodegas visibles (por rol)
+        if user.is_admin:
+            warehouses = Warehouse.objects.all().order_by("name_ware")
+        elif user.has_role("Supervisor"):
+            warehouses = Warehouse.objects.filter(
+                models.Q(id__in=user.ware_assig.all()) |
+                models.Q(name_ware__icontains="Bodega Principal")
+            ).order_by("name_ware")
+        elif user.ware_assig.exists():
+            warehouses = user.ware_assig.all().order_by("name_ware")
+        else:
+            warehouses = Warehouse.objects.none()
 
         context = {
             "page_obj": page_obj,
@@ -165,7 +219,7 @@ class ExportReportView(View):
             "report_type": report_type,
             "start": start.strftime("%Y-%m-%d"),
             "end": end.strftime("%Y-%m-%d"),
-            "users": users,
+            "users": Usuario.objects.all().order_by("nombre_usuario"),
             "warehouses": warehouses,
             "selected_user": selected_user or "",
             "selected_warehouse": selected_warehouse or "",
@@ -173,8 +227,9 @@ class ExportReportView(View):
 
         return render(request, "reports/export_template.html", context)
 
-    # EXPORTADORES
-
+    # ====================================================
+    #  EXPORTADORES AUXILIARES
+    # ====================================================
     def build_filename(self, report_type, extension):
         fecha_actual = datetime.now().strftime("%Y_%m_%d")
         return f"{fecha_actual}_report_{report_type}.{extension}"
@@ -198,11 +253,9 @@ class ExportReportView(View):
         response["Content-Disposition"] = f'attachment; filename="{self.build_filename(report_type, "xlsx")}"'
         return response
 
-    # NUEVO EXPORTADOR PDF (reportlab)
     def export_pdf(self, request, data, report_type, start, end):
         filename = self.build_filename(report_type, "pdf")
         pdf = generar_pdf_reportlab(report_type, data, start, end)
-
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         response.write(pdf)
