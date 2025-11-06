@@ -20,7 +20,7 @@ WINDOW_DAYS = 30              # Días hacia atrás para análisis
 # --- Funciones auxiliares ---
 def _user_is_shed_manager(user):
     try:
-        return user.has_role("Encargado Caseta")
+        return user.has_role(["Encargado Caseta", 'Supervisor'])
     except Exception:
         return False
 

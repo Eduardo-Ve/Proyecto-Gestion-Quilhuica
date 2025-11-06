@@ -11,20 +11,28 @@ from .models import *
 from .forms import *
 from product.models import Product  # usado en transfer_product
 
+from login.utils import user_can
+from django.http import HttpResponseForbidden
 
 # LISTADOS DE CASETAS
 
 def caseta_list(request):
-    """
-    Lista solo casetas (type='shed').
-    """
-    casetas = Warehouse.objects.filter(type='shed').annotate(
+    """Lista solo casetas (type='shed')."""
+    casetas = (
+        Warehouse.objects.filter(type='shed')
+        .annotate(
             total_equipos=Count('equipos', distinct=True),
-            total_sectores=Count('equipos__sectores', distinct=True)
+            total_sectores=Count('equipos__sectores', distinct=True),
         )
-    return render(request, 'warehouse/caseta_list.html', {'casetas': casetas})
+    )
 
-
+    context = {
+        "casetas": casetas,
+        "puede_crear": user_can(request.user, "caseta", "create"),
+        "puede_editar": user_can(request.user, "caseta", "edit"),
+        "puede_eliminar": user_can(request.user, "caseta", "delete"),
+    }
+    return render(request, "warehouse/caseta_list.html", context)
 
 # PRODUCTOS POR CASETA (con filtro)
 
@@ -68,7 +76,7 @@ def productos_por_caseta(request):
 
 # CRUD CASETAS
 
-@role_required(allowed_roles=['Administrador'])
+@role_required(allowed_roles=['Administrador', 'Supervisor'])
 def caseta_create(request):
     if request.method == "POST":
         form = WarehouseForm(request.POST)
@@ -106,7 +114,7 @@ def caseta_create(request):
 
 # EDITAR CASETA
 
-@role_required(allowed_roles=['Administrador'])
+@role_required(allowed_roles=['Administrador', 'Supervisor'])
 @transaction.atomic
 def caseta_edit(request, pk):
     caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
@@ -177,20 +185,22 @@ def caseta_edit(request, pk):
 
 # Eliminar caseta
 
-@role_required(allowed_roles=['Administrador'])
+@role_required(allowed_roles=["Administrador"])
 def caseta_delete(request, pk):
-    caseta = get_object_or_404(Warehouse, pk=pk, type='shed')
+    """Eliminación protegida: solo Administrador."""
+    if not user_can(request.user, "caseta", "delete"):
+        return HttpResponseForbidden("No tienes permiso para eliminar casetas.")
+
+    caseta = get_object_or_404(Warehouse, pk=pk, type="shed")
     if request.method == "POST":
         caseta.delete()
         messages.success(request, "Caseta eliminada correctamente.")
-        return redirect('warehouse:caseta_list')
-    return render(request, 'warehouse/caseta_confirm_delete.html', {'caseta': caseta})
-
-
+        return redirect("warehouse:caseta_list")
+    return render(request, "warehouse/caseta_confirm_delete.html", {"caseta": caseta})
 
 # TRASLADO DESDE BODEGA PRINCIPAL A CASETA
 
-@role_required(allowed_roles=['Administrador']) #'Supervisor'! # 
+@role_required(allowed_roles=['Administrador', 'Supervisor']) #'Supervisor'! # 
 def transfer_product(request):
     try:
         ware_origin = Warehouse.objects.get(type='main')

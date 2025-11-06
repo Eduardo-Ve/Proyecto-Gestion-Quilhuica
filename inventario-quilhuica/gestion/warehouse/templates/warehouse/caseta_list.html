@@ -12,8 +12,7 @@
 <div class="product-list-wrapper">
   <h2 class="text-success fw-bold mb-3">Gestión de Casetas</h2>
 
-  {% if user.is_authenticated and user.is_admin %}
-    <h4>Bodega Principal</h4>
+  {% if puede_crear %}
     <div class="d-flex gap-2 mb-3">
       <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-success">
         + Nueva Caseta
@@ -22,8 +21,6 @@
         Productos por Caseta
       </a>
     </div>
-  {% elif user.is_authenticated and user.caseta_asignada %}
-    <h4>Caseta: {{ user.caseta_asignada.name }}</h4>
   {% endif %}
 
   <div class="table-responsive shadow-sm">
@@ -36,7 +33,7 @@
           <th>Creada en</th>
           <th>Total Equipos</th>
           <th>Total Sectores</th>
-          {% if user.is_authenticated and user.is_admin %}
+          {% if puede_editar or puede_eliminar %}
           <th>Acciones</th>
           {% endif %}
         </tr>
@@ -50,58 +47,30 @@
           <td>{{ caseta.created_at|date:"d/m/Y H:i" }}</td>
           <td>{{ caseta.total_equipos }}</td>
           <td>{{ caseta.total_sectores }}</td>
-          {% if user.is_authenticated and user.is_admin %}
+          {% if puede_editar or puede_eliminar %}
           <td>
             <div class="d-flex gap-2">
+              {% if puede_editar %}
               <a href="{% url 'warehouse:caseta_edit' caseta.id %}" class="btn btn-sm btn-success">
                 Editar
               </a>
+              {% endif %}
+              {% if puede_eliminar %}
               <a href="{% url 'warehouse:caseta_delete' caseta.id %}" class="btn btn-sm btn-danger">
                 Eliminar
               </a>
+              {% endif %}
             </div>
           </td>
           {% endif %}
         </tr>
         {% empty %}
         <tr>
-          <td colspan="{% if user.is_authenticated and user.is_admin %}5{% else %}4{% endif %}" 
-              class="text-center text-muted py-4">
-            No hay casetas registradas
-          </td>
+          <td colspan="7" class="text-center text-muted py-4">No hay casetas registradas</td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
-
-  <!-- Paginación -->
-  {% if is_paginated %}
-  <nav class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">«</span></li>
-      {% endif %}
-
-      {% for i in paginator.page_range %}
-      <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-      </li>
-      {% endfor %}
-
-      {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">»</span></li>
-      {% endif %}
-    </ul>
-  </nav>
-  {% endif %}
 </div>
 {% endblock %}

@@ -9,7 +9,7 @@ from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.db.models import Sum, Value, Q, FloatField, IntegerField
 from django.db.models.functions import Coalesce
-
+from login.utils import user_can
 class ProductListView(ListView):
     model = Product
     template_name = 'product/product_list.html'
@@ -17,18 +17,16 @@ class ProductListView(ListView):
     paginate_by = 10
 
     def get_queryset(self):
-        """
-        Mantiene el comportamiento original (admin o encargado),
-        pero devolvemos productos globales solo para admin.
-        """
         user = self.request.user
         queryset = Product.objects.prefetch_related('category', 'presentation')
 
         if not user.is_authenticated:
             return queryset.none()
 
-        if user.is_admin:
+        # 🔹 Admin y Supervisor ven la bodega principal
+        if user.is_admin or user.has_role("Supervisor"):
             warehouse_filter = Q(inventory__warehouse__type='main')
+        # 🔹 Encargado de caseta solo sus casetas
         elif user.ware_assig.exists():
             warehouse_filter = Q(inventory__warehouse__in=user.ware_assig.all())
         else:
@@ -50,14 +48,16 @@ class ProductListView(ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        """
-        Añade un contexto extra con productos agrupados por caseta
-        (solo para encargados con múltiples casetas).
-        """
         context = super().get_context_data(**kwargs)
         user = self.request.user
 
-        if not user.is_admin and user.ware_assig.exists():
+        # 🔹 Agregamos flags seguras de permisos
+        context["puede_crear"] = user_can(user, "producto", "create")
+        context["puede_editar"] = user_can(user, "producto", "edit")
+        context["puede_eliminar"] = user_can(user, "producto", "delete")
+
+        # 🔹 Encargado de caseta -> productos por sus casetas
+        if user.has_role("Encargado de Caseta") and user.ware_assig.exists():
             casetas_data = []
             for caseta in user.ware_assig.all():
                 products = (
@@ -79,30 +79,22 @@ class ProductListView(ListView):
                     .order_by('name_prod')
                 )
                 casetas_data.append({'caseta': caseta, 'productos': products})
-
             context['casetas_data'] = casetas_data
 
         return context
-
-@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
+@method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'product/product_create_form.html'
     success_url = reverse_lazy('product:product_list')
 
-    def form_valid(self, form):
-        self.object = form.save(user=self.request.user)
-        return HttpResponseRedirect(self.get_success_url())
-
-
-@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
+@method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class ProductUpdateView(UpdateView):
     model = Product
     form_class = ProductForm
     template_name = 'product/product_update_form.html'
     success_url = reverse_lazy('product:product_list')
-
 
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
 class ProductDeleteView(DeleteView):
@@ -110,8 +102,7 @@ class ProductDeleteView(DeleteView):
     template_name = 'product/product_confirm_delete.html'
     success_url = reverse_lazy('product:product_list')
 
-
-@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
+@method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class StockAddView(CreateView):
     template_name = 'product/add_stock_form.html'
     form_class = StockAddForm

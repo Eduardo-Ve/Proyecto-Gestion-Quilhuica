@@ -64,7 +64,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         """Propiedad para verificar fácilmente si es Administrador"""
         return self.has_role("Administrador")  
 
-
+    @property
+    def is_supervisor(self):
+        """Propiedad para verificar fácilmente si es Supervisor"""
+        return self.has_role("Supervisor")
+    
 class UserRole(models.Model):
     user = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
