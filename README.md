@@ -29,9 +29,6 @@
 
 ---
 
-## Acerca del Proyecto
-Gestión Quilhucia es una aplicación web desarrollada en Django que tiene como propósito optimizar la administración de insumos agrícolas y el control de inventarios en diferentes zonas de almacenamiento. La plataforma permite organizar productos como fertilizantes y otros insumos, registrar su movimiento entre casetas, llevar un control de su aplicación en terreno y mantener un inventario actualizado en todo momento. Además, facilita la generación de reportes que apoyan la trazabilidad y la toma de decisiones, contribuyendo a una gestión agrícola más eficiente y confiable.  
-
 ## Tecnologías a Usar
 - Python 3.11+  
 - Django  
