@@ -219,6 +219,7 @@ def transfer_product(request):
 
     # Productos con stock en bodega principal (para hints / dropdowns)
     products_in_stock = Product.objects.filter(
+        is_active=True, 
         inventory__warehouse=ware_origin,
         inventory__quantity_packages__gt=0
     ).distinct()
@@ -302,27 +303,41 @@ def transfer_product(request):
 
 
 # API: Productos por bodega (JSON)
-
 def get_products_by_warehouse(request, warehouse_id):
     try:
+        # 🔹 Filtramos solo inventarios con stock positivo y producto activo
         inventory = (
             Inventory.objects
-            .filter(warehouse_id=warehouse_id, quantity_packages__gt=0)
-            .select_related('product', 'presentation')
+            .filter(
+                warehouse_id=warehouse_id,
+                quantity_packages__gt=0,
+                product__is_active=True
+            )
+            .select_related('product', 'presentation', 'warehouse')
         )
 
-        data = [
-            {
+        # 🔹 Armamos los datos enriquecidos
+        data = []
+        for inv in inventory:
+            data.append({
                 "id": inv.product.product_id,
                 "name": inv.product.name_prod,
-                "presentation": f"{inv.presentation.content_value} {inv.presentation.content_unit}",
-                "quantity": inv.quantity_packages,
-            }
-            for inv in inventory
-        ]
+                "presentation": (
+                    f"{inv.presentation.package_type} "
+                    f"{inv.presentation.content_value} {inv.presentation.content_unit}"
+                ),
+                "quantity_packages": inv.quantity_packages,
+                "total_content": inv.total_content,
+                "display_name": (
+                    f"{inv.product.name_prod} "
+                    f"({inv.presentation.package_type} "
+                    f"{inv.presentation.content_value} {inv.presentation.content_unit}) "
+                    f"— Stock: {inv.quantity_packages}"
+                ),
+            })
+
         return JsonResponse(data, safe=False)
 
     except Exception as e:
-        # Log básico a consola
         print(f"[ERROR get_products_by_warehouse] {e}")
         return JsonResponse({"error": str(e)}, status=500)

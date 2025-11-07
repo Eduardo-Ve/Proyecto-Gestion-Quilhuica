@@ -1,0 +1,48 @@
+{% extends "base/form_base.html" %}
+{% load static %}
+
+{% block title %}Productos Desactivados{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="fw-bold text-danger mb-3">Productos Desactivados</h2>
+  {% if productos %}
+  <div class="table-responsive shadow-sm">
+    <table class="table table-striped table-bordered align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th>Nombre</th>
+          <th>Categoría</th>
+          <th>Presentación</th>
+          <th>Fecha Expiración</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td class="fw-semibold">{{ p.name_prod }}</td>
+          <td>{{ p.category.name_cat }}</td>
+          <td>{{ p.presentation }}</td>
+          <td>{{ p.expire_at|date:"d/m/Y" }}</td>
+          <td>
+            <a href="{% url 'product:product_reactivate' p.pk %}" 
+               class="btn btn-success btn-sm">
+              Reactivar
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="alert alert-info">
+    No hay productos desactivados actualmente.
+  </div>
+  {% endif %}
+</div>
+  <a href="{% url 'product:product_list' %}" class="btn btn-secondary mb-3">
+   Volver a Productos Activos
+  </a>
+{% endblock %}

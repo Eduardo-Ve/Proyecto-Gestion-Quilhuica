@@ -268,10 +268,8 @@
 .password-reset .btn{
   font-weight: 600;
 }
-
-/* MEDIA QUERIES */
 @media only screen and (max-width: 800px) {
-  /* Ocultar navegación desktop y CTA */
+  /* Ocultar solo la navegación principal y CTA */
   .navbar-container .nav__links,
   .navbar-container .cta {
     display: none;
@@ -285,17 +283,29 @@
     color: #1E1E1E;
   }
 
-  /* Ocultar logo y user menu en móvil */
+  /* ✅ Mantener logo visible (centrado) */
   .navbar-container .logo {
-    display: none;
+    order: 1;
+    display: block;
+    margin-right: auto;
   }
 
+  /* ✅ Mantener botón de usuario visible */
   .navbar-container .user-menu {
-    display: none;
+    display: flex;
+    align-items: center;
+    order: 3;
   }
 
-  /* Ajustar padding del header en móvil */
+  /* Ajustar padding */
   .navbar-container header {
     padding: 14px 5%;
+  }
+}
+@media only screen and (max-width: 800px) {
+  .navbar-container header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 }

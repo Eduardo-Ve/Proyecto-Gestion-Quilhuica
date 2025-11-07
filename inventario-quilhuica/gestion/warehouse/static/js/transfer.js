@@ -87,7 +87,7 @@
       if (!selectedValues.has(String(p.id)) || String(p.id) === currentValue) {
         const opt = document.createElement('option');
         opt.value = p.id;
-        opt.textContent = p.name;
+        opt.textContent = p.display_name;       
         selectEl.appendChild(opt);
       }
     });

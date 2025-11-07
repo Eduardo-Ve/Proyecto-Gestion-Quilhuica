@@ -77,6 +77,12 @@
 
         <li><a href="/notification">Alertas</a></li>
       {% endif %}
+      <div class="mobile-user-menu">
+          <form action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <a href="#" onclick="event.preventDefault(); this.closest('form').submit();">Cerrar sesión</a>
+          </form>
+
     </div>
   </div>
 </div>

@@ -1,15 +1,19 @@
 ﻿from django.urls import reverse_lazy
-from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.http import HttpResponseRedirect
+from django.views.generic import ListView, CreateView, UpdateView, View
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
+
 from .models import Product
 from .forms import ProductForm, StockAddForm
-from django.utils.decorators import method_decorator
 from login.decorators import role_required
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.db.models import Sum, Value, Q, FloatField, IntegerField
-from django.db.models.functions import Coalesce
 from login.utils import user_can
+from django.db.models import Q, Sum, Value, FloatField, IntegerField
+from django.db.models.functions import Coalesce
+
+
+#  LISTADO GENERAL DE PRODUCTOS
 class ProductListView(ListView):
     model = Product
     template_name = 'product/product_list.html'
@@ -23,10 +27,11 @@ class ProductListView(ListView):
         if not user.is_authenticated:
             return queryset.none()
 
-        # 🔹 Admin y Supervisor ven la bodega principal
+        # Admin o Supervisor: todo el inventario principal
         if user.is_admin or user.has_role("Supervisor"):
             warehouse_filter = Q(inventory__warehouse__type='main')
-        # 🔹 Encargado de caseta solo sus casetas
+
+        # Encargado de Caseta: solo sus casetas
         elif user.ware_assig.exists():
             warehouse_filter = Q(inventory__warehouse__in=user.ware_assig.all())
         else:
@@ -50,13 +55,10 @@ class ProductListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
-
-        # 🔹 Agregamos flags seguras de permisos
         context["puede_crear"] = user_can(user, "producto", "create")
         context["puede_editar"] = user_can(user, "producto", "edit")
         context["puede_eliminar"] = user_can(user, "producto", "delete")
 
-        # 🔹 Encargado de caseta -> productos por sus casetas
         if user.has_role("Encargado de Caseta") and user.ware_assig.exists():
             casetas_data = []
             for caseta in user.ware_assig.all():
@@ -82,12 +84,16 @@ class ProductListView(ListView):
             context['casetas_data'] = casetas_data
 
         return context
+
+
+#  CREAR / EDITAR PRODUCTO
 @method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class ProductCreateView(CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'product/product_create_form.html'
     success_url = reverse_lazy('product:product_list')
+
 
 @method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class ProductUpdateView(UpdateView):
@@ -96,12 +102,32 @@ class ProductUpdateView(UpdateView):
     template_name = 'product/product_update_form.html'
     success_url = reverse_lazy('product:product_list')
 
-@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
-class ProductDeleteView(DeleteView):
-    model = Product
-    template_name = 'product/product_confirm_delete.html'
-    success_url = reverse_lazy('product:product_list')
 
+#  DESACTIVAR (Soft Delete)
+@method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
+class ProductDeleteView(View):
+    """Desactiva un producto en lugar de eliminarlo físicamente."""
+
+    def post(self, request, pk):
+        product = get_object_or_404(Product.objects_all, pk=pk)
+        if not product.is_active:
+            messages.warning(request, f"El producto '{product.name_prod}' ya está desactivado.")
+        else:
+            product.is_active = False
+            product.save(update_fields=['is_active'])
+            messages.success(
+                request,
+                f"Producto '{product.name_prod}' desactivado correctamente. "
+        
+            )
+        return redirect(reverse_lazy('product:product_list'))
+
+    def get(self, request, pk):
+        product = get_object_or_404(Product.objects_all, pk=pk)
+        return render(request, 'product/product_confirm_delete.html', {'product': product})
+
+
+#  AÑADIR STOCK
 @method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class StockAddView(CreateView):
     template_name = 'product/add_stock_form.html'
@@ -118,3 +144,31 @@ class StockAddView(CreateView):
             messages.success(request, "Stock añadido correctamente.")
             return redirect('product:product_list')
         return render(request, self.template_name, {'form': form})
+
+
+#  LISTA DE PRODUCTOS DESACTIVADOS
+@login_required
+@role_required(allowed_roles=['Administrador'])
+def product_inactive_list(request):
+    productos = Product.objects_all.filter(is_active=False).order_by('name_prod')
+    context = {
+        'productos': productos,
+        'title': 'Productos Desactivados'
+    }
+    return render(request, 'product/product_inactive_list.html', context)
+
+
+#  REACTIVAR PRODUCTO
+@login_required
+@role_required(allowed_roles=['Administrador'])
+def product_reactivate(request, pk):
+    product = get_object_or_404(Product.objects_all, pk=pk)
+
+    if product.is_active:
+        messages.info(request, f"El producto '{product.name_prod}' ya estaba activo.")
+    else:
+        product.is_active = True
+        product.save(update_fields=['is_active'])
+        messages.success(request, f"Producto '{product.name_prod}' reactivado correctamente.")
+    
+    return redirect(reverse_lazy('product:product_inactive_list'))

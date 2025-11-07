@@ -11,15 +11,22 @@
 {% block content %}
 <div class="product-list-wrapper">
   <h2 class="text-success fw-bold mb-3">Listado de Productos</h2>
+{% if puede_crear %}
+  <h4>Bodega Principal</h4>
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <a href="{% url 'product:product_create' %}" class="btn btn-success">
+      + Nuevo Producto
+    </a>
 
-  {% if puede_crear %}
-    <h4>Bodega Principal</h4>
-    <div class="d-flex gap-2 mb-3">
-      <a href="{% url 'product:product_create' %}" class="btn btn-success">+ Nuevo Producto</a>
-      <a href="{% url 'product:add_stock' %}" class="btn btn-primary">Añadir Stock</a>
-    </div>
-  {% endif %}
+    <a href="{% url 'product:add_stock' %}" class="btn btn-primary">
+      Añadir Stock
+    </a>
 
+    <a href="{% url 'product:product_inactive_list' %}" class="btn btn-secondary">
+      Ver Productos Desactivados
+    </a>
+  </div>
+{% endif %}
   <div class="table-responsive shadow-sm">
     <table class="table table-striped align-middle border">
       <thead class="table-success text-dark">

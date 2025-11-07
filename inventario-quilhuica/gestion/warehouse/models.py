@@ -1,8 +1,8 @@
 from django.db import models
 from django.conf import settings
-from product.models import Product, Presentation
 
-#CLASE PARA BODEGA Y CASETAS.
+
+#  MODELOS DE BODEGAS Y CASETAS
 class Warehouse(models.Model):
     name_ware = models.CharField(max_length=150)
     description = models.TextField(blank=True, null=True)
@@ -16,18 +16,28 @@ class Warehouse(models.Model):
         return f"{self.name_ware} ({self.type})"
 
 
+#  MOVIMIENTOS
 class Movement(models.Model):
     MOVEMENT_CHOICES = [
         ('entrada', 'Entrada'),
         ('traslado', 'Traslado'),
+        ('salida', 'Salida'),
     ]
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
-    ware_origin = models.ForeignKey(Warehouse, on_delete=models.SET_NULL, null=True, blank=True, related_name='movements_origin')
-    ware_destin = models.ForeignKey(Warehouse, on_delete=models.CASCADE, related_name='movements_destin')
+    # 🔸 Usa referencia por string para evitar ciclo
+    product = models.ForeignKey('product.Product', on_delete=models.PROTECT)
+    presentation = models.ForeignKey('product.Presentation', on_delete=models.PROTECT)
+
+    ware_origin = models.ForeignKey(
+        'self'.replace('self', 'warehouse.Warehouse'),  # alias, no se usa self realmente
+        on_delete=models.SET_NULL, null=True, blank=True, related_name='movements_origin'
+    )
+    ware_destin = models.ForeignKey(
+        'warehouse.Warehouse', on_delete=models.SET_NULL, null=True, blank=True, related_name='movements_destin'
+    )
+
     movement_type = models.CharField(max_length=20, choices=MOVEMENT_CHOICES)
-    quantity = models.IntegerField()
+    quantity = models.FloatField()
     moved_at = models.DateTimeField(auto_now_add=True)
     moved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)
@@ -36,11 +46,12 @@ class Movement(models.Model):
         return f"{self.movement_type} de {self.product.name_prod} ({self.quantity})"
 
 
-
+#  INVENTARIO
 class Inventory(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    presentation = models.ForeignKey(Presentation, on_delete=models.CASCADE)
-    warehouse  = models.ForeignKey(Warehouse, on_delete=models.CASCADE)
+    product = models.ForeignKey('product.Product', on_delete=models.PROTECT)
+    presentation = models.ForeignKey('product.Presentation', on_delete=models.PROTECT)
+    warehouse  = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
+
     quantity_packages = models.FloatField(default=0)
     total_content = models.FloatField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
@@ -50,28 +61,18 @@ class Inventory(models.Model):
 
     def __str__(self):
         return f"{self.product.name_prod} ({self.quantity_packages} unidades en {self.warehouse.name_ware})"
+
     def save(self, *args, **kwargs):
-        """Actualizar total_content automáticamente"""
         if self.presentation:
             self.total_content = self.quantity_packages * self.presentation.content_value
         super().save(*args, **kwargs)
 
-from django.db import models
 
+#  EQUIPOS Y SECTORES
 class Equipment(models.Model):
-    """Equipos de riego asociados a una caseta."""
-    caseta = models.ForeignKey('Warehouse', on_delete=models.CASCADE, related_name='equipos')
-    
-    nombre_equipo = models.CharField(
-        max_length=50,
-        help_text="Nombre del equipo (Ej: 'A Cítricos', 'Equipo 2', 'Paltos A')"
-    )
-    codigo_interno = models.CharField(
-        max_length=20,
-        blank=True,
-        null=True,
-        help_text="Código opcional interno o alias corto del equipo"
-    )
+    caseta = models.ForeignKey('warehouse.Warehouse', on_delete=models.CASCADE, related_name='equipos')
+    nombre_equipo = models.CharField(max_length=50)
+    codigo_interno = models.CharField(max_length=20, blank=True, null=True)
     descripcion = models.TextField(blank=True, null=True)
     activo = models.BooleanField(default=True)
 
@@ -84,9 +85,8 @@ class Equipment(models.Model):
 
 
 class Sector(models.Model):
-    """Sectores físicos asociados a un equipo."""
-    equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE, related_name='sectores')
-    sector_num = models.PositiveIntegerField(help_text="Número de sector dentro del equipo")
+    equipment = models.ForeignKey('warehouse.Equipment', on_delete=models.CASCADE, related_name='sectores')
+    sector_num = models.PositiveIntegerField()
     observaciones = models.TextField(blank=True, null=True)
 
     class Meta:
