@@ -31,7 +31,6 @@
             params.set("page", page);
             window.location.search = params.toString();
           } else {
-            // ❌ Efecto visual si el número es inválido
             input.classList.add("input-error");
 
             // Reinicia la animación si se vuelve a intentar

@@ -1,6 +1,6 @@
 {% extends "base/form_base.html" %}
 {% load crispy_forms_tags %}
-
+{% load static %}
 {% block content %}
 <div class="container py-4">
   <h2 class="mb-4 text-success fw-bold">{{ title }}</h2>
@@ -40,6 +40,7 @@
       {{ formset.management_form }}
       {% for subform in formset %}
         <div class="equipment-form border p-3 rounded mb-2 bg-light position-relative">
+          {{ subform.id }}  
           <div class="row g-2 align-items-end">
             <div class="col-md-5">{{ subform.nombre_equipo }}</div>
             <div class="col-md-5">{{ subform.sectores_count }}</div>
@@ -48,7 +49,9 @@
             </div>
           </div>
         </div>
+        
       {% endfor %}
+
     </div>
 
     <!-- 🔹 Template para nuevos equipos -->
@@ -63,6 +66,11 @@
         </div>
       </div>
     </template>
+          <div class="d-flex justify-content-end mb-2">
+  <button type="button" id="btn-add-one" class="btn btn-outline-success btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Agregar un equipo
+  </button>
+</div>
 
     <!-- 🔹 Contenedor oculto con el empty_form -->
     <div class="d-none" id="empty-form-source">
@@ -77,73 +85,7 @@
   </form>
 </div>
 
-<!-- ============================================================ -->
-<!-- 🔹 SCRIPT FUNCIONAL PARA AGREGAR N EQUIPOS -->
-<!-- ============================================================ -->
-<script>
-(function() {
-  const container = document.getElementById('formset-container');
-  const totalForms = document.getElementById('id_form-TOTAL_FORMS');
-  const emptyTpl = document.getElementById('empty-form-template').innerHTML;
-  const src = document.getElementById('empty-form-source');
-
-  function nextIndex() {
-    return parseInt(totalForms.value, 10);
-  }
-
-  function buildRow(eqName = null, sect = null) {
-    const i = nextIndex();
-    const eqField = src.children[0].outerHTML.replaceAll('__prefix__', i);
-    const scField = src.children[1].outerHTML.replaceAll('__prefix__', i);
-
-    let html = emptyTpl
-      .replace('__equipo_field__', eqField)
-      .replace('__sectores_field__', scField);
-
-    container.insertAdjacentHTML('beforeend', html);
-    totalForms.value = i + 1;
-
-    // Asignar valores si se pasan por parámetro
-    if (eqName !== null) {
-      container.querySelector(`#id_form-${i}-nombre_equipo`).value = eqName;
-    }
-    if (sect !== null) {
-      container.querySelector(`#id_form-${i}-sectores_count`).value = sect;
-    }
-  }
-
-  // 🔸 Eliminar fila
-  container.addEventListener('click', (e) => {
-    if (e.target.classList.contains('btn-delete')) {
-      const form = e.target.closest('.equipment-form');
-      form.remove();
-      totalForms.value = container.querySelectorAll('.equipment-form').length;
-    }
-  });
-
-  // 🔸 Agregar N equipos consecutivos
-  document.getElementById('btn-bulk-add').addEventListener('click', () => {
-    const n = parseInt(document.getElementById('bulk-n').value || '0', 10);
-    const sect = parseInt(document.getElementById('bulk-sect').value || '1', 10);
-    if (n <= 0) return;
-
-    // Detectar el último número o letra usada en nombres actuales
-    const existingNames = Array.from(
-      container.querySelectorAll('input[name$="-nombre_equipo"]')
-    ).map(i => i.value.trim()).filter(Boolean);
-
-    let startNum = 1;
-    if (existingNames.length) {
-      const last = existingNames[existingNames.length - 1];
-      const match = last.match(/\d+$/);
-      if (match) startNum = parseInt(match[0]) + 1;
-    }
-
-    for (let k = 0; k < n; k++) {
-      const name = `Equipo ${startNum + k}`;
-      buildRow(name, sect);
-    }
-  });
-})();
-</script>
+{% block extra_js %}
+  <script src="{% static '/js/caseta_form.js' %}"></script>
+{% endblock extra_js %}
 {% endblock %}

@@ -122,11 +122,16 @@ def caseta_edit(request, pk):
 
     if request.method == "POST":
         form = WarehouseForm(request.POST, instance=caseta)
-        formset = EquipmentFormSet(request.POST, prefix='form')
+        formset = EquipmentFormSet(
+            request.POST,
+            prefix='form',
+            queryset=Equipment.objects.filter(caseta=caseta)  # ✅ importante
+        )
 
         if form.is_valid() and formset.is_valid():
             form.save()
 
+            # Eliminamos equipos que ya no están en el formset
             existing_ids = [f.cleaned_data.get('id').id for f in formset.forms if f.cleaned_data.get('id')]
             for old_eq in existing_equipment:
                 if old_eq.id not in existing_ids:
@@ -139,8 +144,8 @@ def caseta_edit(request, pk):
 
                 nombre_equipo = subform.cleaned_data['nombre_equipo']
                 sectores_count = subform.cleaned_data['sectores_count']
-
                 equipo_obj = subform.cleaned_data.get('id')
+
                 if equipo_obj:
                     equipo_obj.nombre_equipo = nombre_equipo
                     equipo_obj.save()
@@ -163,15 +168,20 @@ def caseta_edit(request, pk):
                 f"Caseta '{caseta.name_ware}' actualizada. Equipos procesados: {created_or_updated}."
             )
             return redirect('warehouse:caseta_list')
-        else:
-            messages.error(request, "Corrige los errores del formulario.")
+        if not form.is_valid():
+            print("❌ Errores en WarehouseForm:", form.errors)
+
+        if not formset.is_valid():
+            print("❌ Errores en EquipmentFormSet:")
+            for i, f in enumerate(formset.forms):
+                if f.errors:
+                    print(f"   → Formulario {i}:", f.errors)
     else:
         form = WarehouseForm(instance=caseta)
-        initial_data = [
-            {'nombre_equipo': eq.nombre_equipo, 'sectores_count': eq.sectores.count(), 'id': eq.id}
-            for eq in existing_equipment
-        ]
-        formset = EquipmentFormSet(initial=initial_data, prefix='form')
+        formset = EquipmentFormSet(
+            queryset=Equipment.objects.filter(caseta=caseta),  
+            prefix='form'
+        )
 
     return render(
         request,
@@ -182,7 +192,6 @@ def caseta_edit(request, pk):
             'title': f"Editar Caseta",
         }
     )
-
 # Eliminar caseta
 
 @role_required(allowed_roles=["Administrador"])
