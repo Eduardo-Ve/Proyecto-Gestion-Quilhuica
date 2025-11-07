@@ -7,14 +7,14 @@ from warehouse.models import Inventory, Warehouse, Equipment
 from product.models import Product
 from application.models import Application, ApplicationDetail
 
-
 def create_application(request):
     user = request.user
 
+    # 🔹 Validar usuario con caseta asignada
     if not user.is_staff and not user.ware_assig.exists():
         messages.error(request, "No tienes una caseta asignada. Contacta al administrador.")
         return redirect('/')
-    
+
     error_message = None  
 
     if request.method == 'POST':
@@ -23,15 +23,20 @@ def create_application(request):
         if form.is_valid():
             selected_warehouse = form.cleaned_data.get('ware')
 
+            # Crear instancia principal de aplicación
             app_instance = form.save(commit=False)
             app_instance.applied_by = user
             app_instance.ware = selected_warehouse
 
             formset = ApplicationDetailFormSet(request.POST, instance=app_instance, prefix='details')
-            # Filtrar productos según la caseta
+
+            # 🔹 Filtro: solo productos activos y con inventario en esa caseta
             for f in formset.forms:
                 f.fields['product'].queryset = Product.objects.filter(
-                    product_id__in=Inventory.objects.filter(warehouse=selected_warehouse).values_list('product_id', flat=True)
+                    is_active=True,
+                    product_id__in=Inventory.objects.filter(
+                        warehouse=selected_warehouse
+                    ).values_list('product_id', flat=True)
                 )
 
             if formset.is_valid():
@@ -44,14 +49,14 @@ def create_application(request):
                 ]
 
                 if not valid_forms:
-                    error_message = " Debes agregar al menos un producto antes de continuar."
+                    error_message = "Debes agregar al menos un producto antes de continuar."
                     return render(request, 'application/application_form.html', {
                         'form': form,
                         'formset': formset,
                         'error_message': error_message,
                     })
 
-                # Datos para la sesión
+                # 🔹 Guardar datos temporales en sesión
                 products_data = []
                 for f in valid_forms:
                     product = f.cleaned_data['product']
@@ -68,7 +73,6 @@ def create_application(request):
                     })
 
                     sector = form.cleaned_data.get('sector')
-                    sector = form.cleaned_data.get('sector')
                     request.session['pending_application'] = {
                         'warehouse_id': selected_warehouse.id,
                         'warehouse_name': selected_warehouse.name_ware,
@@ -80,6 +84,7 @@ def create_application(request):
                         ),
                         'products': products_data,
                     }
+
                 return redirect('application:confirm_application')
             else:
                 print("FORMSET ERRORS:", formset.errors)
@@ -97,7 +102,6 @@ def create_application(request):
         'formset': formset,
         'error_message': error_message,
     })
-
 
 def confirm_application(request):
     pending_data = request.session.get('pending_application')
@@ -174,7 +178,16 @@ def get_products_by_warehouse(request):
     if not warehouse_id:
         return JsonResponse({"error": "No se envió un warehouse_id"}, status=400)
 
-    inventories = Inventory.objects.filter(warehouse_id=warehouse_id).select_related('product', 'presentation')
+    # 🔹 Filtrar solo productos activos y con stock
+    inventories = (
+        Inventory.objects
+        .filter(
+            warehouse_id=warehouse_id,
+            product__is_active=True,     
+            quantity_packages__gt=0     
+        )
+        .select_related('product', 'presentation')
+    )
 
     data = [
         {

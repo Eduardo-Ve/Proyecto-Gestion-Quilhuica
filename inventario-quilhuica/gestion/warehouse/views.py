@@ -49,7 +49,8 @@ def productos_por_caseta(request):
     qs = (
         Inventory.objects
         .select_related('product', 'presentation', 'warehouse')
-        .filter(warehouse__type='shed')
+        .filter(warehouse__type='shed', #producto activo y con stock
+                product__is_active=True)
     )
 
     if caseta_id:
@@ -169,10 +170,10 @@ def caseta_edit(request, pk):
             )
             return redirect('warehouse:caseta_list')
         if not form.is_valid():
-            print("❌ Errores en WarehouseForm:", form.errors)
+            print(" Errores en WarehouseForm:", form.errors)
 
         if not formset.is_valid():
-            print("❌ Errores en EquipmentFormSet:")
+            print(" Errores en EquipmentFormSet:")
             for i, f in enumerate(formset.forms):
                 if f.errors:
                     print(f"   → Formulario {i}:", f.errors)
