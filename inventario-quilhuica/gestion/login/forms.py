@@ -38,23 +38,26 @@ class RegistroUsuarioForm(forms.ModelForm):
         required=True,
         label="Rol"
     )
-
-    caseta_asignada = forms.ModelChoiceField(
-        queryset=Warehouse.objects.filter(type='shed'),
+    ware_assig = forms.ModelMultipleChoiceField(
+        queryset=Warehouse.objects.none(),
         required=False,
-        label="Caseta Asignada",
-        help_text="Requerido solo si el rol es 'Encargado de caseta'."
+        label="Casetas Asignadas",
+        widget=forms.SelectMultiple(
+            attrs={'class': 'form-select', 'id': 'id_ware_assig'}
+        )
     )
-
     class Meta:
         model = Usuario
-        fields = ["nombre_usuario", "correo", "telefono", "roles", "caseta_asignada"]
+        fields = ["nombre_usuario", "correo", "telefono", "roles", "ware_assig"]
         widgets = {
-            'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo'}),
-            'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com'}),
-            'telefono': forms.NumberInput(attrs={'placeholder': '931816450'}),
+            'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo', 'class': 'form-control'}),
+            'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com', 'class': 'form-control'}),
+            'telefono': forms.NumberInput(attrs={'placeholder': '931816450', 'class': 'form-control'}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['ware_assig'].queryset = Warehouse.objects.filter(type='shed')
     # --- Validaciones ---
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get("nombre_usuario").strip()
@@ -81,31 +84,27 @@ class RegistroUsuarioForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         rol = cleaned_data.get("roles")
-        caseta = cleaned_data.get("caseta_asignada")
-
-        if rol:
-            if rol.name_role == 'Encargado de caseta' and not caseta:
-                self.add_error('caseta_asignada', 'Debe asignar una caseta para este rol.')
-            elif rol.name_role in ['Administrador', 'Auditoria'] and caseta:
-                cleaned_data['caseta_asignada'] = None
+        casetas = cleaned_data.get("casetas_asignadas")
+        if rol and rol.name_role == 'Encargado de caseta' and (not casetas or len(casetas) == 0):
+            self.add_error('ware_assig', 'Debe asignar una o más casetas para este rol.')
         return cleaned_data
+
 
     # --- Guardado con contraseña generada ---
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Generar contraseña temporal segura
+        # Generar contraseña temporal
         caracteres = string.ascii_letters + string.digits + string.punctuation
         temp_password = ''.join(secrets.choice(caracteres) for _ in range(10))
-
         user.set_password(temp_password)
         user.must_change_password = True
-        user.caseta_asignada = self.cleaned_data.get('caseta_asignada')
 
         if commit:
             user.save()
             user.roles.set([self.cleaned_data["roles"]])
-            user._temp_password = temp_password  # atributo temporal, no se guarda en BD
+            user.ware_assig.set(self.cleaned_data.get('ware_assig'))
+            user._temp_password = temp_password  
 
         return user
 

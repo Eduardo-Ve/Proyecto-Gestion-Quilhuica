@@ -16,21 +16,24 @@
   <div class="page-header d-flex justify-content-between align-items-center flex-wrap">
     <h1 class="dashboard-title">Panel de Inventario</h1>
 
-    {% if is_staff and sheds %}
-    <form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
-      <i class="bi bi-funnel text-primary"></i>
-      <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
-      <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
-        onchange="this.form.submit()">
-        <option value="">Todas</option>
-        {% for s in sheds %}
-        <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
-          {{ s.name_ware }}
-        </option>
-        {% endfor %}
-      </select>
-    </form>
-    {% endif %}
+
+{% if sheds %}
+
+<form method="get" class="shed-filter-compact d-flex align-items-center gap-2 mb-2">
+  <i class="bi bi-funnel text-primary"></i>
+  <label for="ware" class="fw-semibold text-secondary mb-0 small">Filtrar:</label>
+  <select name="ware" id="ware" class="form-select form-select-sm filter-select-compact"
+          onchange="this.form.submit()">
+    <option value="">Todas</option>
+    {% for s in sheds %}
+      <option value="{{ s.id }}" {% if selected_shed and selected_shed.id == s.id %}selected{% endif %}>
+        {{ s.name_ware }}
+      </option>
+    {% endfor %}
+  </select>
+</form>
+{% endif %}
+
   </div>
 
   {% if no_access %}
@@ -52,21 +55,21 @@
     <div class="kpi-card info">
       <div class="kpi-icon"><i class="bi bi-stack"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Paquetes Totales</div>
+        <div class="kpi-label">Paquetes Totales en casetas</div>
         <div class="kpi-value">{{ total_packages|floatformat:0 }}</div>
       </div>
     </div>
     <div class="kpi-card accent">
       <div class="kpi-icon"><i class="bi bi-speedometer2"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Contenido Total</div>
+        <div class="kpi-label">Contenido Total en casetas</div>
         <div class="kpi-value">{{ total_content|floatformat:0 }}</div>
       </div>
     </div>
     <div class="kpi-card warn">
       <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <div class="kpi-info">
-        <div class="kpi-label">Bajo stock (≤ {{ LOW_STOCK_THRESHOLD }})</div>
+        <div class="kpi-label">Bajo stock global(≤ {{ LOW_STOCK_THRESHOLD }})</div>
         <div class="kpi-value">{{ low_stock_count }}</div>
       </div>
     </div>
@@ -235,5 +238,7 @@
   {{ chart_json|safe }}
 </script>
   <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  {% include 'notification/alert_script.html' %}
   {% endblock %}
   {% endblock %}

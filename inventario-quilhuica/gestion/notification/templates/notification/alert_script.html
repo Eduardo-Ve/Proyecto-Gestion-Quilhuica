@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch("{% url 'notification:check_alerts' %}")
         .then(response => response.json())
         .then(data => {
-            console.log("Respuesta de check_alerts:", data); // 👈 Nuevo log
+            console.log("Respuesta de check_alerts:", data); //  Nuevo log
             let messages = [];
             if (data.low_stock && data.low_stock.length > 0) {
                 if (data.low_stock && data.low_stock.length > 0) {
@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 messages.push('<strong>Productos próximos a vencer:</strong><br>' + data.expiring.join('<br>'));
             }
 
-            console.log("Mensajes detectados:", messages); // 👈 Nuevo log
+            console.log("Mensajes detectados:", messages); //  Nuevo log
 
             if (messages.length > 0) {
                 Swal.fire({
@@ -54,13 +54,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         })
                         .then(response => response.json())
                         .then(data => {
-                            console.log('Respuesta mark_read:', data); // 👈 Nuevo log
+                            console.log('Respuesta mark_read:', data); //  Nuevo log
                         })
                         .catch(error => console.error('Error al marcar notificaciones:', error));
                     }
                 });
             } else {
-                console.log("No hay mensajes para mostrar"); // 👈 Nuevo log
+                console.log("No hay mensajes para mostrar"); //  Nuevo log
             }
         })
         .catch(error => console.error('Error al obtener notificaciones:', error));

@@ -126,10 +126,18 @@
 }
 .navbar-container .dropdown:hover .dropdown-menu { display: block; }
 
-/* MOBILE NAV */
+/* MOBILE NAV - Menu Button */
 .navbar-container .menu {
   display: none;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  outline: none;
+}
+
+.navbar-container .menu:focus {
+  outline: none;
 }
 
 .navbar-container .overlay {
@@ -175,6 +183,7 @@
   right: 45px;
   font-size: 50px;
   color: #1E1E1E;
+  cursor: pointer;
 }
 
 /* ===== USER ICON BUTTON (avatar) ===== */
@@ -242,21 +251,6 @@
   background-color: #dc3545;
 }
 
-/* MEDIA QUERIES */
-@media only screen and (max-width: 800px) {
-  .navbar-container .nav__links,
-  .navbar-container .cta {
-    display: none;
-  }
-
-  .navbar-container .menu {
-    display: initial;
-    font-family: "Montserrat", sans-serif;
-    font-weight: 500;
-    color: #1E1E1E;
-  }
-}
-
 /* ====== Password reset ====== */
 .password-reset input[type="email"],
 .password-reset input[type="password"]{
@@ -273,4 +267,45 @@
 }
 .password-reset .btn{
   font-weight: 600;
+}
+@media only screen and (max-width: 800px) {
+  /* Ocultar solo la navegación principal y CTA */
+  .navbar-container .nav__links,
+  .navbar-container .cta {
+    display: none;
+  }
+
+  /* Mostrar menú hamburguesa */
+  .navbar-container .menu {
+    display: block;
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    color: #1E1E1E;
+  }
+
+  /* ✅ Mantener logo visible (centrado) */
+  .navbar-container .logo {
+    order: 1;
+    display: block;
+    margin-right: auto;
+  }
+
+  /* ✅ Mantener botón de usuario visible */
+  .navbar-container .user-menu {
+    display: flex;
+    align-items: center;
+    order: 3;
+  }
+
+  /* Ajustar padding */
+  .navbar-container header {
+    padding: 14px 5%;
+  }
+}
+@media only screen and (max-width: 800px) {
+  .navbar-container header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
 }

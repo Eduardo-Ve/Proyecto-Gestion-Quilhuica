@@ -11,19 +11,22 @@
 {% block content %}
 <div class="product-list-wrapper">
   <h2 class="text-success fw-bold mb-3">Listado de Productos</h2>
-    {% if user.is_authenticated and user.is_admin %}
-      <h4>Bodega Principal</h4>
-      <div class="d-flex gap-2 mb-3">
-        <a href="{% url 'product:product_create' %}" class="btn btn-success">
-          + Nuevo Producto
-        </a>
-        <a href="{% url 'product:add_stock' %}" class="btn btn-primary">
-          Añadir Stock
-        </a>
-      </div>
-    {% elif user.is_authenticated and user.caseta_asignada %}
-      <h4>Caseta: {{ user.caseta_asignada.name }}</h4>
-    {% endif %}
+{% if puede_crear %}
+  <h4>Bodega Principal</h4>
+  <div class="d-flex gap-2 mb-3 flex-wrap">
+    <a href="{% url 'product:product_create' %}" class="btn btn-success">
+      + Nuevo Producto
+    </a>
+
+    <a href="{% url 'product:add_stock' %}" class="btn btn-primary">
+      Añadir Stock
+    </a>
+
+    <a href="{% url 'product:product_inactive_list' %}" class="btn btn-secondary">
+      Ver Productos Desactivados
+    </a>
+  </div>
+{% endif %}
   <div class="table-responsive shadow-sm">
     <table class="table table-striped align-middle border">
       <thead class="table-success text-dark">
@@ -34,8 +37,8 @@
           <th>Paquetes</th>
           <th>Cantidad total</th>
           <th>Expira</th>
-          {% if user.is_authenticated and user.is_admin %}
-          <th>Acciones</th>
+          {% if puede_editar or puede_eliminar %}
+            <th>Acciones</th>
           {% endif %}
         </tr>
       </thead>
@@ -44,69 +47,60 @@
         <tr>
           <td>{{ product.name_prod }}</td>
           <td>{{ product.category }}</td>
-          <td>{{ product.presentation }} </td>
+          <td>{{ product.presentation }}</td>
           <td>{{ product.total_packages|floatformat:0 }}</td>
           <td>{{ product.total_content|floatformat:0 }} {{ product.presentation.content_unit }}</td>
-          <td>
-            {% if product.expire_at %}
-              {{ product.expire_at|date:"d/m/Y" }}
-            {% else %}
-              <span class="text-muted">—</span>
-            {% endif %}
-          </td>
-
-          {% if user.is_authenticated and user.is_admin %}
+          <td>{{ product.expire_at|date:"d/m/Y" }}</td>
+          {% if puede_editar or puede_eliminar %}
           <td>
             <div class="d-flex gap-2">
-              <a href="{% url 'product:product_update' product.pk %}" class="btn btn-sm btn-success">
-                Editar
-              </a>
-              <a href="{% url 'product:product_delete' product.pk %}" class="btn btn-sm btn-danger">
-                Eliminar
-              </a>
+              {% if puede_editar %}
+              <a href="{% url 'product:product_update' product.pk %}" class="btn btn-sm btn-success">Editar</a>
+              {% endif %}
+              {% if puede_eliminar %}
+              <a href="{% url 'product:product_delete' product.pk %}" class="btn btn-sm btn-danger">Eliminar</a>
+              {% endif %}
             </div>
           </td>
           {% endif %}
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="{% if user.is_authenticated and user.is_admin %}7{% else %}6{% endif %}"
-              class="text-center text-muted py-4">
-            No hay productos registrados
-          </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
-  <!-- Paginación -->
-  {% if is_paginated %}
-  <nav class="mt-4">
-    <ul class="pagination justify-content-center">
-      {% if page_obj.has_previous %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">«</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">«</span></li>
-      {% endif %}
-
-      {% for i in paginator.page_range %}
-      <li class="page-item {% if page_obj.number == i %}active{% endif %}">
-        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-      </li>
-      {% endfor %}
-
-      {% if page_obj.has_next %}
-      <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}">»</a>
-      </li>
-      {% else %}
-      <li class="page-item disabled"><span class="page-link">»</span></li>
-      {% endif %}
-    </ul>
-  </nav>
+  {% if casetas_data %}
+    {% for item in casetas_data %}
+      <h4 class="mt-4 text-success fw-semibold">Caseta: {{ item.caseta.name_ware }}</h4>
+      <div class="table-responsive shadow-sm mb-4">
+        <table class="table table-striped align-middle border">
+          <thead class="table-success text-dark">
+            <tr>
+              <th>Nombre</th>
+              <th>Categoría</th>
+              <th>Presentación</th>
+              <th>Paquetes</th>
+              <th>Cantidad total</th>
+              <th>Expira</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in item.productos %}
+            <tr>
+              <td>{{ p.name_prod }}</td>
+              <td>{{ p.category }}</td>
+              <td>{{ p.presentation }}</td>
+              <td>{{ p.total_packages|floatformat:0 }}</td>
+              <td>{{ p.total_content|floatformat:0 }} {{ p.presentation.content_unit }}</td>
+              <td>{% if p.expire_at %}{{ p.expire_at|date:"d/m/Y" }}{% else %}<span class="text-muted">—</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="text-center text-muted py-3">Sin productos registrados</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
   {% endif %}
 </div>
 {% endblock %}

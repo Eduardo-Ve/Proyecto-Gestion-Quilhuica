@@ -1,39 +1,76 @@
-
 {% extends "base/form_base.html" %}
 {% load static %}
+
 {% block title %}Registrar Nuevo Usuario{% endblock %}
-
+{% if form.errors %}
+<div class="alert alert-danger">
+  {{ form.errors }}
+</div>
+{% endif %}
 {% block form_content %}
-<div class="form-section">
-  <h5 class="section-title">Datos del Usuario</h5>
-  <div class="form-content">
-    <div class="mb-3">
-  <label for="id_nombre_usuario">{{ form.nombre_usuario.label }}</label>
-  {{ form.nombre_usuario }}
-</div>
+<div class="container py-4">
+  <h2 class="mb-4 text-success fw-bold">Registrar Nuevo Usuario</h2>
 
-<div class="mb-3">
-  <label for="id_correo">{{ form.correo.label }}</label>
-  {{ form.correo }}
-</div>
-<div class="mb-3">
-  <label for="id_telefono">{{ form.telefono.label }}</label>
-  {{ form.telefono }}
-</div>
-<div class="mb-3">
-  <label for="id_roles">{{ form.roles.label }}</label>
-  {{ form.roles }}
-</div>
+  <div class="row g-3">
+    <div class="col-md-6">
+      {{ form.nombre_usuario.label_tag }}
+      {{ form.nombre_usuario }}
+    </div>
 
-<div class="mb-3" id="caseta-wrapper">
-  <label for="id_caseta_asignada">{{ form.caseta_asignada.label }}</label>
-  {{ form.caseta_asignada }}
-</div>
+    <div class="col-md-6">
+      {{ form.correo.label_tag }}
+      {{ form.correo }}
+    </div>
 
+    <div class="col-md-6">
+      {{ form.telefono.label_tag }}
+      {{ form.telefono }}
+    </div>
+
+    <div class="col-md-6">
+      {{ form.roles.label_tag }}
+      {{ form.roles }}
+    </div>
+
+    <div class="col-md-12">
+      {{ form.ware_assig.label_tag }}
+      {{ form.ware_assig }}
+    </div>
   </div>
 </div>
 
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+<link rel="stylesheet" href="{% static 'style_register.css' %}">
+{% endblock %}
 {% block extra_js %}
-<link rel="stylesheet" href="{% static '/js/user_form_logic.js' %}">
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css"
+/>
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // Activar estilo moderno para la selección múltiple
+  new TomSelect("#id_ware_assig", {
+    plugins: ["remove_button"],
+    placeholder: "Seleccione una o más casetas...",
+    create: false,
+    maxItems: null,
+    sortField: { field: "text", direction: "asc" },
+    render: {
+      option: function (data, escape) {
+        return `<div><input type="checkbox" /> ${escape(data.text)}</div>`;
+      },
+      item: function (data, escape) {
+        return `<div class="badge bg-success-subtle text-success fw-semibold me-1">${escape(data.text)}</div>`;
+      },
+    },
+  });
+});
+</script>
 {% endblock %}
-{% endblock %}
+

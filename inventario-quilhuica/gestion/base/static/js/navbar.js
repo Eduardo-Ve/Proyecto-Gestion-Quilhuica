@@ -1,5 +1,5 @@
 const doc = document;
-const menuOpen = doc.querySelector(".menu");
+const menuOpen = doc.querySelector("#menu-btn"); 
 const menuClose = doc.querySelector(".close");
 const overlay = doc.querySelector(".overlay");
 const dropdownToggle = doc.getElementById("dropdown-toggle");
@@ -42,7 +42,5 @@ document.addEventListener("DOMContentLoaded", function () {
     dropdown.classList.toggle("show");
   });
 
-  document.addEventListener("click", () => {
-    dropdown.classList.remove("show");
-  });
+
 });

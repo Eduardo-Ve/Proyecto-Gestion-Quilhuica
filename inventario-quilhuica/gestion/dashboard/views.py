@@ -20,30 +20,49 @@ WINDOW_DAYS = 30              # Días hacia atrás para análisis
 # --- Funciones auxiliares ---
 def _user_is_shed_manager(user):
     try:
-        return user.has_role("Encargado de Caseta")
+        return user.has_role(["Encargado Caseta", 'Supervisor'])
     except Exception:
         return False
 
 
 def _get_accessible_warehouses(user, ware_param=None):
-    """Determina las bodegas accesibles para el usuario."""
+    """Devuelve las casetas o bodegas accesibles para el usuario."""
     if not user.is_authenticated:
         return Warehouse.objects.none(), None, None
 
     main = Warehouse.objects.filter(type="main").first()
 
-    if not user.is_staff and _user_is_shed_manager(user) and user.caseta_asignada:
-        return Warehouse.objects.filter(pk=user.caseta_asignada.pk), main, user.caseta_asignada
+    #  Encargado de Caseta (no staff)
+    if not user.is_staff and _user_is_shed_manager(user):
+        sheds = user.ware_assig.all()
 
-    elif user.is_staff:
-        sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+        # Si tiene parámetro de filtro (solo en vistas con GET ?ware=)
         if ware_param:
             selected = sheds.filter(pk=ware_param).first()
             if selected:
                 return Warehouse.objects.filter(pk=selected.pk), main, selected
+
+        # Si tiene una o más casetas asignadas
+        if sheds.exists():
+            return sheds, main, None
+
+        # Si no tiene casetas
+        return Warehouse.objects.none(), main, None
+
+    #  Administrador o Staff
+    elif user.is_staff:
+        sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+
+        if ware_param:
+            selected = sheds.filter(pk=ware_param).first()
+            if selected:
+                return Warehouse.objects.filter(pk=selected.pk), main, selected
+
         return sheds, main, None
 
+    #  Ninguna coincidencia
     return Warehouse.objects.none(), main, None
+
 
 
 # --- Vista principal del dashboard ---
@@ -56,14 +75,18 @@ def dashboard(request):
         return render(request, "dashboard/dashboard.html", {
             "no_access": True,
             "is_staff": request.user.is_staff,
-            "sheds": Warehouse.objects.filter(type="shed")[:0],
+            "sheds": sheds_qs,
         })
 
     now = timezone.now()
     start_window = (now - timedelta(days=WINDOW_DAYS)).date()
     expiring_limit = now + timedelta(days=EXPIRING_DAYS)
 
-    inv_qs = Inventory.objects.filter(warehouse__in=sheds_qs)
+    # --- 🔹 Inventario actual (solo productos activos) ---
+    inv_qs = Inventory.objects.filter(
+        warehouse__in=sheds_qs,
+        product__is_active=True
+    )
 
     # --- KPI data ---
     total_skus = inv_qs.values("product_id").distinct().count()
@@ -72,13 +95,15 @@ def dashboard(request):
     total_content = agg_pack.get("total_content") or 0
     low_stock_count = inv_qs.filter(quantity_packages__lte=LOW_STOCK_THRESHOLD).count()
 
+    # --- 🔹 Productos activos próximos a vencer ---
     product_ids_in_sheds = inv_qs.values_list("product_id", flat=True).distinct()
     expiring_products = Product.objects.filter(
         product_id__in=product_ids_in_sheds,
+        is_active=True,              # ✅ solo activos
         expire_at__lte=expiring_limit
     ).count()
 
-    # --- Datos para los gráficos ---
+    # --- 🔹 Stock actual por producto ---
     top_n = 15
     stock_by_product = (
         inv_qs.values("product__name_prod")
@@ -86,6 +111,7 @@ def dashboard(request):
         .order_by("-packages")[:top_n]
     )
 
+    # --- 🔸 Aplicaciones y movimientos (históricos, sin filtro de is_active) ---
     apps_qs = (
         Application.objects.filter(
             ware__in=sheds_qs,
@@ -107,31 +133,27 @@ def dashboard(request):
         .order_by("moved_at__date")
     )
 
-    # --- Productos más utilizados (últimos WINDOW_DAYS días) ---
+    # --- 🔸 Productos más usados (histórico, sin filtrar activos) ---
     top_used = (
         ApplicationDetail.objects.filter(
             application__ware__in=sheds_qs,
-            application__applied_at__date__gte=start_window)
+            application__applied_at__date__gte=start_window
+        )
         .values("product__name_prod")
         .annotate(total_used=Sum("quantity_packages"))
-        )
- 
+    )
 
-    # --- Serialización a JSON para Chart.js ---
+    # --- Serialización Chart.js ---
     chart_data = {
         "stock_labels": [s["product__name_prod"] for s in stock_by_product],
         "stock_values": [s["packages"] or 0 for s in stock_by_product],
-
         "apps_labels": [a["applied_at__date"].strftime("%Y-%m-%d") for a in apps_qs],
         "apps_values": [a["total"] or 0 for a in apps_qs],
-
         "moves_labels": [m["moved_at__date"].strftime("%Y-%m-%d") for m in moves_qs],
         "moves_values": [m["total"] or 0 for m in moves_qs],
-
         "used_labels": [u["product__name_prod"] for u in top_used],
         "used_values": [u["total_used"] for u in top_used],
     }
-
 
     chart_json = json.dumps(chart_data)
 
@@ -149,9 +171,7 @@ def dashboard(request):
         .order_by("-created_at")[:10]
     )
 
-    all_sheds = Warehouse.objects.filter(type="shed").order_by("name_ware") if request.user.is_staff else None
-
-    # --- 🧩 Actividad Reciente ---
+    # --- Actividad reciente (sin filtro de activos, para mantener trazabilidad) ---
     recent_movements = Movement.objects.select_related("product", "ware_destin", "moved_by").order_by("-moved_at")[:10]
     recent_applications = Application.objects.select_related("ware", "applied_by").order_by("-applied_at")[:10]
 
@@ -176,16 +196,13 @@ def dashboard(request):
             "message": f"Aplicación realizada en {a.ware.name_ware}",
         })
 
-    # Ordenar actividades combinadas por fecha (descendente)
     recent_activity = sorted(recent_activity, key=lambda x: x["timestamp"], reverse=True)[:10]
 
-    # --- Contexto para template ---
     context = {
         "no_access": False,
         "is_staff": request.user.is_staff,
         "selected_shed": selected_shed,
-        "sheds": all_sheds,
-
+        "sheds": Warehouse.objects.filter(type="shed"),
         "total_skus": total_skus,
         "total_packages": total_packages,
         "total_content": total_content,
@@ -194,13 +211,13 @@ def dashboard(request):
         "LOW_STOCK_THRESHOLD": LOW_STOCK_THRESHOLD,
         "EXPIRING_DAYS": EXPIRING_DAYS,
         "WINDOW_DAYS": WINDOW_DAYS,
-
         "chart_json": chart_json,
         "notifications": notifications,
         "recent_activity": recent_activity,
     }
 
     return render(request, "dashboard/dashboard.html", context)
+
 
 # SECCIÓN AJAX PARA "ACTIVIDAD RECIENTE".
 def activity_feed_api(request):

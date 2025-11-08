@@ -58,7 +58,6 @@ def success_view(request):
     return render(request, "login/success.html")
 
 
-
 @user_passes_test(es_superusuario)
 def registrar_usuario(request):
     if request.method == "POST":
@@ -67,14 +66,39 @@ def registrar_usuario(request):
             user = form.save()
             temp_password = getattr(user, "_temp_password", None)
 
-            # Enviar correo de bienvenida
-            send_welcome_email(user, temp_password)
+            try:
+                # Enviar correo de bienvenida
+                send_welcome_email(user, temp_password)
 
-            messages.success(request, f"Usuario creado correctamente. Se envió un correo a {user.correo}.")
-            return render(request, "login/success.html", {"temp_password": temp_password})
+                messages.success(
+                    request,
+                    f"Usuario creado correctamente. Se envió un correo a {user.correo}."
+                )
+                return render(
+                    request,
+                    "login/success.html",
+                    {"temp_password": temp_password}
+                )
+
+            except Exception as e:
+                print("⚠️ ERROR EN ENVÍO DE CORREO:", e)
+                messages.error(request, f"No se pudo enviar el correo: {e}")
+                return redirect("login:registrar_usuario")
+
     else:
         form = RegistroUsuarioForm()
-    return render(request, 'login/registrar.html', {"form": form})
+
+    return render(
+        request,
+        "login/registrar.html",
+        {
+            "form": form,
+            "title": "Registrar Nuevo Usuario",
+            "submit_text": "Registrar",
+            "cancel_url": "/",
+        }
+    )
+
 
 #-------- Password Reset (usa tu form y tus templates) --------
 class CustomPasswordResetView(PasswordResetView):

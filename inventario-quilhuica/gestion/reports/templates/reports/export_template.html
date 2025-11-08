@@ -76,27 +76,32 @@
     <a href="?report={{ report_type }}&export=xlsx&start={{ start }}&end={{ end }}&user={{ selected_user }}&warehouse={{ selected_warehouse }}" class="btn btn-outline-info btn-sm">Excel</a>
     <a href="?report={{ report_type }}&export=pdf&start={{ start }}&end={{ end }}&user={{ selected_user }}&warehouse={{ selected_warehouse }}" class="btn btn-outline-danger btn-sm">PDF</a>
   </div>
-
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered">
-      <thead class="table-dark">
+<div class="table-responsive">
+  <table class="table table-striped table-bordered align-middle shadow-sm">
+    <thead class="table-dark">
+      <tr>
+        {% for key, value in data.0.items %}
+          <th class="text-center">{{ key|title|cut:"_" }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in data %}
         <tr>
-          {% for key, value in data.0.items %}
-            <th>{{ key }}</th>
+          {% for key, value in row.items %}
+            <td class="text-center">
+              {% if "fecha" in key %}
+                  {{ value }}
+              {% else %}
+                  {{ value }}
+              {% endif %}
+            </td>
           {% endfor %}
         </tr>
-      </thead>
-      <tbody>
-        {% for row in data %}
-          <tr>
-            {% for key, value in row.items %}
-              <td>{{ value }}</td>
-            {% endfor %}
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
   <!-- ================= PAGINADOR ================= -->
   <nav aria-label="Paginación">
@@ -143,7 +148,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="{% static 'js/search_page.js' %}"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="{% static 'js/calendar.js' %}"></script>
-<script src="{% static 'js/search_page.js' %}"></script>
 {% endblock %}

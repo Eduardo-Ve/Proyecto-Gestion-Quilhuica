@@ -36,16 +36,13 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     must_change_password = models.BooleanField(default=True)
     USERNAME_FIELD = "nombre_usuario"
     REQUIRED_FIELDS = ["correo"]
-    caseta_asignada = models.ForeignKey(
-            Warehouse, 
-            on_delete=models.SET_NULL, 
-            null=True, 
-            blank=True,
-            related_name="encargados",
-            help_text="Caseta asignada (Solo para Encargados de caseta)",
-            # Limita las opciones solo a las 'Casetas'
-            limit_choices_to={'type': 'shed'} 
-        )
+    ware_assig = models.ManyToManyField(
+        Warehouse,
+        blank=True,
+        related_name="encargados_multiples",
+        help_text="Casetas asignadas (solo aplica para Encargados de caseta)",
+        limit_choices_to={'type': 'shed'}
+    )
     @property
     def email(self):
         """Alias para compatibilidad con Django (usa el campo 'correo')"""
@@ -67,7 +64,11 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
         """Propiedad para verificar fácilmente si es Administrador"""
         return self.has_role("Administrador")  
 
-
+    @property
+    def is_supervisor(self):
+        """Propiedad para verificar fácilmente si es Supervisor"""
+        return self.has_role("Supervisor")
+    
 class UserRole(models.Model):
     user = models.ForeignKey(Usuario, on_delete=models.CASCADE)
     role = models.ForeignKey(Role, on_delete=models.CASCADE)

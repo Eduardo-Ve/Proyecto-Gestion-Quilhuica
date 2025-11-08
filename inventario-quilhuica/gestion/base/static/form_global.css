@@ -103,12 +103,12 @@ form textarea:focus {
 
 /* === Estilo de los formularios dinámicos === */
 .product-form {
-  background-color: #ffffff; /* ✅ Cambio a blanco puro */
+  background-color: #ffffff; /* Cambio a blanco puro */
   border: 1px solid #e0e0e0;
   border-radius: 10px;
   padding: 1rem 1.2rem;
-  margin-bottom: 1rem; /* ✅ Añadido para separación */
-  transition: all 0.3s ease; /* ✅ Para animaciones suaves */
+  margin-bottom: 1rem; /* Añadido para separación */
+  transition: all 0.3s ease; /* Para animaciones suaves */
 }
 
 .product-form:hover {
@@ -135,14 +135,14 @@ form textarea:focus {
   transform: scale(1.05);
 }
 
-/* ✅ Contenedor del formset sin background */
+/* Contenedor del formset sin background */
 #formset-container {
   background: transparent;
   padding: 0;
   margin: 0;
 }
 
-/* ✅ Animaciones para añadir/eliminar */
+/* Animaciones para añadir/eliminar */
 .product-form.removing {
   opacity: 0;
   transform: scale(0.95);

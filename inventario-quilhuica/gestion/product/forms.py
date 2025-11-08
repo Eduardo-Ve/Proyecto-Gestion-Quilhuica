@@ -7,51 +7,18 @@ from crispy_forms.layout import Layout, Div, Submit
 
 class ProductForm(forms.ModelForm):
     # === CAMPOS NUEVA CATEGORÍA ===
-    create_new_category = forms.BooleanField(
-        required=False,
-        label="Crear nueva categoría",
-        widget=forms.CheckboxInput(attrs={'id': 'id_create_new_category'})
-    )
-    new_category_name = forms.CharField(
-        required=False,
-        label="Nombre de nueva categoría",
-        widget=forms.TextInput(attrs={'placeholder': 'Ej: Insecticida '})
-    )
-    new_category_description = forms.CharField(
-        required=False,
-        widget=forms.Textarea(attrs={'rows': 2, 'placeholder': 'Descripción breve'}),
-        label="Descripción de categoría"
-    )
+    create_new_category = forms.BooleanField(required=False, label="Crear nueva categoría")
+    new_category_name = forms.CharField(required=False, label="Nombre de nueva categoría")
+    new_category_description = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 2}), label="Descripción de categoría")
 
     # === CAMPOS NUEVA PRESENTACIÓN ===
-    create_new_presentation = forms.BooleanField(
-        required=False,
-        label="Crear nueva presentación",
-        widget=forms.CheckboxInput(attrs={'id': 'id_create_new_presentation'})
-    )
-    package_type = forms.ChoiceField(
-        required=False,
-        choices=Presentation.PACKAGE_CHOICES,
-        label="Tipo de empaque"
-    )
-    content_value = forms.FloatField(
-        required=False,
-        label="Contenido",
-        widget=forms.NumberInput(attrs={'min': '0', 'step': '0.01'})
-    )
-    content_unit = forms.ChoiceField(
-        required=False,
-        choices=Presentation.UNIT_CHOICES,
-        label="Unidad"
-    )
+    create_new_presentation = forms.BooleanField(required=False, label="Crear nueva presentación")
+    package_type = forms.ChoiceField(required=False, choices=Presentation.PACKAGE_CHOICES, label="Tipo de empaque")
+    content_value = forms.FloatField(required=False, label="Contenido")
+    content_unit = forms.ChoiceField(required=False, choices=Presentation.UNIT_CHOICES, label="Unidad")
 
     # === STOCK INICIAL ===
-    stock_inicial = forms.FloatField(
-        required=False,
-        min_value=0,
-        label="Stock Inicial",
-        widget=forms.NumberInput(attrs={'placeholder': 'Ej: 10'})
-    )
+    stock_inicial = forms.FloatField(required=False, min_value=0, label="Stock Inicial")
 
     class Meta:
         model = Product
@@ -63,54 +30,33 @@ class ProductForm(forms.ModelForm):
             'expire_at': 'Fecha de vencimiento',
             'stock_inicial': 'Stock inicial',
         }
-        widgets = {
-            'expire_at': forms.DateInput(attrs={'type': 'date'}),
-        }
+        widgets = {'expire_at': forms.DateInput(attrs={'type': 'date'})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Inicializar con el stock actual si existe
+        if self.instance.pk:
+            main_warehouse = Warehouse.objects.filter(type='main').first()
+            if main_warehouse:
+                inventory = Inventory.objects.filter(
+                    product=self.instance,
+                    presentation=self.instance.presentation,
+                    warehouse=main_warehouse
+                ).first()
+                if inventory:
+                    self.fields['stock_inicial'].initial = inventory.quantity_packages
+
+        # Opciones visuales
         self.fields['category'].required = False
         self.fields['presentation'].required = False
         self.fields['category'].empty_label = "Seleccione una categoría existente"
         self.fields['presentation'].empty_label = "Seleccione una presentación existente"
 
-    # === VALIDACIONES ===
-    def clean(self):
-        cleaned_data = super().clean()
-        create_new_category = cleaned_data.get('create_new_category')
-        category = cleaned_data.get('category')
-        new_category_name = cleaned_data.get('new_category_name')
-
-        create_new_presentation = cleaned_data.get('create_new_presentation')
-        presentation = cleaned_data.get('presentation')
-        package_type = cleaned_data.get('package_type')
-        content_value = cleaned_data.get('content_value')
-
-        # Validación categoría
-        if self.instance.pk:
-            # En edición: validar solo si quiere crear nueva
-            if create_new_category and not new_category_name:
-                self.add_error('new_category_name', 'Debe ingresar un nombre para la nueva categoría.')
-        else:
-            # En creación: obligatorio elegir o crear
-            if not create_new_category and not category:
-                self.add_error('category', 'Debe seleccionar una categoría o crear una nueva.')
-
-        # Validación presentación
-        if self.instance.pk:
-            if create_new_presentation and (not package_type or not content_value):
-                self.add_error('create_new_presentation', 'Debe completar todos los campos si crea una nueva presentación.')
-        else:
-            if not create_new_presentation and not presentation:
-                self.add_error('presentation', 'Debe seleccionar una presentación o crear una nueva.')
-
-        return cleaned_data
-
-    # === GUARDADO PERSONALIZADO ===
     def save(self, commit=True, user=None):
         product = super().save(commit=False)
 
-        # Crear nueva categoría si corresponde
+        # === CREAR NUEVAS ENTIDADES ===
         if self.cleaned_data.get('create_new_category'):
             category = Category.objects.create(
                 name_cat=self.cleaned_data['new_category_name'],
@@ -118,7 +64,6 @@ class ProductForm(forms.ModelForm):
             )
             product.category = category
 
-        # Crear nueva presentación si corresponde
         if self.cleaned_data.get('create_new_presentation'):
             presentation = Presentation.objects.create(
                 package_type=self.cleaned_data['package_type'],
@@ -127,41 +72,59 @@ class ProductForm(forms.ModelForm):
             )
             product.presentation = presentation
 
+        is_new = product.pk is None
+
         if commit:
             product.save()
             self.save_m2m()
 
-            # === GESTIÓN DE STOCK INICIAL ===
             stock_inicial = self.cleaned_data.get('stock_inicial')
-            if stock_inicial is not None:
-                main_warehouse = Warehouse.objects.filter(type='main').first()
-                if main_warehouse:
-                    inventory, created = Inventory.objects.get_or_create(
-                        product=product,
-                        presentation=product.presentation,
-                        warehouse=main_warehouse,
-                        defaults={'quantity_packages': stock_inicial}
-                    )
-                    if not created:
+            main_warehouse = Warehouse.objects.filter(type='main').first()
+
+            if stock_inicial is not None and main_warehouse:
+                inventory, _ = Inventory.objects.get_or_create(
+                    product=product,
+                    presentation=product.presentation,
+                    warehouse=main_warehouse,
+                    defaults={'quantity_packages': 0}
+                )
+
+                if is_new:
+                    # Producto nuevo → entrada inicial
+                    inventory.quantity_packages = stock_inicial
+                    inventory.save()
+
+                    if user and user.is_authenticated and stock_inicial > 0:
+                        Movement.objects.create(
+                            product=product,
+                            presentation=product.presentation,
+                            ware_origin=None,
+                            ware_destin=main_warehouse,
+                            movement_type='entrada',
+                            quantity=stock_inicial,
+                            moved_by=user,
+                            description=f"Entrada inicial de {stock_inicial} unidades al crear el producto."
+                        )
+                else:
+                    # Producto existente → ajustar diferencia
+                    diferencia = stock_inicial - inventory.quantity_packages
+                    if diferencia != 0:
                         inventory.quantity_packages = stock_inicial
                         inventory.save()
 
-                # Registrar movimiento inicial
-                if user and user.is_authenticated and stock_inicial:
-                    Movement.objects.create(
-                        product=product,
-                        presentation=product.presentation,
-                        ware_origin=None,
-                        ware_destin=main_warehouse,
-                        movement_type='entrada',
-                        quantity=stock_inicial,
-                        moved_by=user,
-                        description=f"Entrada inicial de {stock_inicial} unidades al crear o editar el producto."
-                    )
+                        if user and user.is_authenticated:
+                            Movement.objects.create(
+                                product=product,
+                                presentation=product.presentation,
+                                ware_origin=None if diferencia > 0 else main_warehouse,
+                                ware_destin=main_warehouse if diferencia > 0 else None,
+                                movement_type='entrada' if diferencia > 0 else 'salida',
+                                quantity=abs(diferencia),
+                                moved_by=user,
+                                description=f"Ajuste de stock al editar producto ({'+' if diferencia > 0 else '-'}{abs(diferencia)} unidades)."
+                            )
 
         return product
-
-
 
 class StockAddForm(forms.Form):
     product = forms.ModelChoiceField(
@@ -204,5 +167,5 @@ class StockAddForm(forms.Form):
             movement_type='entrada',
             quantity=cantidad,
             moved_by=user,
-            description=f"Entrada de {cantidad} paquetes al stock existente."
+            description=f"Entrada de {product}, añadiendo {cantidad} paquetes al stock existente."
         )

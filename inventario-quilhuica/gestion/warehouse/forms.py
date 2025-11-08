@@ -1,13 +1,10 @@
 from django import forms
-from .models import Warehouse, Movement, Inventory
-from product.models import Product, Presentation
-from django.forms import formset_factory
-from .models import Warehouse, Movement, Inventory
-from product.models import Product
+from django.forms import modelformset_factory, formset_factory
 from django.http import JsonResponse
+from .models import Warehouse, Equipment, Sector, Movement, Inventory
+from product.models import Product
 
-
-#FORMULARIO PARA CREAR CASETA
+#  FORMULARIO PRINCIPAL DE CASETAS
 class WarehouseForm(forms.ModelForm):
     class Meta:
         model = Warehouse
@@ -18,38 +15,77 @@ class WarehouseForm(forms.ModelForm):
         }
         labels = {
             'name_ware': 'Nombre de la caseta',
-            'description': 'descripción',
+            'description': 'Descripción',
         }
+
     def save(self, commit=True):
         instance = super().save(commit=False)
-        instance.type = 'shed'  # siempre será caseta (shed = caseta | main = bodega).
+        instance.type = 'shed'
         if commit:
             instance.save()
         return instance
-    
-#FORMULARIO PARA REGISTRAR EL TRASLADO DE PRODUCTOS HACIA LAS CASETAS
-# warehouse/forms.py
 
 
-# 1. FORMULARIO MAESTRO: Para seleccionar el destino una sola vez.
+
+
+#  FORMULARIO DE EQUIPOS (campo virtual sectores_count)
+
+class EquipmentForm(forms.ModelForm):
+    sectores_count = forms.IntegerField(
+        label="Sectores por equipo",
+        min_value=1,
+        required=True,
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm'}),
+    )
+
+    class Meta:
+        model = Equipment
+        fields = ['nombre_equipo']  # Cambiado desde equipo_num
+        widgets = {
+            'nombre_equipo': forms.TextInput(attrs={'class': 'form-control form-control-sm'}),
+        }
+        labels = {
+            'nombre_equipo': 'Nombre del equipo',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:
+            self.fields['sectores_count'].initial = self.instance.sectores.count()
+
+
+#  FORMSET DE EQUIPOS
+
+EquipmentFormSet = modelformset_factory(
+    Equipment,
+    form=EquipmentForm,
+    extra=0,
+    can_delete=True
+)
+#  FORMULARIO DE TRASLADO (MAESTRO)
+
 class TransferForm(forms.Form):
     ware_origin = forms.ModelChoiceField(
         queryset=Warehouse.objects.all(),
-        label="Origen del Producto",
-        widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'})
+        label="Origen del producto",
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'}),
     )
     ware_destin = forms.ModelChoiceField(
         queryset=Warehouse.objects.filter(type='shed'),
-        label="Caseta de Destino",
-        widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'})
+        label="Caseta de destino",
+        widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'}),
     )
     description = forms.CharField(
         required=False,
-        label="Descripción General del Traslado",
-        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2})
+        label="Descripción general del traslado",
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
     )
+
+
+
+#  FORMULARIO DE DETALLE DE TRASLADO
+
 class TransferDetailForm(forms.ModelForm):
-    # Solo necesitamos el producto y la cantidad por cada fila
     class Meta:
         model = Movement
         fields = ['product', 'quantity']
@@ -58,22 +94,27 @@ class TransferDetailForm(forms.ModelForm):
             'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0.01}),
         }
         labels = {
-               "product": "Producto",
-               "quantity": "Cantidad a trasladar",
+            'product': 'Producto',
+            'quantity': 'Cantidad a trasladar',
         }
-
-# 3. FORMSET: Agrupa los formularios de detalle.
 TransferDetailFormSet = formset_factory(
     TransferDetailForm,
-    extra=1,  # Empezar con un formulario
-    can_delete=True # Permitir eliminar filas
+    extra=1,      # cantidad inicial de filas
+    can_delete=True  # permite eliminar filas
 )
 
 
+#  API: Productos por bodega (AJAX)
+
 def get_products_by_warehouse(request, warehouse_id):
+    """Devuelve productos disponibles por bodega (para AJAX)."""
     inventory = Inventory.objects.filter(warehouse_id=warehouse_id, total_content__gt=0)
     data = [
-        {"id": inv.product.id, "name": inv.product.name_prod, "presentation": inv.product.presentation.name}
+        {
+            "id": inv.product.id,
+            "name": inv.product.name_prod,
+            "presentation": inv.product.presentation.name,
+        }
         for inv in inventory
     ]
     return JsonResponse(data, safe=False)

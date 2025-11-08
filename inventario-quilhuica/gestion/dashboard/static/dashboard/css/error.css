@@ -1,0 +1,103 @@
+/* ================================
+   🎨 Fondo general
+================================ */
+body, html {
+  height: 100%;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: #000000;
+}
+
+/* ================================
+   🧱 Contenedor principal
+================================ */
+.error-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 90vh;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+}
+
+/* ================================
+   🧩 Ícono SVG animado
+================================ */
+.error-icon {
+  width: 160px;
+  height: 160px;
+  margin-bottom: 25px;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* Colores específicos */
+.error-400 path,
+.error-400 circle { stroke: #f0ad4e; }
+
+.error-403 path,
+.error-403 circle { stroke: #dc3545; }
+
+.error-404 path,
+.error-404 circle { stroke: #0dcaf0; }
+
+.error-500 path,
+.error-500 circle { stroke: #6f42c1; }
+
+.error-default path,
+.error-default circle { stroke: #00C451; }
+
+/* ================================
+   💬 Textos
+================================ */
+h1.display-4 {
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #000000;
+}
+
+.lead {
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+  color: #000000;
+}
+
+.text-white-50 {
+  color: #424242 !important;
+}
+
+/* ================================
+   🔘 Botón de retorno
+================================ */
+.btn-outline-light {
+  border: 2px solid #00C451;
+  border-radius: 50px;
+  color: #00C451;
+  font-weight: 500;
+  padding: 10px 28px;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-light:hover {
+  background-color: #00C451;
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+/* ================================
+   Responsive
+================================ */
+@media (max-width: 768px) {
+  .error-icon {
+    width: 110px;
+    height: 110px;
+  }
+
+  h1.display-4 {
+    font-size: 1.8rem;
+  }
+
+  .lead {
+    font-size: 1rem;
+  }
+}
