@@ -34,9 +34,9 @@ User = get_user_model()
 class RegistroUsuarioForm(forms.ModelForm):
     roles = forms.ModelChoiceField(
         queryset=Role.objects.all(),
-        widget=forms.Select,
         required=True,
-        label="Rol"
+        label="Rol",
+        widget=forms.Select(attrs={'class': 'form-select'})
     )
     ware_assig = forms.ModelMultipleChoiceField(
         queryset=Warehouse.objects.none(),
@@ -53,6 +53,9 @@ class RegistroUsuarioForm(forms.ModelForm):
             'nombre_usuario': forms.TextInput(attrs={'placeholder': 'Perez Cotapo', 'class': 'form-control'}),
             'correo': forms.EmailInput(attrs={'placeholder': 'ejemplo@dominio.com', 'class': 'form-control'}),
             'telefono': forms.NumberInput(attrs={'placeholder': '931816450', 'class': 'form-control'}),
+            'roles': forms.Select(attrs={'class': 'form-select'}),  
+            'ware_assig': forms.SelectMultiple(attrs={'class': 'form-select'}),
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -64,27 +67,37 @@ class RegistroUsuarioForm(forms.ModelForm):
         if Usuario.objects.filter(nombre_usuario__iexact=nombre_usuario).exists():
             raise forms.ValidationError("Este nombre de usuario ya está en uso.")
         return nombre_usuario.title()
-
     def clean_correo(self):
         correo = self.cleaned_data.get("correo")
         patron = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+
+        if not correo:
+            raise forms.ValidationError("El correo electrónico es obligatorio.")
+
         if not re.match(patron, correo):
             raise forms.ValidationError("Ingrese un correo electrónico válido.")
+
         if Usuario.objects.filter(correo__iexact=correo).exists():
             raise forms.ValidationError("Este correo ya está registrado.")
+
         return correo.lower()
+
 
     def clean_telefono(self):
         telefono = self.cleaned_data.get("telefono")
         patron = r'^[9]\d{8}$'
-        if not re.match(patron, telefono):
-            raise forms.ValidationError("Debe ingresar un número válido de 9 dígitos, ej: 930806450")
-        return f"+56{telefono}"
 
+        if not telefono:
+            raise forms.ValidationError("Debe ingresar un número de teléfono.")
+
+        if not re.match(patron, str(telefono)):  # 👈 se fuerza a string
+            raise forms.ValidationError("Debe ingresar un número válido de 9 dígitos, ej: 930806450")
+
+        return f"+56{telefono}"
     def clean(self):
         cleaned_data = super().clean()
         rol = cleaned_data.get("roles")
-        casetas = cleaned_data.get("casetas_asignadas")
+        casetas = cleaned_data.get("ware_assig")
         if rol and rol.name_role == 'Encargado de caseta' and (not casetas or len(casetas) == 0):
             self.add_error('ware_assig', 'Debe asignar una o más casetas para este rol.')
         return cleaned_data

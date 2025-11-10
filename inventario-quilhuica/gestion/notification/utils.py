@@ -248,3 +248,14 @@ def send_monthly_summary_pdf_email_debug():
     print("🧪 Ejecutando versión DEBUG del resumen mensual (sin restricciones)...")
     send_monthly_summary_pdf_email.__globals__['get_last_business_day'] = lambda *_: True
     send_monthly_summary_pdf_email()
+
+def send_low_stock_alert_debug(threshold=100):
+    """
+    Versión DEBUG de la alerta de stock bajo.
+    Omite validaciones y ejecuta el envío directamente
+    para propósitos de prueba en consola o entorno local.
+    """
+    from notification.utils import send_low_stock_alert
+
+    print("🧪 Ejecutando versión DEBUG de alerta de stock bajo...")
+    send_low_stock_alert(threshold=threshold)

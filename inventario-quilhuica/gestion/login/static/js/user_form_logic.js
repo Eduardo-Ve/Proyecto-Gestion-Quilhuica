@@ -1,9 +1,7 @@
-
 document.addEventListener('DOMContentLoaded', function() {
 
     const rolesSelect = document.getElementById('id_roles');
     const casetasWrapper = document.getElementById('casetas-wrapper'); 
-    // El contenedor <div> que creamos en el template
 
     if (!rolesSelect || !casetasWrapper) {
         console.warn("No se encontró id_roles o casetas-wrapper.");
@@ -11,21 +9,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function toggleCasetas() {
-        const selectedText = rolesSelect.options[rolesSelect.selectedIndex].text;
+        const selectedText = rolesSelect.options[rolesSelect.selectedIndex].text.trim();
 
-        if (selectedText === "Encargado de Caseta") {
-            casetasWrapper.style.display = "block"; // mostrar
+        const rolesSinCasetas = ["Administrador"];  
+
+        if (rolesSinCasetas.includes(selectedText)) {
+            casetasWrapper.style.display = "none"; // ocultar para Admin
         } else {
-            casetasWrapper.style.display = "none"; // ocultar
+            casetasWrapper.style.display = "block"; // mostrar para otros
         }
     }
 
-    // Ejecutar al cargar
+    // Ejecutar al cargar la página
     toggleCasetas();
 
-    // Ejecutar cuando cambia el rol
+    // Ejecutar al cambiar el rol
     rolesSelect.addEventListener('change', toggleCasetas);
 });
-
-
-

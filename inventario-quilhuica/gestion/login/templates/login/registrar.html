@@ -2,59 +2,83 @@
 {% load static %}
 
 {% block title %}Registrar Nuevo Usuario{% endblock %}
-{% if form.errors %}
-<div class="alert alert-danger">
-  {{ form.errors }}
-</div>
-{% endif %}
+
 {% block form_content %}
 <div class="container py-4">
   <h2 class="mb-4 text-success fw-bold">Registrar Nuevo Usuario</h2>
+
+  {# --- Bloque de errores globales, formateado con Bootstrap --- #}
+  {% if form.errors %}
+  <div class="alert alert-danger">
+    <h5 class="mb-2 fw-bold">Se encontraron errores en el formulario:</h5>
+    <ul class="mb-0">
+      {% for field in form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+      {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
   <div class="row g-3">
     <div class="col-md-6">
       {{ form.nombre_usuario.label_tag }}
       {{ form.nombre_usuario }}
+      {% for error in form.nombre_usuario.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     </div>
 
     <div class="col-md-6">
       {{ form.correo.label_tag }}
       {{ form.correo }}
+      {% for error in form.correo.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     </div>
 
     <div class="col-md-6">
       {{ form.telefono.label_tag }}
       {{ form.telefono }}
+      {% for error in form.telefono.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     </div>
 
     <div class="col-md-6">
       {{ form.roles.label_tag }}
       {{ form.roles }}
+      {% for error in form.roles.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     </div>
 
-    <div class="col-md-12">
+    <div id="casetas-wrapper" class="col-md-12">
       {{ form.ware_assig.label_tag }}
       {{ form.ware_assig }}
+      {% for error in form.ware_assig.errors %}
+        <div class="invalid-feedback d-block">{{ error }}</div>
+      {% endfor %}
     </div>
   </div>
 </div>
-
 {% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
 <link rel="stylesheet" href="{% static 'style_register.css' %}">
 {% endblock %}
+
 {% block extra_js %}
-<link
-  rel="stylesheet"
-  href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css"
-/>
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<script src="{% static 'js/user_form_logic.js' %}"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // Activar estilo moderno para la selección múltiple
   new TomSelect("#id_ware_assig", {
     plugins: ["remove_button"],
     placeholder: "Seleccione una o más casetas...",
@@ -73,4 +97,3 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 {% endblock %}
-
