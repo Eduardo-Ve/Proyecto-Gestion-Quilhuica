@@ -51,7 +51,7 @@ def _get_accessible_warehouses(user, ware_param=None):
 
     #  Administrador o Staff
     elif user.is_staff:
-        sheds = Warehouse.objects.filter(type="shed").order_by("name_ware")
+        sheds = Warehouse.objects.filter(type="shed", activo=True ).order_by("name_ware")
 
         if ware_param:
             selected = sheds.filter(pk=ware_param).first()
@@ -202,7 +202,7 @@ def dashboard(request):
         "no_access": False,
         "is_staff": request.user.is_staff,
         "selected_shed": selected_shed,
-        "sheds": Warehouse.objects.filter(type="shed"),
+        "sheds": Warehouse.objects.filter(type="shed", activo=True),
         "total_skus": total_skus,
         "total_packages": total_packages,
         "total_content": total_content,

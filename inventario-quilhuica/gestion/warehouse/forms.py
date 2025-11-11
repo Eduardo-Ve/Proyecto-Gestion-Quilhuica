@@ -66,12 +66,12 @@ EquipmentFormSet = modelformset_factory(
 
 class TransferForm(forms.Form):
     ware_origin = forms.ModelChoiceField(
-        queryset=Warehouse.objects.all(),
+        queryset=Warehouse.objects.filter(activo=True),
         label="Origen del producto",
         widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'}),
     )
     ware_destin = forms.ModelChoiceField(
-        queryset=Warehouse.objects.filter(type='shed'),
+        queryset=Warehouse.objects.filter(type='shed', activo=True),
         label="Caseta de destino",
         widget=forms.Select(attrs={'class': 'form-select form-select-lg mb-3'}),
     )

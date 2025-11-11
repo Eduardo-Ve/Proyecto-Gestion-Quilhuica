@@ -13,13 +13,8 @@
       weekdays: {
         shorthand: ["Do", "Lu", "Ma", "Mi", "Ju", "Vi", "Sa"],
         longhand: [
-          "Domingo",
-          "Lunes",
-          "Martes",
-          "Miércoles",
-          "Jueves",
-          "Viernes",
-          "Sábado",
+          "Domingo", "Lunes", "Martes", "Miércoles",
+          "Jueves", "Viernes", "Sábado",
         ],
       },
       months: {
@@ -44,21 +39,21 @@
       container.style.setProperty("--fp-primary-hover", "#055526");
       container.style.setProperty("--fp-text", "#1E1E1E");
 
-      // === OBTENER FLECHAS NATIVAS DE FLATPICKR ===
+      // === Obtener flechas ===
       const prevArrow = container.querySelector(".flatpickr-prev-month");
       const nextArrow = container.querySelector(".flatpickr-next-month");
 
-      // === CABECERA PERSONALIZADA ===
+      // === Cabecera personalizada ===
       const header = container.querySelector(".flatpickr-current-month");
       if (!header) return;
 
-      // Limpiar el contenido pero mantener las flechas
+      // Eliminar contenido original del mes/año
       const monthElement = header.querySelector(".flatpickr-monthDropdown-months");
       const yearElement = header.querySelector(".numInputWrapper");
       if (monthElement) monthElement.remove();
       if (yearElement) yearElement.remove();
 
-      // Crear título personalizado
+      // Crear nuevo título
       const title = document.createElement("div");
       title.classList.add("fp-title-custom");
       title.style.cursor = "pointer";
@@ -68,10 +63,9 @@
       title.style.flex = "1";
       title.style.textAlign = "center";
       title.style.padding = "0 10px";
-
       header.appendChild(title);
 
-      // Asegurar que las flechas sean visibles y estén estilizadas
+      // Estilo flechas
       if (prevArrow) {
         prevArrow.style.display = "flex";
         prevArrow.style.color = "#fff";
@@ -81,9 +75,13 @@
         nextArrow.style.color = "#fff";
       }
 
-      // === VISTAS ===
+      // === Vistas personalizadas ===
       let view = "days";
       let currentDecadeStart = instance.currentYear - (instance.currentYear % 12);
+
+      function updateTitle() {
+        title.textContent = `${instance.l10n.months.longhand[instance.currentMonth]} ${instance.currentYear}`;
+      }
 
       function renderDays() {
         view = "days";
@@ -92,9 +90,9 @@
         const weekDays = container.querySelector(".flatpickr-weekdays");
         if (daysContainer) daysContainer.style.display = "";
         if (weekDays) weekDays.style.display = "";
-        title.textContent = `${instance.l10n.months.longhand[instance.currentMonth]} ${instance.currentYear}`;
-        
-        // Restaurar comportamiento normal de las flechas
+        updateTitle();
+
+        // Restaurar comportamiento normal de flechas
         if (prevArrow) prevArrow.onclick = null;
         if (nextArrow) nextArrow.onclick = null;
       }
@@ -116,8 +114,8 @@
         });
 
         setCustomGrid(grid, `${instance.currentYear}`);
-        
-        // Ocultar flechas en vista de meses
+
+        // Ocultar flechas
         if (prevArrow) prevArrow.style.visibility = "hidden";
         if (nextArrow) nextArrow.style.visibility = "hidden";
       }
@@ -140,8 +138,8 @@
         }
 
         setCustomGrid(grid, `${startYear} - ${startYear + 11}`);
-        
-        // Mostrar flechas y usar para cambiar década
+
+        // Mostrar flechas y usarlas para cambiar década
         if (prevArrow) {
           prevArrow.style.visibility = "visible";
           prevArrow.onclick = (e) => {
@@ -160,7 +158,7 @@
         }
       }
 
-      // === CONTENEDOR DE GRILLAS ===
+      // === Contenedor para grid custom ===
       function setCustomGrid(grid, titleText) {
         removeCustomGrid();
         const daysContainer = container.querySelector(".flatpickr-days");
@@ -173,17 +171,15 @@
         wrapper.appendChild(grid);
         container.querySelector(".flatpickr-innerContainer").appendChild(wrapper);
 
-        // ✅ Actualiza el título del header verde
         title.textContent = titleText;
       }
 
-      // === LIMPIAR ===
       function removeCustomGrid() {
         const existing = container.querySelector(".fp-grid-container");
         if (existing) existing.remove();
       }
 
-      // === EVENTOS ===
+      // === Eventos ===
       title.addEventListener("click", () => {
         if (view === "days") renderMonths();
         else if (view === "months") renderYears();
@@ -195,6 +191,11 @@
         renderDays();
       });
 
+      // Hooks para actualizar título al cambiar mes o año
+      instance.config.onMonthChange.push(updateTitle);
+      instance.config.onYearChange.push(updateTitle);
+
+      // Render inicial
       renderDays();
     },
   });

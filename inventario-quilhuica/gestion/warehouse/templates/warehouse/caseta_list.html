@@ -13,14 +13,14 @@
   <h2 class="text-success fw-bold mb-3">Gestión de Casetas</h2>
 
   {% if puede_crear %}
-    <div class="d-flex gap-2 mb-3">
-      <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-success">
-        + Nueva Caseta
-      </a>
-      <a href="{% url 'warehouse:productos_por_caseta' %}" class="btn btn-primary">
-        Productos por Caseta
-      </a>
-    </div>
+  <div class="d-flex gap-2 mb-3">
+    <a href="{% url 'warehouse:caseta_create' %}" class="btn btn-success">
+      + Nueva Caseta
+    </a>
+    <a href="{% url 'warehouse:productos_por_caseta' %}" class="btn btn-primary">
+      Productos por Caseta
+    </a>
+  </div>
   {% endif %}
 
   <div class="table-responsive shadow-sm">
@@ -40,7 +40,7 @@
       </thead>
       <tbody>
         {% for caseta in casetas %}
-        <tr>
+        <tr class="{% if not caseta.activo %}table-secondary text-muted{% endif %}">
           <td>{{ caseta.id }}</td>
           <td>{{ caseta.name_ware }}</td>
           <td>{{ caseta.description }}</td>
@@ -55,9 +55,9 @@
                 Editar
               </a>
               {% endif %}
-              {% if puede_eliminar %}
+              {% if puede_eliminar and caseta.activo %}
               <a href="{% url 'warehouse:caseta_delete' caseta.id %}" class="btn btn-sm btn-danger">
-                Eliminar
+                Desactivar
               </a>
               {% endif %}
             </div>
@@ -66,7 +66,7 @@
         </tr>
         {% empty %}
         <tr>
-          <td colspan="7" class="text-center text-muted py-4">No hay casetas registradas</td>
+          <td colspan="8" class="text-center text-muted py-4">No hay casetas registradas</td>
         </tr>
         {% endfor %}
       </tbody>

@@ -19,7 +19,7 @@ from django.http import HttpResponseForbidden
 def caseta_list(request):
     """Lista solo casetas (type='shed')."""
     casetas = (
-        Warehouse.objects.filter(type='shed')
+        Warehouse.objects.filter(type='shed',activo=True)
         .annotate(
             total_equipos=Count('equipos', distinct=True),
             total_sectores=Count('equipos__sectores', distinct=True),
@@ -35,24 +35,30 @@ def caseta_list(request):
     return render(request, "warehouse/caseta_list.html", context)
 
 # PRODUCTOS POR CASETA (con filtro)
-
 def productos_por_caseta(request):
     """
     Vista principal para ver productos por caseta.
     - Si viene ?caseta=<id> se filtra y se renderiza listado plano.
     - Si NO hay filtro, se agrupa por caseta (regroup en el template).
-    Importante: ordenamos por warehouse__name_ware para que regroup no repita grupos.
+    Importante: solo se muestran casetas activas.
     """
-    casetas = Warehouse.objects.filter(type='shed').order_by('name_ware')
+    # 🔸 Casetas activas (para el combo y agrupación)
+    casetas = Warehouse.objects.filter(type='shed', activo=True).order_by('name_ware')
 
     caseta_id = request.GET.get('caseta')  # puede venir None/'' si no hay filtro
+
+    # 🔸 Inventario filtrado: solo casetas activas y productos activos
     qs = (
         Inventory.objects
         .select_related('product', 'presentation', 'warehouse')
-        .filter(warehouse__type='shed', #producto activo y con stock
-                product__is_active=True)
+        .filter(
+            warehouse__type='shed',
+            warehouse__activo=True,        # 🔹 Filtra solo casetas activas
+            product__is_active=True        # 🔹 Solo productos activos
+        )
     )
 
+    # 🔸 Filtro individual
     if caseta_id:
         inventarios = qs.filter(warehouse_id=caseta_id).order_by(
             'product__name_prod',
@@ -60,8 +66,9 @@ def productos_por_caseta(request):
             'presentation__content_value',
         )
     else:
+        # 🔹 Orden necesario para que el regroup del template funcione correctamente
         inventarios = qs.order_by(
-            'warehouse__name_ware',               # clave para que regroup funcione
+            'warehouse__name_ware',
             'product__name_prod',
             'presentation__content_unit',
             'presentation__content_value',
@@ -73,7 +80,6 @@ def productos_por_caseta(request):
         'caseta_seleccionada': caseta_id or "",
     }
     return render(request, 'warehouse/productos_por_caseta.html', context)
-
 
 # CRUD CASETAS
 
@@ -197,23 +203,36 @@ def caseta_edit(request, pk):
 
 @role_required(allowed_roles=["Administrador"])
 def caseta_delete(request, pk):
-    """Eliminación protegida: solo Administrador."""
+    """Soft delete de caseta (solo Administrador)."""
     if not user_can(request.user, "caseta", "delete"):
         return HttpResponseForbidden("No tienes permiso para eliminar casetas.")
 
     caseta = get_object_or_404(Warehouse, pk=pk, type="shed")
+
     if request.method == "POST":
-        caseta.delete()
-        messages.success(request, "Caseta eliminada correctamente.")
+        caseta.activo = False
+        caseta.save()
+
+        messages.success(
+            request,
+            f"La caseta '{caseta.name_ware}' fue desactivada correctamente."
+        )
         return redirect("warehouse:caseta_list")
-    return render(request, "warehouse/caseta_confirm_delete.html", {"caseta": caseta})
+
+    # Render de confirmación
+    return render(
+        request,
+        "warehouse/caseta_confirm_delete.html",
+        {"caseta": caseta}
+    )
+
 
 # TRASLADO DESDE BODEGA PRINCIPAL A CASETA
 
 @role_required(allowed_roles=['Administrador', 'Supervisor']) #'Supervisor'! # 
 def transfer_product(request):
     try:
-        ware_origin = Warehouse.objects.get(type='main')
+        ware_origin = Warehouse.objects.get(type='main', activo=True)
     except Warehouse.DoesNotExist:
         messages.error(request, "Error crítico: No existe una bodega principal configurada.")
         return redirect('warehouse:caseta_list')

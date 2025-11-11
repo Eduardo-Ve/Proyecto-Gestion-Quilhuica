@@ -60,7 +60,7 @@ class RegistroUsuarioForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['ware_assig'].queryset = Warehouse.objects.filter(type='shed')
+        self.fields['ware_assig'].queryset = Warehouse.objects.filter(type='shed', activo=True)
     # --- Validaciones ---
     def clean_nombre_usuario(self):
         nombre_usuario = self.cleaned_data.get("nombre_usuario").strip()

@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from pydantic_core import ValidationError
 
 
 #  MODELOS DE BODEGAS Y CASETAS
@@ -11,9 +12,16 @@ class Warehouse(models.Model):
         choices=[('main', 'Bodega Principal'), ('shed', 'Caseta')]
     )
     created_at = models.DateTimeField(auto_now_add=True)
+    activo = models.BooleanField(default=True)  # 🔸 Soft delete flag
 
     def __str__(self):
         return f"{self.name_ware} ({self.type})"
+
+    def delete(self, *args, **kwargs):
+        """Soft delete para evitar romper relaciones protegidas."""
+        self.activo = False
+        self.save()
+
 
 
 #  MOVIMIENTOS
@@ -41,6 +49,9 @@ class Movement(models.Model):
     moved_at = models.DateTimeField(auto_now_add=True)
     moved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     description = models.TextField(blank=True, null=True)
+    def clean(self):
+        if self.ware_destin and not self.ware_destin.activo:
+            raise ValidationError("No se pueden registrar movimientos hacia casetas inactivas.")
 
     def __str__(self):
         return f"{self.movement_type} de {self.product.name_prod} ({self.quantity})"

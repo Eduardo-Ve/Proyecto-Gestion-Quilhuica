@@ -45,8 +45,12 @@
     <div class="delete-container">
         
         <h1 class="text-danger">Eliminar Caseta</h1>
-        <p>¿Seguro que deseas eliminar la caseta <strong>{{ caseta.name_ware }}</strong>?</p>
-
+        <p>
+        ¿Seguro que deseas <strong>desactivar</strong> la caseta
+        <strong>{{ caseta.name_ware }}</strong>?<br>
+        Esta acción <u>no eliminará los datos asociados</u>, pero la caseta dejará de estar disponible
+        para operaciones y  se tendra que crear una nueva caseta en caso de volver a necesitarla.
+        </p>
         <form method="post">
             {% csrf_token %}
             <div class="action-buttons">

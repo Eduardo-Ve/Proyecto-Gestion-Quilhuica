@@ -18,16 +18,18 @@
 
 {% block content %}
 <div class="container mt-5 mb-5">
-
   <form method="post" novalidate>
     {% csrf_token %}
     {% block form_content %}{% endblock %}
+
+    {% block form_submit_button %}
     <div class="text-end mt-4">
       <button type="submit" class="btn btn-success px-4">{{ submit_text|default:"Guardar" }}</button>
       {% if cancel_url %}
       <a href="{{ cancel_url }}" class="btn btn-secondary px-4">Cancelar</a>
       {% endif %}
     </div>
+    {% endblock %}
   </form>
 </div>
 {% endblock %}

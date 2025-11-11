@@ -1,0 +1,105 @@
+{% extends "base/base.html" %}
+{% load static %}
+
+{% block title %}Panel de Reportes{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="fw-bold text-success mb-4">Panel de Reportes de Problemas</h2>
+
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+      <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="">Estado: Todos</option>
+        {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if request.GET.status == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select name="module" class="form-select" onchange="this.form.submit()">
+        <option value="">Módulo: Todos</option>
+        {% for val, label in module_choices %}
+          <option value="{{ val }}" {% if request.GET.module == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </form>
+
+  <table class="table table-hover align-middle">
+    <thead class="table-success">
+      <tr>
+        <th>Usuario</th>
+        <th>Módulo</th>
+        <th>Asunto</th>
+        <th>Prioridad</th>
+        <th>Estado</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in reports %}
+      <tr>
+        <td>{{ r.user }}</td>
+        <td>{{ r.get_module_display }}</td>
+        <td>{{ r.subject }}</td>
+        <td>
+          <span class="badge 
+            {% if r.priority == 'alta' %}bg-danger{% elif r.priority == 'media' %}bg-warning{% else %}bg-success{% endif %}">
+            {{ r.get_priority_display }}
+          </span>
+        </td>
+        <td>
+          <span class="badge 
+            {% if r.status == 'pending' %}bg-warning
+            {% elif r.status == 'in_review' %}bg-info
+            {% elif r.status == 'resolved' %}bg-success
+            {% else %}bg-secondary{% endif %}">
+            {{ r.get_status_display }}
+          </span>
+        </td>
+        <td>{{ r.created_at|date:"d/m/Y H:i" }}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#editModal{{ r.id }}">Editar</button>
+        </td>
+      </tr>
+
+      <!-- Modal -->
+      <div class="modal fade" id="editModal{{ r.id }}" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <form method="post" action="{% url 'reports:change_report_status' r.id %}">
+              {% csrf_token %}
+              <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Actualizar reporte #{{ r.id }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <label class="form-label">Nuevo Estado</label>
+                <select name="status" class="form-select mb-3">
+                  {% for val, label in status_choices %}
+                    <option value="{{ val }}" {% if r.status == val %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <label class="form-label">Comentario del Administrador</label>
+                <textarea name="comment" class="form-control" rows="3">{{ r.admin_comment }}</textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <tr><td colspan="7" class="text-center text-muted">No hay reportes registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+{% block extra_js %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

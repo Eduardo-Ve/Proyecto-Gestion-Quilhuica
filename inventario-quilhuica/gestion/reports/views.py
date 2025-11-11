@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from django.db import models
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.views import View
 from django.core.paginator import Paginator
 from django.contrib import messages
@@ -13,6 +13,14 @@ from application.models import ApplicationDetail
 from login.models import Usuario
 from .pdf_reportlab import generar_pdf_reportlab
 
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from .forms import ReportarProblemaForm
+from .models import ProblemReport
+
+from django.contrib.auth.decorators import user_passes_test
+from django.shortcuts import render, redirect, get_object_or_404
+from django.core.exceptions import PermissionDenied
 
 # ============================================================
 #  PÁGINA PRINCIPAL DE REPORTES
@@ -260,3 +268,59 @@ class ExportReportView(View):
         response["Content-Disposition"] = f'attachment; filename="{filename}"'
         response.write(pdf)
         return response
+
+
+
+@login_required
+def reportar_problema(request):
+    if request.method == 'POST':
+        form = ReportarProblemaForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.user = request.user
+            report.save()
+            messages.success(request, "Tu reporte fue enviado correctamente ✅")
+        return redirect('reports:reportar_problema')
+
+    else:
+        form = ReportarProblemaForm()
+
+    return render(request, 'reports/reportar_problema.html', {'form': form})
+
+
+def is_admin_user(user):
+    try:
+        if not user.is_authenticated:
+            return False
+        if user.is_superuser or user.has_role("Administrador"):
+            return True
+        raise PermissionDenied
+    except Exception:
+        raise PermissionDenied
+    
+@user_passes_test(is_admin_user)
+def admin_problem_panel(request):
+    reports = ProblemReport.objects.select_related('user').all()
+    status_filter = request.GET.get('status')
+    module_filter = request.GET.get('module')
+
+    if status_filter:
+        reports = reports.filter(status=status_filter)
+    if module_filter:
+        reports = reports.filter(module=module_filter)
+
+    return render(request, 'reports/admin_problem_panel.html', {
+        'reports': reports,
+        'status_choices': ProblemReport.STATUS_CHOICES,
+        'module_choices': ProblemReport.MODULE_CHOICES,
+    })
+
+@user_passes_test(is_admin_user)
+def change_report_status(request, pk):
+    report = get_object_or_404(ProblemReport, pk=pk)
+    if request.method == 'POST':
+        report.status = request.POST.get('status', report.status)
+        report.admin_comment = request.POST.get('comment', '')
+        report.save()
+        messages.success(request, "El estado del reporte fue actualizado correctamente.")
+    return redirect('reports:admin_problem_panel')

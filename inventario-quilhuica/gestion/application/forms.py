@@ -29,10 +29,10 @@ class ApplicationForm(forms.ModelForm):
         if user:
             if user.is_staff:
                 # El administrador ve todas las casetas tipo "shed"
-                self.fields['ware'].queryset = Warehouse.objects.filter(type='shed')
+                self.fields['ware'].queryset = Warehouse.objects.filter(type='shed', activo=True )
             else:
                 # El encargado solo ve sus casetas asignadas
-                user_casetas = user.ware_assig.all()
+                user_casetas = user.ware_assig.filter(activo=True)
 
                 if user_casetas.count() == 1:
                     # Si solo tiene una caseta → se fija y bloquea
@@ -57,7 +57,7 @@ class ApplicationForm(forms.ModelForm):
                 ware_id = int(self.data.get('ware'))
                 self.fields['sector'].queryset = (
                     Sector.objects
-                    .filter(equipment__caseta_id=ware_id)
+                    .filter(equipment__caseta_id=ware_id,equipment__caseta__activo=True)
                     .select_related('equipment')
                     .order_by('equipment__nombre_equipo', 'sector_num')
                 )
@@ -69,7 +69,7 @@ class ApplicationForm(forms.ModelForm):
             ware = self.instance.ware
             self.fields['sector'].queryset = (
                 Sector.objects
-                .filter(equipment__caseta=ware)
+                .filter(equipment__caseta=ware,equipment__caseta__activo=True)
                 .select_related('equipment')
                 .order_by('equipment__nombre_equipo', 'sector_num')
             )
@@ -79,6 +79,8 @@ class ApplicationForm(forms.ModelForm):
         ware = self.cleaned_data.get('ware')
         if sector and ware and sector.equipment.caseta_id != ware.id:
             raise forms.ValidationError("El sector seleccionado no pertenece a la caseta indicada.")
+        if ware and not ware.activo:
+            raise forms.ValidationError("La caseta seleccionada está inactiva y no permite registrar aplicaciones.")
         return sector
     
 class ApplicationDetailForm(forms.ModelForm):

@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("✅ Calendario inicializado correctamente");
+  console.log("✅ Calendarios inicializados correctamente");
 
   flatpickr("#start-date, #end-date", {
     appendTo: document.body,
@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const container = instance.calendarContainer;
       if (!container) return;
 
+      // === Estilos institucionales ===
       container.style.setProperty("--fp-primary", "#00C451");
       container.style.setProperty("--fp-primary-hover", "#055526");
       container.style.setProperty("--fp-text", "#1E1E1E");
@@ -43,15 +44,15 @@ document.addEventListener("DOMContentLoaded", () => {
       container.style.boxShadow = "0 4px 16px rgba(0,0,0,0.15)";
       container.style.overflow = "hidden";
 
-      // === OBTENER FLECHAS NATIVAS DE FLATPICKR ===
+      // === Obtener flechas ===
       const prevArrow = container.querySelector(".flatpickr-prev-month");
       const nextArrow = container.querySelector(".flatpickr-next-month");
 
-      // === CABECERA PERSONALIZADA ===
+      // === Cabecera personalizada ===
       const header = container.querySelector(".flatpickr-current-month");
       if (!header) return;
 
-      // Limpiar el contenido pero mantener las flechas
+      // Limpiar contenido original
       const monthElement = header.querySelector(".flatpickr-monthDropdown-months");
       const yearElement = header.querySelector(".numInputWrapper");
       if (monthElement) monthElement.remove();
@@ -67,10 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
       title.style.flex = "1";
       title.style.textAlign = "center";
       title.style.padding = "0 10px";
-
       header.appendChild(title);
 
-      // Asegurar que las flechas sean visibles y estén estilizadas
+      // Asegurar que las flechas sean visibles y blancas
       if (prevArrow) {
         prevArrow.style.display = "flex";
         prevArrow.style.color = "#fff";
@@ -80,8 +80,14 @@ document.addEventListener("DOMContentLoaded", () => {
         nextArrow.style.color = "#fff";
       }
 
+      // === Control de vistas ===
       let view = "days";
       let currentDecadeStart = instance.currentYear - (instance.currentYear % 12);
+
+      // 🔁 Actualizar título dinámicamente
+      function updateTitle() {
+        title.textContent = `${instance.l10n.months.longhand[instance.currentMonth]} ${instance.currentYear}`;
+      }
 
       function renderDays() {
         view = "days";
@@ -90,10 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const weekDays = container.querySelector(".flatpickr-weekdays");
         if (daysContainer) daysContainer.style.display = "";
         if (weekDays) weekDays.style.display = "";
-        
-        title.textContent = `${instance.l10n.months.longhand[instance.currentMonth]} ${instance.currentYear}`;
-        
-        // Restaurar comportamiento normal de las flechas
+        updateTitle();
+
+        // Restaurar flechas a comportamiento nativo
         if (prevArrow) prevArrow.onclick = null;
         if (nextArrow) nextArrow.onclick = null;
       }
@@ -115,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         setCustomGrid(grid, `${instance.currentYear}`);
-        
+
         // Ocultar flechas en vista de meses
         if (prevArrow) prevArrow.style.visibility = "hidden";
         if (nextArrow) nextArrow.style.visibility = "hidden";
@@ -139,8 +144,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         setCustomGrid(grid, `${startYear} - ${startYear + 11}`);
-        
-        // Mostrar flechas y usar para cambiar década
+
+        // Mostrar flechas y usarlas para navegar décadas
         if (prevArrow) {
           prevArrow.style.visibility = "visible";
           prevArrow.onclick = (e) => {
@@ -159,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // === Grillas personalizadas ===
       function setCustomGrid(grid, titleText) {
         removeCustomGrid();
         const daysContainer = container.querySelector(".flatpickr-days");
@@ -169,8 +175,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const wrapper = document.createElement("div");
         wrapper.classList.add("fp-grid-container");
         wrapper.appendChild(grid);
-        
         container.querySelector(".flatpickr-innerContainer").appendChild(wrapper);
+
         title.textContent = titleText;
       }
 
@@ -179,12 +185,18 @@ document.addEventListener("DOMContentLoaded", () => {
         if (existing) existing.remove();
       }
 
+      // === Eventos ===
       title.addEventListener("click", () => {
         if (view === "days") renderMonths();
         else if (view === "months") renderYears();
         else renderDays();
       });
 
+      // 🔁 Hooks para actualizar el título al cambiar mes/año
+      instance.config.onMonthChange.push(updateTitle);
+      instance.config.onYearChange.push(updateTitle);
+
+      // Render inicial
       renderDays();
     },
   });
