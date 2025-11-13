@@ -93,7 +93,11 @@ class ProductCreateView(CreateView):
     form_class = ProductForm
     template_name = 'product/product_create_form.html'
     success_url = reverse_lazy('product:product_list')
-
+    def form_valid(self, form):
+        # Guardamos pasando el usuario para que se creen inventarios y movimientos
+        form.save(user=self.request.user)
+        messages.success(self.request, "Producto creado correctamente.")
+        return redirect(self.success_url)
 
 @method_decorator(role_required(allowed_roles=['Administrador', 'Supervisor']), name='dispatch')
 class ProductUpdateView(UpdateView):
@@ -101,7 +105,11 @@ class ProductUpdateView(UpdateView):
     form_class = ProductForm
     template_name = 'product/product_update_form.html'
     success_url = reverse_lazy('product:product_list')
-
+    def form_valid(self, form):
+        # Guardamos pasando el usuario para que se creen movimientos de ajuste
+        form.save(user=self.request.user)
+        messages.success(self.request, "Producto actualizado correctamente.")
+        return redirect(self.success_url)
 
 #  DESACTIVAR (Soft Delete)
 @method_decorator(role_required(allowed_roles=['Administrador']), name='dispatch')
