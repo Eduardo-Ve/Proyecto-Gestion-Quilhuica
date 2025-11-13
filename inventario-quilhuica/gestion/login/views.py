@@ -10,6 +10,8 @@ from django.urls import reverse_lazy
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.core.exceptions import PermissionDenied
 from django.contrib.auth.forms import SetPasswordForm
+
+from login.decorators import role_required
 from .forms import CustomLoginForm, RegistroUsuarioForm, CustomPasswordResetForm
 from notification.views import send_welcome_email
 
@@ -58,7 +60,8 @@ def success_view(request):
     return render(request, "login/success.html")
 
 
-@user_passes_test(es_superusuario)
+@login_required
+@role_required(allowed_roles=['Administrador'])
 def registrar_usuario(request):
     if request.method == "POST":
         form = RegistroUsuarioForm(request.POST)
