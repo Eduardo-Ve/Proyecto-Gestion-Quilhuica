@@ -4,20 +4,26 @@ from warehouse.models import Warehouse, Inventory, Movement
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Div, Submit
 
-
 class ProductForm(forms.ModelForm):
-    # === CAMPOS NUEVA CATEGORÍA ===
+    """
+    Formulario para crear y editar productos, permitiendo:
+    - Crear nuevas categorías
+    - Crear nuevas presentaciones
+    - Registrar stock inicial en bodega principal
+    - Registrar movimientos por ajuste al editar un producto
+    """
+    
     create_new_category = forms.BooleanField(required=False, label="Crear nueva categoría")
     new_category_name = forms.CharField(required=False, label="Nombre de nueva categoría")
-    new_category_description = forms.CharField(required=False, widget=forms.Textarea(attrs={'rows': 2}), label="Descripción de categoría")
+    new_category_description = forms.CharField(
+        required=False, widget=forms.Textarea(attrs={'rows': 2}), label="Descripción de categoría"
+    )
 
-    # === CAMPOS NUEVA PRESENTACIÓN ===
     create_new_presentation = forms.BooleanField(required=False, label="Crear nueva presentación")
     package_type = forms.ChoiceField(required=False, choices=Presentation.PACKAGE_CHOICES, label="Tipo de empaque")
     content_value = forms.FloatField(required=False, label="Contenido")
     content_unit = forms.ChoiceField(required=False, choices=Presentation.UNIT_CHOICES, label="Unidad")
 
-    # === STOCK INICIAL ===
     stock_inicial = forms.FloatField(required=False, min_value=0, label="Stock Inicial")
 
     class Meta:
@@ -30,24 +36,24 @@ class ProductForm(forms.ModelForm):
             'expire_at': 'Fecha de vencimiento',
             'stock_inicial': 'Stock inicial',
         }
-        widgets = {'expire_at': forms.DateInput(attrs={'type': 'date'})}
+        widgets = {
+            'expire_at': forms.DateInput(attrs={'type': 'date'})
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Inicializar con el stock actual si existe
         if self.instance.pk:
             main_warehouse = Warehouse.objects.filter(type='main').first()
             if main_warehouse:
-                inventory = Inventory.objects.filter(
+                inv = Inventory.objects.filter(
                     product=self.instance,
                     presentation=self.instance.presentation,
                     warehouse=main_warehouse
                 ).first()
-                if inventory:
-                    self.fields['stock_inicial'].initial = inventory.quantity_packages
+                if inv:
+                    self.fields['stock_inicial'].initial = inv.quantity_packages
 
-        # Opciones visuales
         self.fields['category'].required = False
         self.fields['presentation'].required = False
         self.fields['category'].empty_label = "Seleccione una categoría existente"
@@ -56,21 +62,18 @@ class ProductForm(forms.ModelForm):
     def save(self, commit=True, user=None):
         product = super().save(commit=False)
 
-        # === CREAR NUEVAS ENTIDADES ===
         if self.cleaned_data.get('create_new_category'):
-            category = Category.objects.create(
+            product.category = Category.objects.create(
                 name_cat=self.cleaned_data['new_category_name'],
                 description_cat=self.cleaned_data.get('new_category_description', '')
             )
-            product.category = category
 
         if self.cleaned_data.get('create_new_presentation'):
-            presentation = Presentation.objects.create(
+            product.presentation = Presentation.objects.create(
                 package_type=self.cleaned_data['package_type'],
                 content_value=self.cleaned_data['content_value'],
                 content_unit=self.cleaned_data['content_unit']
             )
-            product.presentation = presentation
 
         is_new = product.pk is None
 
@@ -78,10 +81,10 @@ class ProductForm(forms.ModelForm):
             product.save()
             self.save_m2m()
 
-            stock_inicial = self.cleaned_data.get('stock_inicial')
+            stock_nuevo = self.cleaned_data.get('stock_inicial')
             main_warehouse = Warehouse.objects.filter(type='main').first()
 
-            if stock_inicial is not None and main_warehouse:
+            if stock_nuevo is not None and main_warehouse:
                 inventory, _ = Inventory.objects.get_or_create(
                     product=product,
                     presentation=product.presentation,
@@ -90,41 +93,52 @@ class ProductForm(forms.ModelForm):
                 )
 
                 if is_new:
-                    # Producto nuevo → entrada inicial
-                    inventory.quantity_packages = stock_inicial
+                    inventory.quantity_packages = stock_nuevo
                     inventory.save()
 
-                    if user and user.is_authenticated and stock_inicial > 0:
+                    if user and user.is_authenticated and stock_nuevo > 0:
                         Movement.objects.create(
                             product=product,
                             presentation=product.presentation,
                             ware_origin=None,
                             ware_destin=main_warehouse,
                             movement_type='entrada',
-                            quantity=stock_inicial,
+                            quantity=stock_nuevo,
                             moved_by=user,
-                            description=f"Entrada inicial de {stock_inicial} unidades al crear el producto."
+                            description=f"Entrada inicial de {stock_nuevo} unidades al crear el producto."
                         )
+
                 else:
-                    # Producto existente → ajustar diferencia
-                    diferencia = stock_inicial - inventory.quantity_packages
+                    stock_anterior = inventory.quantity_packages
+                    diferencia = stock_nuevo - stock_anterior
+
                     if diferencia != 0:
-                        inventory.quantity_packages = stock_inicial
-                        inventory.save()
+                        if diferencia > 0:
+                            origen = None
+                            destino = main_warehouse
+                            tipo = "entrada"
+                        else:
+                            origen = main_warehouse
+                            destino = None
+                            tipo = "salida"
 
                         if user and user.is_authenticated:
                             Movement.objects.create(
                                 product=product,
                                 presentation=product.presentation,
-                                ware_origin=None if diferencia > 0 else main_warehouse,
-                                ware_destin=main_warehouse if diferencia > 0 else None,
-                                movement_type='entrada' if diferencia > 0 else 'salida',
+                                ware_origin=origen,
+                                ware_destin=destino,
+                                movement_type=tipo,
                                 quantity=abs(diferencia),
                                 moved_by=user,
                                 description=f"Ajuste de stock al editar producto ({'+' if diferencia > 0 else '-'}{abs(diferencia)} unidades)."
                             )
 
+                        inventory.quantity_packages = stock_nuevo
+                        inventory.save()
+
         return product
+
 
 class StockAddForm(forms.Form):
     product = forms.ModelChoiceField(
