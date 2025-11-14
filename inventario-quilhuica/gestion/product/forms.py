@@ -128,7 +128,7 @@ class ProductForm(forms.ModelForm):
 
 class StockAddForm(forms.Form):
     product = forms.ModelChoiceField(
-        queryset=Product.objects.all(),
+        queryset=Product.objects.filter(is_active=True).order_by('name_prod'),
         label="Producto",
         widget=forms.Select(attrs={'class': 'form-select'})
     )

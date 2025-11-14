@@ -88,9 +88,7 @@ def create_application(request):
                 return redirect('application:confirm_application')
             else:
                 print("FORMSET ERRORS:", formset.errors)
-                messages.error(request, "Corrige los errores del formulario de productos.")
         else:
-            messages.error(request, "Corrige los errores en el formulario principal.")
             formset = ApplicationDetailFormSet(request.POST, prefix='details')
 
     else:
@@ -106,7 +104,6 @@ def create_application(request):
 def confirm_application(request):
     pending_data = request.session.get('pending_application')
     if not pending_data:
-        messages.warning(request, "No hay ninguna aplicación pendiente de confirmar.")
         return redirect('application:create_application')
 
     if request.method == 'POST':
@@ -123,9 +120,7 @@ def confirm_application(request):
 def save_application(request):
     pending_data = request.session.get('pending_application')
     if not pending_data:
-        messages.error(request, "Sesión expirada. Por favor, crea la aplicación nuevamente.")
         return redirect('application:create_application')
-
     try:
         user = request.user
         warehouse = Warehouse.objects.get(id=pending_data['warehouse_id'])
@@ -143,7 +138,8 @@ def save_application(request):
         for product_data in pending_data['products']:
             product = Product.objects.get(product_id=product_data['product_id'])
             quantity = product_data['quantity']
-
+            if quantity <= 0:
+                raise ValueError(f"Cantidad inválida para {product.name_prod}.")
             ApplicationDetail.objects.create(
                 application=application,
                 product=product,
