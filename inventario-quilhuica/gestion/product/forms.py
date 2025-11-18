@@ -21,10 +21,9 @@ class ProductForm(forms.ModelForm):
 
     create_new_presentation = forms.BooleanField(required=False, label="Crear nueva presentación")
     package_type = forms.ChoiceField(required=False, choices=Presentation.PACKAGE_CHOICES, label="Tipo de empaque")
-    content_value = forms.FloatField(required=False, label="Contenido")
+    content_value = forms.IntegerField(required=False, label="Contenido")
     content_unit = forms.ChoiceField(required=False, choices=Presentation.UNIT_CHOICES, label="Unidad")
-
-    stock_inicial = forms.FloatField(required=False, min_value=0, label="Stock Inicial")
+    stock_inicial = forms.IntegerField(required=False, min_value=0, label="Stock Inicial")
 
     class Meta:
         model = Product
@@ -146,8 +145,8 @@ class StockAddForm(forms.Form):
         label="Producto",
         widget=forms.Select(attrs={'class': 'form-select'})
     )
-    cantidad = forms.FloatField(
-        min_value=0.1,
+    cantidad = forms.IntegerField(
+        min_value=1,
         label="Cantidad a añadir (en paquetes)",
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 100'})
     )

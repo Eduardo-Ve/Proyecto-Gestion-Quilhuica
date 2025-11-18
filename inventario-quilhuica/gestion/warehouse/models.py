@@ -63,8 +63,8 @@ class Inventory(models.Model):
     presentation = models.ForeignKey('product.Presentation', on_delete=models.PROTECT)
     warehouse  = models.ForeignKey(Warehouse, on_delete=models.PROTECT)
 
-    quantity_packages = models.FloatField(default=0)
-    total_content = models.FloatField(default=0)
+    quantity_packages = models.IntegerField(default=0)
+    total_content = models.IntegerField(default=0)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
