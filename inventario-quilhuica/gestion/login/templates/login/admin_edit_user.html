@@ -1,0 +1,58 @@
+{% extends "base/form_base.html" %}
+
+{% block form_content %}
+<h3 class="mb-3">Editar Usuario — Administrador</h3>
+
+<div class="mb-3">
+    <label class="form-label fw-bold">Nombre del usuario</label>
+    <input type="text" class="form-control" value="{{ usuario.nombre_usuario }}" readonly>
+</div>
+
+<div class="mb-3">
+    <label class="form-label fw-bold">Correo</label>
+    <input type="text" class="form-control" value="{{ usuario.correo }}" readonly>
+</div>
+
+<div class="mb-3">
+    {{ form.roles.label_tag }}  
+    {{ form.roles }}
+</div>
+
+<div class="mb-3">
+    {{ form.ware_assig.label_tag }}  
+    <div id="casetas-wrapper" class="mb-3">
+        {{ form.ware_assig }}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.bootstrap5.min.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  // Aplicar TomSelect en el campo de casetas asignadas
+  new TomSelect("#id_ware_assig", {
+    plugins: ["remove_button"],
+    placeholder: "Seleccione una o más casetas...",
+    create: false,
+    maxItems: null,
+    sortField: { field: "text", direction: "asc" },
+    render: {
+      option: function (data, escape) {
+        return `<div><input type="checkbox" /> ${escape(data.text)}</div>`;
+      },
+      item: function (data, escape) {
+        return `<div class="badge bg-success-subtle text-success fw-semibold me-1">${escape(data.text)}</div>`;
+      },
+    },
+  });
+
+});
+</script>
+{% endblock %}

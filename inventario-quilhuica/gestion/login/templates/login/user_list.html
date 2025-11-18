@@ -1,0 +1,72 @@
+{% extends "base/base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+
+  <h3 class="mb-4 fw-bold">Usuarios del Sistema</h3>
+
+  <table class="table table-hover align-middle">
+    <thead class="table-light">
+      <tr>
+        <th>Nombre Usuario</th>
+        <th>Correo</th>
+        <th>Rol</th>
+        <th>Casetas</th>
+        <th>Estado</th>
+        <th class="text-end">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in usuarios %}
+      <tr>
+        <td>{{ u.nombre_usuario }}</td>
+        <td>{{ u.correo }}</td>
+        <td>
+          {% for r in u.roles.all %}
+            <span class="badge bg-secondary">{{ r.name_role }}</span>
+          {% endfor %}
+        </td>
+        <td>
+          {% for w in u.ware_assig.all %}
+            <span class="badge bg-success">{{ w.name_ware }}</span>
+          {% empty %}
+            <span class="text-muted">—</span>
+          {% endfor %}
+        </td>
+        <td>
+          {% if u.is_active %}
+            <span class="badge bg-success">Activo</span>
+          {% else %}
+            <span class="badge bg-danger">Inactivo</span>
+          {% endif %}
+        </td>
+
+        <td class="text-end">
+
+          <!-- Botón Editar -->
+          <a href="{% url 'admin_edit_user' u.id_user %}" class="btn btn-sm btn-primary">
+            Editar
+          </a>
+
+          <!-- Botón Desactivar / Activar -->
+          {% if u.is_active %}
+              <a href="{% url 'deactivate_user' u.id_user %}" 
+                 class="btn btn-sm btn-danger">
+                 Desactivar
+              </a>
+          {% else %}
+              <a href="{% url 'activate_user' u.id_user %}" 
+                 class="btn btn-sm btn-success">
+                 Activar
+              </a>
+          {% endif %}
+
+        </td>
+
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+</div>
+{% endblock %}

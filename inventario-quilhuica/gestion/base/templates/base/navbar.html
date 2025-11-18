@@ -18,26 +18,35 @@
       <ul class="dropdown-menu">
 
         <li><a href="/application/new">Aplicación de Productos</a></li>
-        <li><a href="/reports/">Auditoría de Reportes</a></li>
-      {% if user.is_authenticated and user.is_admin or user.is_authenticated and user.is_supervisor %}
+
+        {% if user.is_authenticated and user.is_admin or user.is_authenticated and user.is_supervisor %}
           <li><a href="/warehouse/transfer-product/">Movimientos de Productos</a></li>
+          <li><a href="/reports/">Auditoría de Reportes</a></li>
         {% endif %}
 
         {% if user.is_authenticated and user.is_admin %}
+          <li><a href="/users">Gestión de Usuarios</a></li>
           <li><a href="/register/">Nuevo Personal</a></li>
         {% endif %}
 
-        <!-- 🔸 Todos los roles -->
-        <li><a href="/notification">Alertas</a></li>
+        <!-- 🔸 Todos los roles autenticados -->
+        {% if user.is_authenticated %}
+          <li><a href="/notification">Alertas</a></li>
+          <li><a href="/edit_profile">Mi Perfil</a></li>
+        {% else %}
+          <li><a href="/notification">Alertas</a></li>
+        {% endif %}
       </ul>
     </div>
 
     <a class="logo" href="/">
       <img src="{% static 'img/FQ_logo.png' %}" alt="logo">
     </a>
-  <a class="menu" id="menu-btn" aria-label="Abrir menú">
-    <i class="bi bi-list" style="font-size: 2rem; color: #00C451;"></i>
-  </a>
+
+    <a class="menu" id="menu-btn" aria-label="Abrir menú">
+      <i class="bi bi-list" style="font-size: 2rem; color: #00C451;"></i>
+    </a>
+
     <!-- 🔹 Usuario autenticado -->
     {% if user.is_authenticated %}
       <div class="user-menu">
@@ -71,10 +80,12 @@
         {% endif %}
 
         {% if user.is_admin %}
+          <li><a href="/users">Gestión de Usuarios</a></li>
           <li><a href="/register/">Nuevo personal</a></li>
         {% endif %}
 
         <li><a href="/notification">Alertas</a></li>
+        <li><a href="/edit_profile">Mi Perfil</a></li>
       {% endif %}
     </div>
   </div>
