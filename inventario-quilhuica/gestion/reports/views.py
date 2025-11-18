@@ -199,6 +199,42 @@ class ExportReportView(View):
                 for i in queryset
             ]
 
+        #  REPORTES: APLICACIONES
+        elif report_type == "aplicaciones":
+            queryset = (
+                ApplicationDetail.objects.select_related(
+                    "application__ware",
+                    "application__applied_by",
+                    "product",
+                    "application__sector__equipment",
+                )
+                .filter(
+                    application__applied_at__range=[start, end],
+                    application__ware__in=allowed_warehouses,
+                )
+                .order_by("-application__applied_at")
+            )
+
+            if selected_user:
+                queryset = queryset.filter(application__applied_by__id_user=selected_user)
+            if selected_warehouse:
+                queryset = queryset.filter(application__ware__id=selected_warehouse)
+
+            data = []
+            for a in queryset:
+                sector = a.application.sector
+                data.append(
+                    {
+                        "id_aplicacion": a.application.id,
+                        "fecha": a.application.applied_at.strftime("%d/%m/%Y %H:%M"),
+                        "caseta": a.application.ware.name_ware,
+                        "equipo": sector.equipment.nombre_equipo if sector and sector.equipment else "No asignado",
+                        "sector": sector.sector_num if sector else "No asignado",
+                        "producto": a.product.name_prod,
+                        "cantidad": f"{a.quantity_packages:.0f}",
+                        "usuario": a.application.applied_by.nombre_usuario,
+                    }
+                )
         else:
             data = []
 

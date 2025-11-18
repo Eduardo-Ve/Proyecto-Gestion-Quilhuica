@@ -1,5 +1,5 @@
 from django import forms
-from django.forms import modelformset_factory, formset_factory
+from django.forms import BaseFormSet, modelformset_factory, formset_factory
 from django.http import JsonResponse
 from .models import Warehouse, Equipment, Sector, Movement, Inventory
 from product.models import Product
@@ -91,17 +91,22 @@ class TransferDetailForm(forms.ModelForm):
         fields = ['product', 'quantity']
         widgets = {
             'product': forms.Select(attrs={'class': 'form-select product-select'}),
-            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 0.01}),
+            'quantity': forms.NumberInput(attrs={'class': 'form-control', 'min': 1, 'step': 1}),
         }
         labels = {
             'product': 'Producto',
             'quantity': 'Cantidad a trasladar',
         }
-TransferDetailFormSet = formset_factory(
-    TransferDetailForm,
-    extra=1,      # cantidad inicial de filas
-    can_delete=True  # permite eliminar filas
-)
+        def clean_quantity(self):
+            quantity = self.cleaned_data.get("quantity")
+
+            if quantity is None:
+                raise forms.ValidationError("Debes ingresar una cantidad.")
+
+            if quantity <= 0:
+                raise forms.ValidationError("La cantidad debe ser mayor a 0.")
+
+            return quantity
 
 
 #  API: Productos por bodega (AJAX)
@@ -118,3 +123,21 @@ def get_products_by_warehouse(request, warehouse_id):
         for inv in inventory
     ]
     return JsonResponse(data, safe=False)
+
+class BaseTransferDetailFormSet(BaseFormSet):
+    def clean(self):
+        super().clean()
+
+        valid_forms = [
+            form for form in self.forms
+            if form.cleaned_data and not form.cleaned_data.get("DELETE")
+        ]
+
+        if len(valid_forms) == 0:
+            raise forms.ValidationError("Debes agregar al menos un producto para realizar el traslado.")
+TransferDetailFormSet = formset_factory(
+    TransferDetailForm,
+    formset=BaseTransferDetailFormSet,  # ← agregar esto
+    extra=1,
+    can_delete=True
+)

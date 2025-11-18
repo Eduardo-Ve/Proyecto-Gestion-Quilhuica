@@ -3,11 +3,43 @@
 {% block title %}Trasladar Productos a Caseta{% endblock %}
 
 {% block form_content %}
+
 <div class="form-section">
   <h5 class="section-title">Datos del Traslado</h5>
+
   <div id="same-ware-alert" class="alert alert-danger d-none" role="alert">
     No puedes seleccionar la misma caseta como origen y destino.
   </div>
+
+  {# 🔹 ERRORES DEL FORMULARIO MAESTRO #}
+  {% if master_form.errors %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+
+      {% for field in master_form %}
+        {% for error in field.errors %}
+          <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+        {% endfor %}
+      {% endfor %}
+
+      {% for error in master_form.non_field_errors %}
+        <li>{{ error }}</li>
+      {% endfor %}
+
+    </ul>
+  </div>
+  {% endif %}
+
+  {# 🔹 ERRORES GENERALES DEL FORMSET (no form errors) #}
+  {% if formset.non_form_errors %}
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      {% for error in formset.non_form_errors %}
+      <li>{{ error }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
 
   <div class="form-content">
     <div class="row">
@@ -27,56 +59,87 @@
   </div>
 </div>
 
+
 <div class="form-section">
   <h5 class="section-title">Productos a Trasladar</h5>
+
   <div class="form-content">
+
     {{ formset.management_form }}
+
     <div id="formset-container">
+
       {% for form in formset %}
+
+        {# 🔹 ERRORES DEL FORMULARIO INDIVIDUAL DEL FORMSET #}
+        {% if form.errors %}
+        <div class="alert alert-warning p-2 mb-2">
+          <ul class="mb-0">
+
+            {% for field in form %}
+              {% for error in field.errors %}
+                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+              {% endfor %}
+            {% endfor %}
+
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+
+          </ul>
+        </div>
+        {% endif %}
+
+        <div class="product-form border rounded p-3 mb-3">
+          <div class="row align-items-center">
+
+            <div class="col-md-6">
+              {{ form.product.label_tag }}
+              {{ form.product }}
+            </div>
+
+            <div class="col-md-4">
+              {{ form.quantity.label_tag }}
+              {{ form.quantity }}
+            </div>
+
+            <div class="d-none">{{ form.DELETE }}</div>
+
+            <div class="col-md-2 d-flex align-items-center">
+              <button type="button" class="btn btn-outline-danger delete-btn">Eliminar</button>
+            </div>
+
+          </div>
+        </div>
+
+      {% endfor %}
+    </div>
+
+    <button type="button" id="add-form" class="btn btn-outline-success mt-2">
+      + Agregar Producto
+    </button>
+
+    <template id="empty-form-template">
       <div class="product-form border rounded p-3 mb-3">
         <div class="row align-items-center">
           <div class="col-md-6">
-            {{ form.product.label_tag }}
-            {{ form.product }}
+            {{ formset.empty_form.product.label_tag }}
+            {{ formset.empty_form.product }}
           </div>
           <div class="col-md-4">
-            {{ form.quantity.label_tag }}
-            {{ form.quantity }}
+            {{ formset.empty_form.quantity.label_tag }}
+            {{ formset.empty_form.quantity }}
           </div>
-          
-          <div class="d-none">{{ form.DELETE }}</div>
-
           <div class="col-md-2 d-flex align-items-center">
             <button type="button" class="btn btn-outline-danger delete-btn">Eliminar</button>
           </div>
         </div>
       </div>
-      {% endfor %}
-    </div>
-
-    <button type="button" id="add-form" class="btn btn-outline-success mt-2">+ Agregar Producto</button>
-    
-    <template id="empty-form-template">
-        <div class="product-form border rounded p-3 mb-3">
-            <div class="row align-items-center">
-                <div class="col-md-6">
-                    {{ formset.empty_form.product.label_tag }}
-                    {{ formset.empty_form.product }}
-                </div>
-                <div class="col-md-4">
-                    {{ formset.empty_form.quantity.label_tag }}
-                    {{ formset.empty_form.quantity }}
-                </div>
-                <div class="d-none"></div>
-                <div class="col-md-2 d-flex align-items-center">
-                    <button type="button" class="btn btn-outline-danger delete-btn">Eliminar</button>
-                </div>
-            </div>
-        </div>
     </template>
-    
+
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
