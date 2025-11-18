@@ -15,7 +15,7 @@ class Warehouse(models.Model):
     activo = models.BooleanField(default=True)  # 🔸 Soft delete flag
 
     def __str__(self):
-        return f"{self.name_ware} ({self.type})"
+        return f"{self.name_ware}"
 
     def delete(self, *args, **kwargs):
         """Soft delete para evitar romper relaciones protegidas."""
