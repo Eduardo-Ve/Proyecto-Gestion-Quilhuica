@@ -18,10 +18,9 @@
       <ul class="dropdown-menu">
 
         <li><a href="/application/new">Aplicación de Productos</a></li>
-
+        <li><a href="/reports/">Auditoría de Reportes</a></li>
       {% if user.is_authenticated and user.is_admin or user.is_authenticated and user.is_supervisor %}
           <li><a href="/warehouse/transfer-product/">Movimientos de Productos</a></li>
-          <li><a href="/reports/">Auditoría de Reportes</a></li>
         {% endif %}
 
         {% if user.is_authenticated and user.is_admin %}
