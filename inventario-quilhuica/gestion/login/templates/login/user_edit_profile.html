@@ -1,0 +1,20 @@
+{% extends "base/form_base.html" %}
+
+{% block form_content %}
+<h3 class="mb-3">Mi Perfil</h3>
+
+<div class="mb-3">
+    <label class="form-label fw-bold">Nombre de usuario</label>
+    <input type="text" class="form-control" value="{{ usuario.nombre_usuario }}" readonly>
+</div>
+
+<div class="mb-3">
+    {{ form.correo.label_tag }}
+    {{ form.correo }}
+</div>
+
+<div class="mb-3">
+    {{ form.telefono.label_tag }}
+    {{ form.telefono }}
+</div>
+{% endblock %}

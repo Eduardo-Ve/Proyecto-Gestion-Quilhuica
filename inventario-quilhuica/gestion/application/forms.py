@@ -105,6 +105,16 @@ class ApplicationDetailForm(forms.ModelForm):
         else:
             self.fields['product'].queryset = Product.objects.none()
 
+    def clean_quantity_packages(self):
+        quantity = self.cleaned_data.get('quantity_packages')
+
+        if quantity is None:
+            return quantity
+
+        if quantity <= 0:
+            raise forms.ValidationError("La cantidad debe ser un número positivo mayor a cero.")
+
+        return quantity
 
 class BaseApplicationDetailFormSet(BaseInlineFormSet):
     def __init__(self, *args, **kwargs):
@@ -124,6 +134,7 @@ class BaseApplicationDetailFormSet(BaseInlineFormSet):
 
     def clean(self):
         super().clean()
+
         warehouse = getattr(self.instance, 'ware', None)
         if not warehouse:
             return
@@ -131,19 +142,34 @@ class BaseApplicationDetailFormSet(BaseInlineFormSet):
         for form in self.forms:
             if not hasattr(form, 'cleaned_data'):
                 continue
+
+            # Form vacío o marcado para eliminar → ignorar
             if not form.cleaned_data or form.cleaned_data.get('DELETE', False):
                 continue
 
             product = form.cleaned_data.get('product')
             quantity = form.cleaned_data.get('quantity_packages')
-            if not product or not quantity:
+
+            # Si no hay valores, no validamos todavía
+            if not product or quantity is None:
                 continue
 
+            # 🔹 Validación 1: cantidad positiva
+            if quantity <= 0:
+                form.add_error('quantity_packages', "La cantidad debe ser mayor a cero.")
+                continue  # no tiene sentido validar stock si ya está mal
+
+            # 🔹 Validación 2: stock insuficiente
             try:
                 inventory = Inventory.objects.get(product=product, warehouse=warehouse)
+
                 if quantity > inventory.quantity_packages:
-                    form.add_error('quantity_packages', f"Stock insuficiente. Disponible: {inventory.quantity_packages}")
+                    form.add_error(
+                        'quantity_packages', 
+                        f"Stock insuficiente. Disponible: {inventory.quantity_packages}"
+                    )
             except Inventory.DoesNotExist:
+                # 🔹 Validación 3: producto sin inventario asociado
                 form.add_error('product', "Este producto no tiene stock en la bodega seleccionada.")
 
 

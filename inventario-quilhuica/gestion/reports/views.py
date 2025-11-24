@@ -108,29 +108,95 @@ class ExportReportView(View):
                 Movement.objects.select_related(
                     "product", "presentation", "ware_origin", "ware_destin", "moved_by"
                 )
-                .filter(moved_at__range=[start, end], ware_destin__in=allowed_warehouses)
+                .filter(moved_at__range=[start, end])
+                .filter(
+                    models.Q(ware_destin__in=allowed_warehouses)
+                    | models.Q(ware_origin__in=allowed_warehouses)
+                )
                 .order_by("-moved_at")
             )
 
             if selected_user:
                 queryset = queryset.filter(moved_by__id_user=selected_user)
-            if selected_warehouse:
-                queryset = queryset.filter(ware_destin__id=selected_warehouse)
 
-            data = [
-                {
+            if selected_warehouse:
+                queryset = queryset.filter(
+                    models.Q(ware_destin__id=selected_warehouse) |
+                    models.Q(ware_origin__id=selected_warehouse)
+                )
+
+            data = []
+            for m in queryset:
+                descripcion = (m.description or "").lower()
+
+                # =====================
+                # ORIGEN
+                # =====================
+                if m.ware_origin:
+                    origen = m.ware_origin.name_ware
+
+                else:
+                    # Entrada inicial de producto
+                    if "crear el producto" in descripcion:
+                        origen = "Proveedor"
+
+                    # Ajuste positivo al editar producto
+                    elif "ajuste de stock" in descripcion:
+                        origen = "Ajuste Interno"
+
+                    else:
+                        origen = "Ajuste Interno"
+
+                # =====================
+                # DESTINO
+                # =====================
+                if m.ware_destin:
+                    destino = m.ware_destin.name_ware
+
+                else:
+                    # Salida por ajuste negativo
+                    if "ajuste de stock" in descripcion:
+                        destino = "Ajuste / Eliminación"
+                    else:
+                        destino = "Ajuste / Eliminación"
+
+                # =====================
+                # ARMAR FILA
+                # =====================
+                data.append({
                     "ID": m.id,
                     "Tipo": m.get_movement_type_display(),
                     "Producto": m.product.name_prod,
                     "Presentación": str(m.presentation),
-                    "Origen": m.ware_origin.name_ware if m.ware_origin else "Proveedor",
-                    "Destino": m.ware_destin.name_ware,
+                    "Origen": origen,
+                    "Destino": destino,
                     "Cantidad": f"{m.quantity:.0f}",
                     "Usuario": m.moved_by.nombre_usuario if m.moved_by else "-",
                     "Fecha": m.moved_at.strftime("%d/%m/%Y %H:%M"),
                     "Descripción": m.description,
+                })
+
+        #  REPORTES: INVENTARIO
+        elif report_type == "inventario":
+            queryset = (
+                Inventory.objects.select_related("product", "presentation", "warehouse")
+                .filter(warehouse__in=allowed_warehouses)
+                .order_by("warehouse__name_ware", "product__name_prod")
+            )
+
+            if selected_warehouse and selected_warehouse not in ["", "None"]:
+                queryset = queryset.filter(warehouse__id=int(selected_warehouse))
+
+            data = [
+                {
+                    "bodega": i.warehouse.name_ware,
+                    "producto": i.product.name_prod,
+                    "presentacion": str(i.presentation),
+                    "cantidad_paquetes": f"{i.quantity_packages:.0f}",
+                    "total_contenido": f"{i.total_content:.0f}",
+                    "ultima_actualizacion": i.updated_at.strftime("%d/%m/%Y"),
                 }
-                for m in queryset
+                for i in queryset
             ]
 
         #  REPORTES: APLICACIONES
@@ -169,30 +235,6 @@ class ExportReportView(View):
                         "usuario": a.application.applied_by.nombre_usuario,
                     }
                 )
-
-        #  REPORTES: INVENTARIO
-        elif report_type == "inventario":
-            queryset = (
-                Inventory.objects.select_related("product", "presentation", "warehouse")
-                .filter(warehouse__in=allowed_warehouses)
-                .order_by("warehouse__name_ware", "product__name_prod")
-            )
-
-            if selected_warehouse and selected_warehouse not in ["", "None"]:
-                queryset = queryset.filter(warehouse__id=int(selected_warehouse))
-
-            data = [
-                {
-                    "bodega": i.warehouse.name_ware,
-                    "producto": i.product.name_prod,
-                    "presentacion": str(i.presentation),
-                    "cantidad_paquetes": f"{i.quantity_packages:.0f}",
-                    "total_contenido": f"{i.total_content:.0f}",
-                    "ultima_actualizacion": i.updated_at.strftime("%d/%m/%Y"),
-                }
-                for i in queryset
-            ]
-
         else:
             data = []
 

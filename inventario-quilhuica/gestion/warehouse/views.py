@@ -228,52 +228,57 @@ def caseta_delete(request, pk):
 
 
 # TRASLADO DESDE BODEGA PRINCIPAL A CASETA
-
-@role_required(allowed_roles=['Administrador', 'Supervisor']) #'Supervisor'! # 
+@role_required(allowed_roles=['Administrador', 'Supervisor'])
 def transfer_product(request):
-    try:
-        ware_origin = Warehouse.objects.get(type='main', activo=True)
-    except Warehouse.DoesNotExist:
-        messages.error(request, "Error crítico: No existe una bodega principal configurada.")
-        return redirect('warehouse:caseta_list')
-
-    # Productos con stock en bodega principal (para hints / dropdowns)
-    products_in_stock = Product.objects.filter(
-        is_active=True, 
-        inventory__warehouse=ware_origin,
-        inventory__quantity_packages__gt=0
-    ).distinct()
 
     if request.method == 'POST':
         master_form = TransferForm(request.POST)
         formset = TransferDetailFormSet(request.POST)
 
         if master_form.is_valid() and formset.is_valid():
+
+            ware_origin = master_form.cleaned_data['ware_origin']
             ware_destin = master_form.cleaned_data['ware_destin']
             description = master_form.cleaned_data['description']
 
+            if ware_origin == ware_destin:
+                messages.error(request, "El origen y el destino no pueden ser iguales.")
+                return redirect('warehouse:transfer_product')
+
             try:
                 with transaction.atomic():
+
                     for form_data in formset.cleaned_data:
-                        if not form_data or form_data.get('DELETE'):
+                        if not form_data or form_data.get("DELETE"):
                             continue
 
                         product = form_data['product']
                         quantity_to_move = form_data['quantity']
 
-                        # 1) Validar stock en origen
-                        inv_origin = Inventory.objects.get(product=product, warehouse=ware_origin)
+                        if quantity_to_move <= 0:
+                            raise ValueError("La cantidad debe ser mayor que 0.")
+
+                        # STOCK ORIGEN
+                        try:
+                            inv_origin = Inventory.objects.get(
+                                product=product, warehouse=ware_origin
+                            )
+                        except Inventory.DoesNotExist:
+                            raise ValueError(
+                                f"El producto {product.name_prod} no existe en el inventario del origen."
+                            )
+
                         if inv_origin.quantity_packages < quantity_to_move:
                             raise ValueError(
                                 f"Stock insuficiente para {product.name_prod}. "
                                 f"Disponible: {inv_origin.quantity_packages}."
                             )
 
-                        # 2) Descontar en origen
+                        # DESCONTAR EN ORIGEN
                         inv_origin.quantity_packages -= quantity_to_move
                         inv_origin.save()
 
-                        # 3) Aumentar en destino (respetando presentación del producto)
+                        # SUMAR EN DESTINO
                         inv_dest, _ = Inventory.objects.get_or_create(
                             product=product,
                             presentation=product.presentation,
@@ -283,7 +288,7 @@ def transfer_product(request):
                         inv_dest.quantity_packages += quantity_to_move
                         inv_dest.save()
 
-                        # 4) Registrar movimiento
+                        # REGISTRAR MOVIMIENTO
                         Movement.objects.create(
                             product=product,
                             presentation=product.presentation,
@@ -297,29 +302,22 @@ def transfer_product(request):
 
                 messages.success(
                     request,
-                    f"Traslado completado exitosamente a la caseta {ware_destin.name_ware}."
+                    f"Traslado completado exitosamente hacia {ware_destin.name_ware}."
                 )
                 return redirect('warehouse:transfer_product')
 
-            except Inventory.DoesNotExist:
-                messages.error(
-                    request,
-                    "Error: Uno de los productos no tiene inventario en la bodega principal."
-                )
             except ValueError as e:
                 messages.error(request, str(e))
+
     else:
         master_form = TransferForm()
         formset = TransferDetailFormSet()
 
-    context = {
+    return render(request, 'warehouse/transfer_product.html', {
         'master_form': master_form,
         'formset': formset,
-        'products_in_stock': products_in_stock,
-        'title': 'Trasladar Productos a Caseta',
-    }
-    return render(request, 'warehouse/transfer_product.html', context)
-
+        'title': 'Trasladar Productos',
+    })
 
 
 # API: Productos por bodega (JSON)

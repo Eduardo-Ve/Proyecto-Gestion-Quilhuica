@@ -4,6 +4,38 @@
 {% block title %}Crear Nueva Aplicación de Productos{% endblock %}
 
 {% block form_content %}
+{% if form.errors or formset.errors %}
+<div class="alert alert-danger">
+  <h6 class="fw-bold"><i class="bi bi-exclamation-triangle-fill"></i> Hay errores en el formulario:</h6>
+  <ul class="mt-2 mb-0">
+    
+    {# 🔹 Errores del formulario principal #}
+    {% for field in form %}
+      {% for error in field.errors %}
+        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+      {% endfor %}
+    {% endfor %}
+    {% for error in form.non_field_errors %}
+      <li>{{ error }}</li>
+    {% endfor %}
+
+    {# 🔹 Errores de los productos (formset) #}
+    {% for form_item in formset.forms %}
+      {% if form_item.errors %}
+        {% for field, errors in form_item.errors.items %}
+          {% for error in errors %}
+            <li>
+              <strong>Producto {{ forloop.parentloop.counter }} — {{ form_item.fields.field.label }}:</strong>
+              {{ error }}
+            </li>
+          {% endfor %}
+        {% endfor %}
+      {% endif %}
+    {% endfor %}
+
+  </ul>
+</div>
+{% endif %}
 
 <div class="form-section">
   <h5 class="section-title">Datos de la Aplicación</h5>
@@ -90,6 +122,8 @@
     </template>
   </div>
 </div>
+
+
 {% endblock %}
 
 {% block extra_js %}
