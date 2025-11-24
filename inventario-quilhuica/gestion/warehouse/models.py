@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from pydantic_core import ValidationError
+from django.core.exceptions import ValidationError
 
 
 #  MODELOS DE BODEGAS Y CASETAS
