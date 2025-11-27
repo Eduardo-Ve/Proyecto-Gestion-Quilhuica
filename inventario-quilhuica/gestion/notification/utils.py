@@ -156,7 +156,7 @@ def send_monthly_summary_pdf_email():
             "Cantidad": m.quantity,
             "Tipo": m.movement_type.capitalize(),
             "Origen": m.ware_origin.name_ware if m.ware_origin else "—",
-            "Destino": m.ware_destin.name_ware,
+            "Destino": m.ware_destin.name_ware if m.ware_destin else "—",
             "Usuario": m.moved_by.nombre_usuario if m.moved_by else "—",
             "Descripción": m.description or "",
         }

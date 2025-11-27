@@ -3,11 +3,11 @@ from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordResetForm
 import re
 from django.core.exceptions import ValidationError
+from django.contrib.auth.hashers import make_password
 
 from login.models import Usuario, Role  # tu modelo de usuarios y roles
 from warehouse.models import Warehouse
-import secrets
-import string
+
 
 
 User = get_user_model()
@@ -120,18 +120,15 @@ class RegistroUsuarioForm(forms.ModelForm):
     def save(self, commit=True):
         user = super().save(commit=False)
 
-        # Generar contraseña temporal
-        caracteres = string.ascii_letters + string.digits + string.punctuation
-        temp_password = ''.join(secrets.choice(caracteres) for _ in range(10))
-        user.set_password(temp_password)
-        user.must_change_password = True
+        # Nuevo flujo: cuenta inactiva y sin contraseña usable
+        user.is_active = False
+        user.set_unusable_password()  # no puede loguearse aún
 
         if commit:
             user.save()
             # roles: ModelChoice → lo pasas a ManyToMany con set
             user.roles.set([self.cleaned_data["roles"]])
             user.ware_assig.set(self.cleaned_data.get('ware_assig'))
-            user._temp_password = temp_password  # para enviarla por correo, etc.
 
         return user
 

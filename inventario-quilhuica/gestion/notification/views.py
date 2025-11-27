@@ -1,11 +1,18 @@
+
+from django.shortcuts import render
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .models import Notification
-from .services import create_notifications
-from django.shortcuts import render
-from django.utils import timezone 
+from django.utils import timezone
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
+
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.urls import reverse
+from django.contrib.auth.tokens import default_token_generator
+
+from .models import Notification
+from .services import create_notifications
 @login_required
 def notification_list(request):
     """
@@ -61,30 +68,34 @@ def mark_notifications_read(request):
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
 
-
-def send_welcome_email(user, temp_password):
-    """Envía correo de bienvenida con contraseña temporal."""
-    subject = "Bienvenido a Gestión Quilhuica"
-    from_email = "no-reply@quilhuica.cl"
+def send_activation_email(request, user):
+    subject = "Activa tu cuenta en Gestión Quilhuica"
+    from_email = "no-reply@gestion-quilhuica.online"
     to = [user.correo]
 
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    activation_link = request.build_absolute_uri(
+        reverse("activar_cuenta", kwargs={"uidb64": uidb64, "token": token})
+    )
+
     context = {
-        'nombre_usuario': user.nombre_usuario,
-        'temp_password': temp_password,
-        'login_url': "http://127.0.0.1:8000/",  # cambiar por el dominio cuando temos en producción
-        'year': timezone.now().year,
+        "nombre_usuario": user.nombre_usuario,
+        "activation_link": activation_link,
+        "year": timezone.now().year,
     }
 
-    html_content = render_to_string("notification/welcome_email.html", context)
+    html_content = render_to_string("notification/activation_email.html", context)
     text_content = f"""
     Hola {user.nombre_usuario},
 
-    Tu cuenta ha sido creada exitosamente en Gestión Quilhuica.
-    Tu contraseña temporal es: {temp_password}
+    Has sido registrado en Gestión Quilhuica.
+    Para activar tu cuenta y definir tu contraseña, entra al siguiente enlace:
 
-    Al iniciar sesión se te pedirá cambiarla.
+    {activation_link}
 
-    Ingresa aquí: http://127.0.0.1:8000/
+    Si no solicitaste este acceso, ignora este mensaje.
     """
 
     msg = EmailMultiAlternatives(subject, text_content, from_email, to)

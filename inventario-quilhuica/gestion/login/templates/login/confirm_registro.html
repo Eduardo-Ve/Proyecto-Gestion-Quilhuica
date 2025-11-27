@@ -1,0 +1,64 @@
+{% extends "base/form_base.html" %}
+{% load static %}
+
+{% block title %}Confirmar datos del usuario{% endblock %}
+
+{% block form_content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-success fw-bold">Confirmar datos del usuario</h2>
+
+  <p>Revisa los datos antes de crear el usuario:</p>
+
+  <ul class="list-group mb-4">
+    <li class="list-group-item">
+      <strong>Nombre:</strong> {{ form.nombre_usuario.value }}
+    </li>
+    <li class="list-group-item">
+      <strong>Correo:</strong> {{ form.correo.value }}
+    </li>
+    <li class="list-group-item">
+      <strong>Teléfono:</strong> {{ form.telefono.value }}
+    </li>
+    <li class="list-group-item">
+      <strong>Rol:</strong> {{ role_name }}
+    </li>
+    <li class="list-group-item">
+      <strong>Casetas asignadas:</strong>
+      {% if casetas %}
+        {% for c in casetas %}
+          {{ c.name_ware }}{% if not forloop.last %}, {% endif %}
+        {% endfor %}
+      {% else %}
+        (ninguna)
+      {% endif %}
+    </li>
+  </ul>
+
+  {# inputs ocultos, van dentro del form del base #}
+  <input type="hidden" name="confirm" value="1">
+
+  <input type="hidden" name="nombre_usuario"
+         value="{{ form.nombre_usuario.value|default_if_none:'' }}">
+  <input type="hidden" name="correo"
+         value="{{ form.correo.value|default_if_none:'' }}">
+  <input type="hidden" name="telefono"
+         value="{{ form.telefono.value|default_if_none:'' }}">
+  <input type="hidden" name="roles"
+         value="{{ form.roles.value|default_if_none:'' }}">
+
+  {% for wid in form.ware_assig.value %}
+    <input type="hidden" name="ware_assig" value="{{ wid }}">
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% block form_buttons %}
+<div class="d-flex gap-2 mt-4">
+  <button type="submit" class="btn btn-success">
+    Confirmar y crear usuario
+  </button>
+  <a href="{% url 'login:registrar_usuario' %}" class="btn btn-secondary">
+    Volver y editar
+  </a>
+</div>
+{% endblock %}

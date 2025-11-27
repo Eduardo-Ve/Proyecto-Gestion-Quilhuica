@@ -1,15 +1,24 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
+
 from django.contrib.auth import (
     logout,
     login as auth_login,
-    update_session_auth_hash
+    update_session_auth_hash,
+    get_user_model,
 )
 from django.contrib.auth.views import LoginView, PasswordResetView
-from django.urls import reverse, reverse_lazy
-from django.contrib.auth.decorators import user_passes_test, login_required
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.exceptions import PermissionDenied
+
+from django.urls import reverse, reverse_lazy
+
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+
+from gestion import settings
 
 from .forms import (
     CustomLoginForm,
@@ -19,9 +28,9 @@ from .forms import (
     UserEditProfileForm,
 )
 from .models import Usuario
-from .decorators import role_required  # tu decorador de roles
-from notification.views import send_welcome_email
+from .decorators import role_required
 
+from notification.views import send_activation_email
 
 class CustomLoginView(LoginView):
     authentication_form = CustomLoginForm
@@ -73,34 +82,55 @@ def es_superusuario(user):
 def success_view(request):
     return render(request, "login/success.html")
 
-
 @login_required
 @role_required(allowed_roles=['Administrador'])
 def registrar_usuario(request):
     if request.method == "POST":
+        # Si viene de la pantalla de confirmación
+        if "confirm" in request.POST:
+            form = RegistroUsuarioForm(request.POST)
+            if form.is_valid():
+                user = form.save()  # aquí NO se genera clave, queda inactivo
+
+                try:
+                    send_activation_email(request, user)
+                    messages.success(
+                        request,
+                        f"Usuario creado correctamente. Se envió un correo de activación a {user.correo}."
+                    )
+                    return render(request, "login/success.html")
+                except Exception as e:
+                    print("⚠️ ERROR EN ENVÍO DE CORREO:", e)
+                    messages.error(request, f"No se pudo enviar el correo: {e}")
+                    return redirect("registrar_usuario")
+
+            # Si el form no es válido, volver al formulario normal
+            return render(
+                request,
+                "login/registrar.html",
+                {
+                    "form": form,
+                    "title": "Registrar Nuevo Usuario",
+                    "submit_text": "Registrar",
+                    "cancel_url": "/",
+                }
+            )
+
+        # Primer POST (desde formulario de registro)
         form = RegistroUsuarioForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            temp_password = getattr(user, "_temp_password", None)
-
-            try:
-                # Enviar correo de bienvenida
-                send_welcome_email(user, temp_password)
-
-                messages.success(
-                    request,
-                    f"Usuario creado correctamente. Se envió un correo a {user.correo}."
-                )
-                return render(
-                    request,
-                    "login/success.html",
-                    {"temp_password": temp_password}
-                )
-
-            except Exception as e:
-                print("⚠️ ERROR EN ENVÍO DE CORREO:", e)
-                messages.error(request, f"No se pudo enviar el correo: {e}")
-                return redirect("login:registrar_usuario")
+            rol = form.cleaned_data["roles"]
+            casetas = form.cleaned_data["ware_assig"]
+            return render(
+                request,
+                "login/confirm_registro.html",
+                {
+                    "form": form,
+                    "title": "Confirmar datos del nuevo usuario",
+                    "role_name": rol.name_role,
+                    "casetas": casetas,
+                }
+            )
 
     else:
         form = RegistroUsuarioForm()
@@ -115,8 +145,6 @@ def registrar_usuario(request):
             "cancel_url": "/",
         }
     )
-
-
 # -------- Password Reset (usa tu form y tus templates) --------
 class CustomPasswordResetView(PasswordResetView):
     template_name = "login/password_reset_form.html"
@@ -252,3 +280,39 @@ def activate_user(request, user_id):
 
     messages.success(request, f"El usuario {usuario.nombre_usuario} ha sido activado.")
     return redirect("user_list")
+
+User = get_user_model()
+
+def activar_cuenta(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Usuario.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+        user = None
+
+    if user is None or not default_token_generator.check_token(user, token):
+        messages.error(request, "El enlace de activación no es válido o ha expirado.")
+        return redirect("login")
+
+    if request.method == "POST":
+        form = SetPasswordForm(user, request.POST)
+        if form.is_valid():
+            form.save()           # guarda la contraseña
+            user.is_active = True
+            # Por si acaso quieres limpiar flags:
+            # user.must_change_password = False
+            user.save()
+
+            # Opcional: loguearlo al tiro
+            auth_login(
+                request,
+                user,
+                backend=settings.AUTHENTICATION_BACKENDS[0]
+            )
+
+            messages.success(request, "Tu cuenta ha sido activada y tu contraseña fue definida correctamente.")
+            return redirect("/")
+    else:
+        form = SetPasswordForm(user)
+
+    return render(request, "login/change_new_password.html", {"form": form})

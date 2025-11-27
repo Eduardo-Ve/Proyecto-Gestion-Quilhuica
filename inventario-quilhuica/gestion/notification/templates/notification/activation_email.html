@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Bienvenido a Gestión Quilhuica</title>
+  <title>Activa tu cuenta - Gestión Quilhuica</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,7 +20,7 @@
       overflow: hidden;
     }
     .header {
-      background-color: #00C451 ;
+      background-color: #00C451;
       color: white;
       text-align: center;
       padding: 20px;
@@ -29,19 +29,27 @@
       padding: 25px;
     }
     .content h2 {
-      color: #00C451 ;
+      color: #00C451;
       margin-top: 0;
     }
-    .password-box {
+    .btn {
+      display: inline-block;
+      padding: 12px 20px;
+      background-color: #00C451;
+      color: #ffffff !important;
+      text-decoration: none;
+      border-radius: 6px;
+      font-weight: bold;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .link-box {
       background-color: #f0f4ff;
       border: 1px solid #d5e0ff;
       padding: 10px 15px;
       border-radius: 6px;
-      font-size: 18px;
-      font-weight: bold;
-      text-align: center;
-      letter-spacing: 1px;
-      color: #afd8c0ff ;
+      font-size: 13px;
+      word-break: break-all;
     }
     .footer {
       text-align: center;
@@ -59,20 +67,23 @@
     </div>
     <div class="content">
       <h2>Hola {{ nombre_usuario }},</h2>
-      <p>Tu cuenta ha sido creada exitosamente en el sistema <strong>Gestión Quilhuica</strong>.</p>
-
-      <p>Tu contraseña temporal es:</p>
-      <div class="password-box">{{ temp_password }}</div>
-
-      <p>Por razones de seguridad, deberás cambiar esta contraseña al ingresar por primera vez al sistema.</p>
-
-      <p>👉 Puedes acceder al sistema desde:  
-        <a href="{{ login_url }}">{{ login_url }}</a>
+      <p>
+        Tu cuenta ha sido creada en el sistema <strong>Gestión Quilhuica</strong>.
+        Para activarla y definir tu contraseña, haz clic en el siguiente botón:
       </p>
 
-      <p>Si no solicitaste este acceso, por favor comunícate con el administrador.</p>
-      <p>No entregues este codigo de acceso a nadie, puedes copiarlo y pegarlo en el acceso del sistema.</p>
+      <p style="text-align:center;">
+        <a href="{{ activation_link }}" class="btn">Activar mi cuenta</a>
+      </p>
 
+      <p>Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
+      <div class="link-box">
+        {{ activation_link }}
+      </div>
+
+      <p>
+        Si no esperabas este correo, puedes ignorarlo sin problemas.
+      </p>
     </div>
     <div class="footer">
       &copy; {{ year }} Gestión Quilhuica — Todos los derechos reservados.
