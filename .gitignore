@@ -1,15 +1,27 @@
-# Python / Django
+# Entornos virtuales
 env_gestion/
-*.pyc
-__pycache__/
-db.sqlite3
-.env
-*.env
 venv/
 env/
 .venv/
-media/
+
+# Python / Django
+*.py[cod]
+__pycache__/
 *.log
 *.sqlite3
+db.sqlite3
+
+# Configuración / secretos
+.env
+*.env
+
+# Archivos generados por Django
+/media/
+ /staticfiles/
+
+# Editores
 .vscode/
 .idea/
+
+# Otros
+.DS_Store
