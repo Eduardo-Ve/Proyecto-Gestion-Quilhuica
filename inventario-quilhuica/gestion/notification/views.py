@@ -10,6 +10,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.urls import reverse
 from django.contrib.auth.tokens import default_token_generator
+from django.conf import settings
 
 from .models import Notification
 from .services import create_notifications
@@ -70,7 +71,7 @@ def mark_notifications_read(request):
 
 def send_activation_email(request, user):
     subject = "Activa tu cuenta en Gestión Quilhuica"
-    from_email = "no-reply@gestion-quilhuica.online"
+    from_email = settings.DEFAULT_FROM_EMAIL
     to = [user.correo]
 
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))

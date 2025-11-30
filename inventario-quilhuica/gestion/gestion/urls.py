@@ -71,6 +71,14 @@ urlpatterns = [
         ),
         name="password_reset_complete"
     ),
+        path(
+    'sw.js',
+    TemplateView.as_view(
+        template_name="base/sw.js",
+        content_type='application/javascript'
+    ),
+    name='sw.js'
+),
 ]
 
 

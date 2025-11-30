@@ -21,12 +21,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-8r(%_b(!#%$4x9*!$fr0v&x9-*cymc*pkqu2kmof5o_cyh&r&#'
-
+SECRET_KEY =  config('DJANGO_SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['192.168.100.118', 'localhost', '127.0.0.1']  
+ALLOWED_HOSTS = ['gestion-quilhuica.online', 'www.gestion-quilhuica.online',]  
+
+#Trusted Origins
+CSRF_TRUSTED_ORIGINS = [
+    "https://gestion-quilhuica.online",
+    "https://www.gestion-quilhuica.online",
+]
+
 
 # Application definition
 
@@ -126,7 +132,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'es-CL'  # O el código que prefieras que use puntos.
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Santiago'
+USE_TZ = True
 
 USE_I18N = True
 
@@ -174,3 +181,22 @@ TWILIO_WHATSAPP_TO = config("TWILIO_WHATSAPP_TO")
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
+
+
+
+# Fuerza HTTPS (asegúrate de que el certificado está bien configurado)
+SECURE_SSL_REDIRECT = True
+
+# Cookies solo por HTTPS
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# Protección HSTS (solo actívalo cuando estés 100% seguro de que SIEMPRE usas HTTPS)
+SECURE_HSTS_SECONDS = 31536000  # 1 año
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Headers de seguridad adicionales
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+X_FRAME_OPTIONS = "DENY"
