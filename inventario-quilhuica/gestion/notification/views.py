@@ -40,8 +40,6 @@ def check_notifications(request):
     if not request.user.is_staff:
         return JsonResponse({"low_stock": [], "expiring": []})
     
-    # Es recomendable mover esto a una tarea periódica (ver más abajo).
-    # Pero por ahora, para que funcione, lo dejamos aquí.
     create_notifications()
     
     # Traer notificaciones no leídas
@@ -64,7 +62,7 @@ def mark_notifications_read(request):
     if request.method == 'POST':
         Notification.objects.filter(user=request.user, read=False).update(
             read=True,
-            read_at=timezone.now() # ✨ AÑADE ESTA LÍNEA
+            read_at=timezone.now()
         )
         return JsonResponse({"status": "ok"})
     return JsonResponse({"status": "error", "message": "Invalid method"}, status=405)
