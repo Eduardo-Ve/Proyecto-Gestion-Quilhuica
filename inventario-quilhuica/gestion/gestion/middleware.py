@@ -18,6 +18,7 @@ class AuthRequiredMiddleware:
             '/reset/',
             '/reset_password_complete/',
             '/cambiar-contrasena-inicial/',
+            '/static'
         ]
 
     def __call__(self, request):
